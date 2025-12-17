@@ -9,10 +9,11 @@ Tài liệu này hướng dẫn **các bước bắt buộc** để sinh viên t
 ## 1. Tạo repository từ template (BẮT BUỘC)
 
 ### Bước 1: Sử dụng template
-1. Truy cập **template repository** của học phần.
+1. Truy cập [Template Project Repository](https://github.com/fda-oop-java-anhpt/template-project)
+.
 2. Nhấn nút **Use this template**.
 3. Chọn:
-   - **Owner**: GitHub Organization của học phần.
+   - **Owner**: `fda-oop-java-anhpt`.
    - **Repository visibility**: Private.
 
 ---
@@ -20,21 +21,22 @@ Tài liệu này hướng dẫn **các bước bắt buộc** để sinh viên t
 ### Bước 2: Đặt tên repository (BẮT BUỘC)
 
 Tên repository phải theo **đúng định dạng sau**:
-`pXX-project-keyword-teamYY`
+`<class>-pXX-<project-keyword>`
 
 
 Trong đó:
 
 | Thành phần | Ý nghĩa | Ví dụ |
 |----------|--------|-------|
+| `<class>` | Mã lớp <ai66a, ai66b> | `ai66a, ai66b` |
 | `pXX` | Mã project (01 → 10) | `p01` |
 | `project-keyword` | Tên project viết thường, không dấu, dùng dấu `-` | `yummy-catering` |
-| `teamYY` | Số nhóm | `team03` |
 
-### Ví dụ hợp lệ
-p01-yummy-catering-team03
-p04-library-system-team01
-
+### Ví dụ hợp lệ:
+```
+ai66a-p01-yummy-catering
+ai66b-p04-library-system
+```
 
 ---
 
@@ -88,7 +90,7 @@ Cần điền đầy đủ:
 ## 5. Quy định làm việc với Git (BẮT BUỘC)
 
 ### 5.1. Commit
-- Mỗi thành viên: **tối thiểu 5 commit**.
+- Mỗi thành viên: **tối thiểu 20 commit**.
 - Commit message phải rõ ràng, có ý nghĩa.
 
 Ví dụ commit hợp lệ:
@@ -110,6 +112,7 @@ done
 
 ### 5.2. Thời gian commit
 - Không dồn toàn bộ commit vào 1–2 ngày cuối.
+- Mỗi tuần ít nhất 1 commit
 - Lịch sử commit sẽ được sử dụng để đánh giá mức độ đóng góp cá nhân.
 
 ---
@@ -151,15 +154,6 @@ Trước khi nộp, nhóm phải tự kiểm tra:
 - Không đổi tên repository sau khi đã bắt đầu làm project.
 - Mọi chỉnh sửa và trao đổi kỹ thuật phải thể hiện qua **commit trên GitHub**.
 
----
-
-## 9. Hỗ trợ
-
-Nếu gặp vấn đề trong quá trình tạo repository hoặc phân quyền, liên hệ giảng viên **trước hạn nộp bài**.
-
-Các vấn đề phát sinh do **không đọc kỹ README** sẽ không được giải quyết ngoại lệ.
-
----
-
-**Repository là sản phẩm học tập chính thức của nhóm.  
-Giảng viên sẽ đánh giá dựa trên code, lịch sử commit và khả năng giải thích khi bảo vệ project.**
+- Repository là sản phẩm học tập chính thức của nhóm.  
+- Giảng viên sẽ đánh giá dựa trên code, lịch sử commit và khả năng giải thích khi bảo vệ project.  
+- Các vấn đề phát sinh do không đọc kỹ README sẽ không được giải quyết ngoại lệ.

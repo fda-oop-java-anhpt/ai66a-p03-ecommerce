@@ -3,7 +3,6 @@
 - Project ID: P01
 - Project Name: Yummy Catering Event Management System
 - Class: OOP Java – K68A
-- Team: Team 03
 
 ## Members
 - Nguyễn Văn A – Leader

@@ -1,10 +1,11 @@
 ## Project Information
 
-- Project ID: P01
-- Project Name: Yummy Catering Event Management System
-- Class: OOP Java – K68A
+- Project ID: P03
+- Project Name: E-Commerce Sales and Billing System
+- Class: OOP Java – AI66A
 
 ## Members
-- Nguyễn Văn A – Leader
-- Trần Thị B – Backend
-- Lê Văn C – GUI
+- Bui Dang Duong – Model & Util
+- Nguyen Tuan Anh – Repository and Database Implementation
+- Nguyen Thanh Lan - Service and Bussiness Logic
+- Le Ngoc Anh Thu – UI/UX and Event Handling

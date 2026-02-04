@@ -1,3 +1,5 @@
+package com.oop.project.ui.frame;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;

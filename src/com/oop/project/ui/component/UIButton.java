@@ -1,3 +1,5 @@
+package com.oop.project.ui.component;
+
 import javax.swing.*;
 
 public class UIButton extends JButton {

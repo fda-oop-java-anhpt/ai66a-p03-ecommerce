@@ -1,5 +1,8 @@
+package com.oop.project.ui.frame;
+
 import javax.swing.*;
 import java.awt.*;
+import com.oop.project.ui.component.UIColors;
 
 public class BaseFrame extends JFrame {
 

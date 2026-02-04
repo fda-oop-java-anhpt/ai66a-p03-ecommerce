@@ -1,4 +1,4 @@
-package panel; 
+package com.oop.project.ui.panel;
 
 import javax.swing.*;
 import javax.swing.table.*;

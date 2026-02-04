@@ -1,6 +1,8 @@
-import panel.CustomerPanel;
-import panel.ItemPanel;
-import panel.OrderPanel;
+package com.oop.project.ui.frame;
+
+import com.oop.project.ui.panel.CustomerPanel;
+import com.oop.project.ui.panel.ItemPanel;
+import com.oop.project.ui.panel.OrderPanel;
 
 import javax.swing.*;
 import javax.swing.border.*;

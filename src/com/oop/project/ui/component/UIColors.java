@@ -1,3 +1,5 @@
+package com.oop.project.ui.component;
+
 import java.awt.Color;
 
 public class UIColors {

@@ -1,5 +1,10 @@
+package com.oop.project.ui.frame;
+
 import javax.swing.*;
 import java.awt.*;
+import com.oop.project.ui.component.UIColors;
+import com.oop.project.ui.component.UIFonts;
+import com.oop.project.ui.component.UIButton;
 
 public class OrderFrame extends BaseFrame {
 

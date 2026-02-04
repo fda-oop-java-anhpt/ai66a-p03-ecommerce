@@ -1,3 +1,5 @@
+package panel; 
+
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.border.*;

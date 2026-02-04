@@ -1,4 +1,6 @@
-
+import panel.CustomerPanel;
+import panel.ItemPanel;
+import panel.OrderPanel;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -9,6 +11,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+
 
 /**
  * MainFrame - Cửa sổ chính của E-Commerce System
@@ -82,7 +85,7 @@ public class MainFrame extends JFrame {
     private void initComponents() {
         // Initialize tab panels (placeholders for now)
         customerPanel = new CustomerPanel();
-        itemPanel = new ItemPanel(currentRole);     // NEW!
+        itemPanel = new ItemPanel(currentRole);  
         orderPanel = new OrderPanel(); 
         billingPanel = createPlaceholderPanel("Billing System", 
             "Calculate bills, apply discounts, and generate invoices");

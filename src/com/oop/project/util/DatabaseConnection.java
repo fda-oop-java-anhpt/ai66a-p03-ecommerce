@@ -8,7 +8,8 @@ public class DatabaseConnection {
     // 1. Các thông số kết nối (Thay password của bạn vào đây)
     private static final String URL = "jdbc:postgresql://localhost:5432/ecommerce_db";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "password"; 
+    private static final String PASSWORD = "081106"; 
+
 
     private static Connection connection = null;
 

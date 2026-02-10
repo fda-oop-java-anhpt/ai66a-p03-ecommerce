@@ -29,3 +29,6 @@ replay_pid*
 
 #Ignore .vscode
 .vscode/
+
+#Allow PostgreSQL driver 
+!src/com/oop/project/lib/postgresql-42.7.9.jar

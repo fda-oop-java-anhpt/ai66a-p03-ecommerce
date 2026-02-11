@@ -6,11 +6,17 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
     // 1. Các thông số kết nối (Thay password của bạn vào đây)
+<<<<<<< HEAD
     private static final String URL = "jdbc:postgresql://localhost:5432/E-commerce";
     private static final String USER = "postgres";
     private static final String PASSWORD = "123456"; 
 
   
+=======
+    private static final String URL = "jdbc:postgresql://localhost:5432/ecommerce_db";
+    private static final String USER = "postgres";
+    private static final String PASSWORD = "081106"; 
+>>>>>>> 9c0bb29f698dc5dbae171fa3aa87701e14e5f151
 
     private static Connection connection = null;
 

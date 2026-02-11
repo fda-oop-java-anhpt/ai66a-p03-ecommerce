@@ -10,6 +10,8 @@ public class DatabaseConnection {
     private static final String USER = "postgres";
     private static final String PASSWORD = "123456"; 
 
+  
+
     private static Connection connection = null;
 
     // 2. PHƯƠNG THỨC LẤY KẾT NỐI (Phải có chữ static)

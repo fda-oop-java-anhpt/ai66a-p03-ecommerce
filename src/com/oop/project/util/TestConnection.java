@@ -43,8 +43,4 @@ public class TestConnection {
             DatabaseConnection.closeConnection();
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 9c0bb29f698dc5dbae171fa3aa87701e14e5f151

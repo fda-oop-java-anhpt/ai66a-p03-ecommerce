@@ -27,13 +27,8 @@ replay_pid*
 .idea/
 *.iml
 
-<<<<<<< HEAD
 #Ignore .vscode
 .vscode/
 
 #Ignore target/
 target/
-=======
-# Ignore .vscode
-.vscode/
->>>>>>> 9c0bb29 (Update ignore .vscode)

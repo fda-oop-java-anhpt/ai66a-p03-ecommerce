@@ -8,6 +8,7 @@ public class User{
     private UserRole userRole;
     private Timestamp createdDate;
     private Timestamp lastLogin;
+    public User(){}
 
     public User(int userId, String userName, String userPassword, UserRole userRole, Timestamp createdDate, Timestamp lastLogin){
         this.userId = userId;
@@ -26,6 +27,9 @@ public class User{
     }
     public int getUserId(){ 
         return userId;
+    }
+    public void setUserId(int userId){
+        this.userId = userId;
     }
     public String getUserName(){
         return userName;

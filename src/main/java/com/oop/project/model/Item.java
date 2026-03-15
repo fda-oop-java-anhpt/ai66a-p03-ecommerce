@@ -16,10 +16,21 @@ public class Item {
         this.unitPrice = unitPrice;
         this.stockQuantity = stockQuantity;
     }
+     @Override
+    public String toString() {
+        return "Item{" +
+                "itemSku='" + itemSku + '\'' +
+                ", itemName='" + itemName + '\'' +
+                ", category='" + category + '\'' +
+                ", unitPrice=" + unitPrice +
+                ", stockQuantity=" + stockQuantity +
+                '}';
+    }
 
     // Getter và Setter
     public String getItemSku() { return itemSku; }
     public String getItemName() { return itemName; }
+    public String getCategory() { return category; }
     public BigDecimal getUnitPrice() { return unitPrice; }
     public int getStockQuantity() { return stockQuantity; }
 }

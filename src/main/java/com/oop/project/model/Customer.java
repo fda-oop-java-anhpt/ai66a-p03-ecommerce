@@ -18,10 +18,24 @@ public class Customer {
         this.address = address;
         this.createdDate = createdDate;
     }
+    @Override
+    public String toString() {
+    return "Customer{" +
+            "customerId=" + customerId +
+            ", customerName='" + customerName + '\'' +
+            ", phone='" + phone + '\'' +
+            ", email='" + email + '\'' +
+            ", address='" + address + '\'' +
+            ", createdDate=" + createdDate +
+            '}';
+    }
 
     // Getters
     public int getCustomerId() { return customerId; }
     public String getCustomerName() { return customerName; }
     public String getPhone() { return phone; }
+    public String getEmail() { return email; }
+    public String getAddress() { return address; }
+    public Timestamp getCreatedDate() { return createdDate; }
 
 }

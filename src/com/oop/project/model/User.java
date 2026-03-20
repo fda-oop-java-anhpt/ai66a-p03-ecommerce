@@ -1,5 +1,6 @@
 package com.oop.project.model;
 import java.sql.Timestamp;
+import java.util.Objects;
 public class User{
     private int userId;
     private String userName;
@@ -7,6 +8,7 @@ public class User{
     private UserRole userRole;
     private Timestamp createdDate;
     private Timestamp lastLogin;
+    public User(){}
 
     public User(int userId, String userName, String userPassword, UserRole userRole, Timestamp createdDate, Timestamp lastLogin){
         this.userId = userId;
@@ -25,6 +27,9 @@ public class User{
     }
     public int getUserId(){ 
         return userId;
+    }
+    public void setUserId(int userId){
+        this.userId = userId;
     }
     public String getUserName(){
         return userName;
@@ -60,14 +65,29 @@ public class User{
     public void setCreatedDate(Timestamp createdDate) {
         this.createdDate = createdDate;
     }
-    public Timestamp getlastlogin(Timestamp lastLogin){
+    public Timestamp getLastLogin(){
         return lastLogin;
     }
+    public void setLastLogin(Timestamp lastLogin){
+        this.lastLogin = lastLogin;
+    }
 
-    // --- CÁC HÀM BỔ TRỢ TUẦN 3 [cite: 61] ---
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;       
+        User user = (User) o;       
+        return userId == user.userId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
+    }
 
     @Override
     public String toString() {
-        return "User{" + "id=" + userId + ", name='" + userName + '\'' + ", role=" + userRole + '}';
+        // In ra Role để dễ debug phân quyền
+        return "User{id=" + userId + ", username='" + userName + "', role=" + userRole + "}";
     }
 }

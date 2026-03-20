@@ -68,7 +68,7 @@ public class User{
     public Timestamp getLastLogin(){
         return lastLogin;
     }
-    public void setLastLogin(){
+    public void setLastLogin(Timestamp lastLogin){
         this.lastLogin = lastLogin;
     }
 

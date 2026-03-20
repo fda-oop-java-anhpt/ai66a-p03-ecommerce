@@ -1,6 +1,6 @@
 package com.oop.project.model;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 public class AuditLog {
     private int logId;
@@ -22,7 +22,7 @@ public class AuditLog {
         this.createdDate = createdDate;
     }
     public int getLogId(){ return logId;}
-    public void setLogId(){this.logId = logId;}
+    public void setLogId(int logId){this.logId = logId;}
     public User getUser(){ return user;}
     public void setUser(User user){
         if (user == null){

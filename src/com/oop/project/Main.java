@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-package com.oop.project;
-
->>>>>>> thu-ui
 public class Main {
 
     public static void main(String[] args) {

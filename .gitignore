@@ -30,3 +30,9 @@ replay_pid*
 # Ignore IDE-specific configuration files
 .idea/
 *.iml
+
+#Ignore .vscode
+.vscode/
+
+#Ignore target/
+target/

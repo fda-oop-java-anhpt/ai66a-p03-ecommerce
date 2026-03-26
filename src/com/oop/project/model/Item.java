@@ -17,6 +17,8 @@ public class Item {
         this.unitPrice = unitPrice;
         this.stockQuantity = stockQuantity;
     }
+    
+    public Item() {}
 
     // Getter và Setter
     public String getItemSku() { return itemSku; }

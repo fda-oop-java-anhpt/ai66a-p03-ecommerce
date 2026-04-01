@@ -9,7 +9,7 @@ import com.oop.project.repository.ItemRepository;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.repository.impl.ItemRepositoryImpl;
 import com.oop.project.service.interfaces.ItemService;
-import com.oop.project.util.ValidationRules;
+import com.oop.project.util.Validator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -127,11 +127,11 @@ public class ItemServiceImpl implements ItemService {
 
         // Validate price range
         if (newPrice == null ||
-            newPrice.compareTo(BigDecimal.valueOf(ValidationRules.MIN_PRICE)) < 0 ||
-            newPrice.compareTo(BigDecimal.valueOf(ValidationRules.MAX_PRICE)) > 0) {
+            newPrice.compareTo(BigDecimal.valueOf(Validator.MIN_PRICE)) < 0 ||
+            newPrice.compareTo(BigDecimal.valueOf(Validator.MAX_PRICE)) > 0) {
             throw new IllegalArgumentException(
-                "Price must be between " + ValidationRules.MIN_PRICE +
-                " and " + ValidationRules.MAX_PRICE);
+                "Price must be between " + Validator.MIN_PRICE +
+                " and " + Validator.MAX_PRICE);
         }
 
         Item item = itemRepository.findBySku(sku)
@@ -188,7 +188,7 @@ public class ItemServiceImpl implements ItemService {
     // ─────────────────────────────────────────────────────────────
 
     /**
-     * Validate item fields against ValidationRules.
+     * Validate item fields against Validator.
      * Throws IllegalArgumentException with clear message if invalid.
      */
     private void validateItem(Item item) {
@@ -196,7 +196,7 @@ public class ItemServiceImpl implements ItemService {
 
         // Validate SKU format (FR-2.2)
         String sku = item.getItemSku();
-        if (sku == null || !ValidationRules.SKU_PATTERN.matcher(sku.trim()).matches()) {
+        if (sku == null || !Validator.SKU_PATTERN.matcher(sku.trim()).matches()) {
             throw new IllegalArgumentException(
                 "Invalid SKU format. Must be uppercase letters, digits, and hyphens (3-20 chars). E.g., SHIRT-001");
         }
@@ -213,11 +213,11 @@ public class ItemServiceImpl implements ItemService {
 
         // Validate price (FR-2.2)
         if (item.getUnitPrice() == null ||
-            item.getUnitPrice().compareTo(BigDecimal.valueOf(ValidationRules.MIN_PRICE)) < 0 ||
-            item.getUnitPrice().compareTo(BigDecimal.valueOf(ValidationRules.MAX_PRICE)) > 0) {
+            item.getUnitPrice().compareTo(BigDecimal.valueOf(Validator.MIN_PRICE)) < 0 ||
+            item.getUnitPrice().compareTo(BigDecimal.valueOf(Validator.MAX_PRICE)) > 0) {
             throw new IllegalArgumentException(
-                "Unit price must be between " + ValidationRules.MIN_PRICE +
-                " and " + ValidationRules.MAX_PRICE);
+                "Unit price must be between " + Validator.MIN_PRICE +
+                " and " + Validator.MAX_PRICE);
         }
     }
 

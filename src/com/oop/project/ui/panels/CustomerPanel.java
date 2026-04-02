@@ -1,6 +1,7 @@
 package com.oop.project.ui.panels;
 
 import com.oop.project.model.Customer;
+import com.oop.project.model.Order;
 import com.oop.project.model.User;
 import com.oop.project.service.interfaces.CustomerService;
 import com.oop.project.ui.components.SearchBar;
@@ -9,9 +10,12 @@ import com.oop.project.ui.utils.TableUtils;
 import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Customer Management tab.
@@ -73,7 +77,7 @@ public class CustomerPanel extends JPanel {
         TableUtils.applyDefaultRenderers(table);
         TableUtils.setColumnWidths(table, 60, 180, 130, 220, 140);
 
-        // Select row → populate form
+        // Select row -> populate form
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) populateFormFromTable();
         });
@@ -155,7 +159,7 @@ public class CustomerPanel extends JPanel {
 
         try {
             Customer c = new Customer();
-            c.setName(name);
+            c.setCustomerName(name);
             c.setPhone(phone);
             c.setEmail(email);
             customerService.addCustomer(c);
@@ -173,13 +177,18 @@ public class CustomerPanel extends JPanel {
 
         int id = (int) tableModel.getValueAt(row, 0);
         try {
-            Customer c = customerService.getCustomerById(id);
-            c.setName(nameField.getText().trim());
-            c.setPhone(phoneField.getText().trim());
-            c.setEmail(emailField.getText().trim());
-            customerService.updateCustomer(c);
-            refreshTable();
-            DialogUtils.showSuccess(this, "Customer updated.");
+            Optional<Customer> opt = customerService.getCustomerById(id);
+            if (opt.isPresent()) {
+                Customer c = opt.get();
+                c.setCustomerName(nameField.getText().trim());
+                c.setPhone(phoneField.getText().trim());
+                c.setEmail(emailField.getText().trim());
+                customerService.updateCustomer(c);
+                refreshTable();
+                DialogUtils.showSuccess(this, "Customer updated.");
+            } else {
+                DialogUtils.showError(this, "Customer not found.");
+            }
         } catch (Exception ex) {
             DialogUtils.showError(this, ex.getMessage());
         }
@@ -192,10 +201,10 @@ public class CustomerPanel extends JPanel {
         int id   = (int) tableModel.getValueAt(row, 0);
         String n = (String) tableModel.getValueAt(row, 1);
         if (!DialogUtils.confirm(this,
-                "Delete customer "" + n + ""? This cannot be undone.", "Confirm Delete")) return;
+                "Delete customer \"" + n + "\"? This cannot be undone.", "Confirm Delete")) return;
 
         try {
-            customerService.deleteCustomer(id);
+            customerService.deleteCustomer(id, currentUser);
             refreshTable();
             clearForm();
             DialogUtils.showSuccess(this, "Customer deleted.");
@@ -212,7 +221,7 @@ public class CustomerPanel extends JPanel {
         String name = (String) tableModel.getValueAt(row, 1);
 
         try {
-            List<?> orders = customerService.getCustomerOrderHistory(id);
+            List<Order> orders = customerService.getCustomerOrderHistory(id);
             if (orders.isEmpty()) {
                 DialogUtils.showInfo(this, name + " has no past orders.", "Order History");
                 return;
@@ -228,7 +237,7 @@ public class CustomerPanel extends JPanel {
 
     private void doSearch(String keyword) {
         try {
-            List<Customer> results = customerService.searchCustomers(keyword);
+            List<Customer> results = customerService.searchCustomer(keyword);
             populateTable(results);
         } catch (Exception ex) {
             DialogUtils.showError(this, ex.getMessage());
@@ -248,7 +257,7 @@ public class CustomerPanel extends JPanel {
         tableModel.setRowCount(0);
         for (Customer c : list) {
             tableModel.addRow(new Object[]{
-                c.getId(), c.getName(), c.getPhone(), c.getEmail(), c.getCreatedDate()
+                c.getCustomerId(), c.getCustomerName(), c.getPhone(), c.getEmail(), c.getCreatedDate()
             });
         }
     }

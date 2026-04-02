@@ -1,6 +1,7 @@
 package com.oop.project.ui.panels;
 
 import com.oop.project.model.Order;
+import com.oop.project.model.OrderStatus;
 import com.oop.project.service.interfaces.CustomerService;
 import com.oop.project.service.interfaces.ItemService;
 import com.oop.project.service.interfaces.OrderService;
@@ -14,6 +15,11 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 /**
@@ -181,7 +187,7 @@ public class DashboardPanel extends JPanel {
         try {
             List<Order> orders = "All Statuses".equals(status)
                     ? orderService.getAllOrders()
-                    : orderService.getOrdersByStatus(status);
+                    : orderService.filterByStatus(OrderStatus.valueOf(status));
             populateTable(orders);
         } catch (Exception ex) {
             DialogUtils.showError(this, ex.getMessage());
@@ -191,11 +197,24 @@ public class DashboardPanel extends JPanel {
     private void applyPeriodFilter(String period) {
         try {
             List<Order> orders;
+            LocalDateTime now = LocalDateTime.now();
             switch (period) {
-                case "Today"      -> orders = orderService.getOrdersToday();
-                case "This Week"  -> orders = orderService.getOrdersThisWeek();
-                case "This Month" -> orders = orderService.getOrdersThisMonth();
-                default           -> orders = orderService.getAllOrders();
+                case "Today" -> {
+                    Timestamp start = Timestamp.valueOf(now.with(LocalTime.MIN));
+                    Timestamp end = Timestamp.valueOf(now.with(LocalTime.MAX));
+                    orders = orderService.filterByDateRange(start, end);
+                }
+                case "This Week" -> {
+                    Timestamp start = Timestamp.valueOf(now.with(java.time.DayOfWeek.MONDAY).with(LocalTime.MIN));
+                    Timestamp end = Timestamp.valueOf(now.with(java.time.DayOfWeek.SUNDAY).with(LocalTime.MAX));
+                    orders = orderService.filterByDateRange(start, end);
+                }
+                case "This Month" -> {
+                    Timestamp start = Timestamp.valueOf(now.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN));
+                    Timestamp end = Timestamp.valueOf(now.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX));
+                    orders = orderService.filterByDateRange(start, end);
+                }
+                default -> orders = orderService.getAllOrders();
             }
             populateTable(orders);
         } catch (Exception ex) {
@@ -207,20 +226,21 @@ public class DashboardPanel extends JPanel {
         tableModel.setRowCount(0);
         for (Order o : orders) {
             tableModel.addRow(new Object[]{
-                o.getOrderId(), o.getCustomerName(),
+                o.getOrderId(), 
+                o.getCustomer() != null ? o.getCustomer().getCustomerName() : "N/A",
                 o.getOrderDate(), o.getStatus().name(),
-                o.getTotalAmount()
+                o.getFinalTotal()
             });
         }
     }
 
     private void updateKpis(List<Order> orders) {
         int total     = orders.size();
-        int paid      = (int) orders.stream().filter(o -> "PAID".equals(o.getStatus().name())).count();
-        int cancelled = (int) orders.stream().filter(o -> "CANCELLED".equals(o.getStatus().name())).count();
+        int paid      = (int) orders.stream().filter(o -> OrderStatus.PAID == o.getStatus()).count();
+        int cancelled = (int) orders.stream().filter(o -> OrderStatus.CANCELLED == o.getStatus()).count();
         double revenue = orders.stream()
-                .filter(o -> "PAID".equals(o.getStatus().name()))
-                .mapToDouble(Order::getTotalAmount).sum();
+                .filter(o -> OrderStatus.PAID == o.getStatus())
+                .mapToDouble(o -> o.getFinalTotal().doubleValue()).sum();
 
         totalOrdersCard.setValue(String.valueOf(total));
         revenueCard    .setValue(String.format("$%.2f", revenue));

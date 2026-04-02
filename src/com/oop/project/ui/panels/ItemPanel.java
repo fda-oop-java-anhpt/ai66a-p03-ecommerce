@@ -12,6 +12,7 @@ import com.oop.project.ui.utils.UITheme;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -196,9 +197,9 @@ public class ItemPanel extends JPanel {
         if (row < 0) { DialogUtils.showError(this, "Select an item to delete."); return; }
         String sku  = (String) tableModel.getValueAt(row, 0);
         String name = (String) tableModel.getValueAt(row, 1);
-        if (!DialogUtils.confirm(this, "Delete item "" + name + ""?", "Confirm Delete")) return;
+        if (!DialogUtils.confirm(this, "Delete item \"" + name + "\"?","Confirm Delete")) return;
         try {
-            itemService.deleteItem(sku);
+            itemService.removeItem(sku, currentUser);
             refreshTable();
             clearForm();
             DialogUtils.showSuccess(this, "Item deleted.");
@@ -216,15 +217,15 @@ public class ItemPanel extends JPanel {
         if (sku.isEmpty())   throw new Exception("SKU is required.");
         if (name.isEmpty())  throw new Exception("Name is required.");
 
-        double price = 0;
+        BigDecimal price = BigDecimal.ZERO;
         if (!priceStr.isEmpty()) {
-            try { price = Double.parseDouble(priceStr); }
+            try { price = new BigDecimal(priceStr); }
             catch (NumberFormatException e) { throw new Exception("Invalid price format."); }
         }
 
         Item item = new Item();
-        item.setSku(sku);
-        item.setName(name);
+        item.setItemSku(sku);
+        item.setItemName(name);
         item.setUnitPrice(price);
         item.setCategory(category);
         return item;
@@ -242,7 +243,7 @@ public class ItemPanel extends JPanel {
     private void populateTable(List<Item> list) {
         tableModel.setRowCount(0);
         for (Item i : list) {
-            tableModel.addRow(new Object[]{i.getSku(), i.getName(), i.getUnitPrice(), i.getCategory()});
+            tableModel.addRow(new Object[]{i.getItemSku(), i.getItemName(), i.getUnitPrice(), i.getCategory()});
         }
     }
 

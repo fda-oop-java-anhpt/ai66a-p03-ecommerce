@@ -300,12 +300,17 @@ public class OrderPanel extends JPanel {
         try {
             // Parse "SKU - Name ($price)" from combo text
             String sku = selected.split(" - ")[0].trim();
-            Item item = itemService.getItemBySku(sku);
-            BigDecimal lineTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(qty));
-            lineTableModel.addRow(new Object[]{
-                item.getItemSku(), item.getItemName(), qty, item.getUnitPrice(), lineTotal
-            });
-            recalculateBill();
+            Optional<Item> itemOpt = itemService.getItemBySku(sku);
+            if (itemOpt.isPresent()) {
+                Item item = itemOpt.get();
+                BigDecimal lineTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(qty));
+                lineTableModel.addRow(new Object[]{
+                    item.getItemSku(), item.getItemName(), qty, item.getUnitPrice(), lineTotal
+                });
+                recalculateBill();
+            } else {
+                DialogUtils.showError(this, "Item not found: " + sku);
+            }
         } catch (Exception ex) {
             DialogUtils.showError(this, ex.getMessage());
         }
@@ -366,7 +371,12 @@ public class OrderPanel extends JPanel {
 
         try {
             int customerId = Integer.parseInt(custSelected.split(" - ")[0].trim());
-            Customer customer = customerService.getCustomerById(customerId).orElseThrow();
+            Optional<Customer> customerOpt = customerService.getCustomerById(customerId);
+            if (!customerOpt.isPresent()) {
+                DialogUtils.showError(this, "Customer not found: " + customerId);
+                return;
+            }
+            Customer customer = customerOpt.get();
             
             String couponCode  = couponField.getText().trim();
             Coupon coupon = null;
@@ -392,11 +402,17 @@ public class OrderPanel extends JPanel {
             for (int i = 0; i < lineTableModel.getRowCount(); i++) {
                 OrderDetail detail = new OrderDetail();
                 String sku = (String) lineTableModel.getValueAt(i, 0);
-                Item item = itemService.getItemBySku(sku);
-                detail.setItem(item);
-                detail.setQuantity((int) lineTableModel.getValueAt(i, 2));
-                detail.setPriceAtTime((BigDecimal) lineTableModel.getValueAt(i, 3));
-                orderDetails.add(detail);
+                Optional<Item> itemOpt = itemService.getItemBySku(sku);
+                if (itemOpt.isPresent()) {
+                    Item item = itemOpt.get();
+                    detail.setItem(item);
+                    detail.setQuantity((int) lineTableModel.getValueAt(i, 2));
+                    detail.setPriceAtTime((BigDecimal) lineTableModel.getValueAt(i, 3));
+                    orderDetails.add(detail);
+                } else {
+                    DialogUtils.showError(this, "Item not found during order creation: " + sku);
+                    return;
+                }
             }
 
             orderService.createOrder(order, orderDetails, currentUser);

@@ -9,7 +9,7 @@ import com.oop.project.repository.OrderRepository;
 import com.oop.project.repository.impl.CustomerRepositoryImpl;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.service.interfaces.CustomerService;
-import com.oop.project.util.ValidationRules;
+import com.oop.project.util.Validator;
 
 import java.util.List;
 import java.util.Optional;
@@ -163,24 +163,24 @@ public class CustomerServiceImpl implements CustomerService {
         // Validate name
         String name = customer.getCustomerName();
         if (name == null || name.trim().isEmpty() ||
-            name.trim().length() < ValidationRules.MIN_NAME_LENGTH ||
-            name.trim().length() > ValidationRules.MAX_NAME_LENGTH) {
+            name.trim().length() < Validator.MIN_NAME_LENGTH ||
+            name.trim().length() > Validator.MAX_NAME_LENGTH) {
             throw new IllegalArgumentException(
                 "Customer name must be between " +
-                ValidationRules.MIN_NAME_LENGTH + " and " +
-                ValidationRules.MAX_NAME_LENGTH + " characters.");
+                Validator.MIN_NAME_LENGTH + " and " +
+                Validator.MAX_NAME_LENGTH + " characters.");
         }
 
         // Validate phone (FR-1.2)
         String phone = customer.getPhone();
-        if (phone == null || !ValidationRules.PHONE_PATTERN.matcher(phone.trim()).matches()) {
+        if (phone == null || !Validator.PHONE_PATTERN.matcher(phone.trim()).matches()) {
             throw new IllegalArgumentException(
                 "Invalid phone number format. Expected Vietnamese format (e.g., 0912345678).");
         }
 
         // Validate email (FR-1.2)
         String email = customer.getEmail();
-        if (email == null || !ValidationRules.EMAIL_PATTERN.matcher(email.trim()).matches()) {
+        if (email == null || !Validator.EMAIL_PATTERN.matcher(email.trim()).matches()) {
             throw new IllegalArgumentException(
                 "Invalid email format. Expected: user@domain.com");
         }

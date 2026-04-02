@@ -8,7 +8,7 @@ import com.oop.project.repository.UserRepository;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.service.interfaces.AuthenticationService;
-import com.oop.project.util.ValidationRules;
+import com.oop.project.util.Validator;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -113,11 +113,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /**
      * Check if a user has permission to perform a specific action.
      *
-     * Admin-only actions (from ValidationRules.ADMIN_ONLY_ACTIONS):
+     * Admin-only actions (from Validator.ADMIN_ONLY_ACTIONS):
      *   "UPDATE_PRICE", "DELETE_ORDER", "DELETE_CUSTOMER",
      *   "CREATE_USER", "DELETE_COUPON"
      *
-     * Regular user actions (from ValidationRules.USER_ACTIONS):
+     * Regular user actions (from Validator.USER_ACTIONS):
      *   "CREATE_ORDER", "VIEW_ORDERS", "UPDATE_CUSTOMER", "SEARCH_ITEMS"
      */
     @Override
@@ -128,7 +128,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (user.getUserRole() == UserRole.ADMIN) return true;
 
         // STAFF can only do non-admin actions
-        boolean isAdminOnlyAction = Arrays.asList(ValidationRules.ADMIN_ONLY_ACTIONS)
+        boolean isAdminOnlyAction = Arrays.asList(Validator.ADMIN_ONLY_ACTIONS)
                                           .contains(action.toUpperCase());
         return !isAdminOnlyAction;
     }

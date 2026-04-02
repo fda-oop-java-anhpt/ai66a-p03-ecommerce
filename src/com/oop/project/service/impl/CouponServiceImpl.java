@@ -7,7 +7,7 @@ import com.oop.project.model.UserRole;
 import com.oop.project.repository.CouponRepository;
 import com.oop.project.repository.impl.CouponRepositoryImpl;
 import com.oop.project.service.interfaces.CouponService;
-import com.oop.project.util.ValidationRules;
+import com.oop.project.util.Validator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -193,7 +193,7 @@ public class CouponServiceImpl implements CouponService {
 
         // Validate coupon code format
         String code = coupon.getCouponCode();
-        if (code == null || !ValidationRules.COUPON_CODE_PATTERN.matcher(code.trim()).matches()) {
+        if (code == null || !Validator.COUPON_CODE_PATTERN.matcher(code.trim()).matches()) {
             throw new IllegalArgumentException(
                 "Invalid coupon code format. Must be uppercase letters and digits (4-20 chars). E.g., SAVE10");
         }

@@ -2,7 +2,6 @@ package com.oop.project.ui.panels;
 
 import com.oop.project.model.*;
 import com.oop.project.model.OrderStatus;
-import com.oop.project.model.UserRole;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.ui.components.SearchBar;
 import com.oop.project.ui.utils.DialogUtils;
@@ -12,7 +11,10 @@ import com.oop.project.ui.utils.UITheme;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Order Management tab.
@@ -95,7 +97,7 @@ public class OrderPanel extends JPanel {
             String sel = (String) statusFilter.getSelectedItem();
             try {
                 if ("All".equals(sel)) refreshTable();
-                else populateOrderTable(orderService.getOrdersByStatus(sel));
+                else populateOrderTable(orderService.filterByStatus(OrderStatus.valueOf(sel)));
             } catch (Exception ex) { DialogUtils.showError(this, ex.getMessage()); }
         });
         right.add(statusFilter);
@@ -140,9 +142,9 @@ public class OrderPanel extends JPanel {
         // Action buttons below list
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         actions.setBackground(UITheme.BG_DARK);
-        deleteOrderBtn    = UITheme.dangerButton("Delete Order");
+        deleteOrderBtn    = UITheme.dangerButton("Cancel Order");
         viewInvoiceBtn    = UITheme.ghostButton("View Invoice");
-        deleteOrderBtn.addActionListener(e -> deleteOrder());
+        deleteOrderBtn.addActionListener(e -> cancelOrder());
         viewInvoiceBtn.addActionListener(e -> viewInvoice());
         actions.add(deleteOrderBtn);
         actions.add(viewInvoiceBtn);
@@ -299,9 +301,9 @@ public class OrderPanel extends JPanel {
             // Parse "SKU - Name ($price)" from combo text
             String sku = selected.split(" - ")[0].trim();
             Item item = itemService.getItemBySku(sku);
-            double lineTotal = item.getUnitPrice() * qty;
+            BigDecimal lineTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(qty));
             lineTableModel.addRow(new Object[]{
-                item.getSku(), item.getName(), qty, item.getUnitPrice(), lineTotal
+                item.getItemSku(), item.getItemName(), qty, item.getUnitPrice(), lineTotal
             });
             recalculateBill();
         } catch (Exception ex) {
@@ -321,27 +323,31 @@ public class OrderPanel extends JPanel {
     }
 
     // ── Billing calculation (FR-3.3, FR-3.4, FR-6.4) ─────────────────────────
-    private double currentDiscount = 0;
+    private BigDecimal currentDiscount = BigDecimal.ZERO;
 
     private void recalculateBill() {
-        double subtotal = 0;
+        BigDecimal subtotal = BigDecimal.ZERO;
         for (int i = 0; i < lineTableModel.getRowCount(); i++) {
-            subtotal += (double) lineTableModel.getValueAt(i, 4);
+            subtotal = subtotal.add((BigDecimal) lineTableModel.getValueAt(i, 4));
         }
 
         String coupon = couponField.getText().trim();
-        currentDiscount = 0;
+        currentDiscount = BigDecimal.ZERO;
         if (!coupon.isEmpty()) {
             try {
-                currentDiscount = couponService.getDiscountAmount(coupon, subtotal);
+                if (couponService.validateCoupon(coupon, subtotal)) {
+                    currentDiscount = couponService.getDiscountAmount(coupon, subtotal);
+                }
             } catch (Exception ex) {
                 // invalid coupon — ignore silently; error shown on create
             }
         }
 
-        double afterDiscount = Math.max(0, subtotal - currentDiscount);
-        double tax   = afterDiscount * 0.08;
-        double total = afterDiscount + tax;
+        BigDecimal afterDiscount = subtotal.subtract(currentDiscount);
+        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0) afterDiscount = BigDecimal.ZERO;
+        
+        BigDecimal tax   = billingService.applyTax(afterDiscount).subtract(afterDiscount);
+        BigDecimal total = afterDiscount.add(tax);
 
         subtotalLbl.setText(String.format("$%.2f", subtotal));
         discountLbl.setText(String.format("-$%.2f", currentDiscount));
@@ -360,30 +366,40 @@ public class OrderPanel extends JPanel {
 
         try {
             int customerId = Integer.parseInt(custSelected.split(" - ")[0].trim());
-            String coupon  = couponField.getText().trim().isEmpty() ? null : couponField.getText().trim();
-
-            // Validate coupon if present
-            if (coupon != null && !couponService.validateCoupon(coupon)) {
-                DialogUtils.showError(this, "Invalid or expired coupon code.");
-                return;
+            Customer customer = customerService.getCustomerById(customerId).orElseThrow();
+            
+            String couponCode  = couponField.getText().trim();
+            Coupon coupon = null;
+            if (!couponCode.isEmpty()) {
+                BigDecimal subtotal = BigDecimal.ZERO;
+                for (int i = 0; i < lineTableModel.getRowCount(); i++) {
+                    subtotal = subtotal.add((BigDecimal) lineTableModel.getValueAt(i, 4));
+                }
+                if (!couponService.validateCoupon(couponCode, subtotal)) {
+                    DialogUtils.showError(this, "Invalid or expired coupon code.");
+                    return;
+                }
+                coupon = couponService.getCouponByCode(couponCode).orElse(null);
             }
 
             Order order = new Order();
-            order.setCustomerId(customerId);
-            order.setStatus(OrderStatus.valueOf(
-                    (String) statusCombo.getSelectedItem()));
-            order.setCouponCode(coupon);
+            order.setCustomer(customer);
+            order.setCoupon(coupon);
+            order.setStatus(OrderStatus.valueOf((String) statusCombo.getSelectedItem()));
 
+            List<OrderDetail> orderDetails = new ArrayList<>();
             // Build line items from table
             for (int i = 0; i < lineTableModel.getRowCount(); i++) {
-                OrderItem oi = new OrderItem();
-                oi.setItemSku((String) lineTableModel.getValueAt(i, 0));
-                oi.setQuantity((int) lineTableModel.getValueAt(i, 2));
-                oi.setUnitPrice((double) lineTableModel.getValueAt(i, 3));
-                order.addItem(oi);
+                OrderDetail detail = new OrderDetail();
+                String sku = (String) lineTableModel.getValueAt(i, 0);
+                Item item = itemService.getItemBySku(sku);
+                detail.setItem(item);
+                detail.setQuantity((int) lineTableModel.getValueAt(i, 2));
+                detail.setPriceAtTime((BigDecimal) lineTableModel.getValueAt(i, 3));
+                orderDetails.add(detail);
             }
 
-            orderService.createOrder(order);
+            orderService.createOrder(order, orderDetails, currentUser);
             refreshTable();
             resetForm();
             DialogUtils.showSuccess(this, "Order created successfully.");
@@ -408,7 +424,7 @@ public class OrderPanel extends JPanel {
         String newStatus = (String) statusCombo.getSelectedItem();
         try {
             orderService.updateOrderStatus(selectedOrderId,
-                    OrderStatus.valueOf(newStatus));
+                    OrderStatus.valueOf(newStatus), currentUser);
             refreshTable();
             DialogUtils.showSuccess(this, "Status updated to " + newStatus + ".");
         } catch (Exception ex) {
@@ -416,16 +432,16 @@ public class OrderPanel extends JPanel {
         }
     }
 
-    private void deleteOrder() {
+    private void cancelOrder() {
         int row = orderTable.getSelectedRow();
-        if (row < 0) { DialogUtils.showError(this, "Select an order to delete."); return; }
+        if (row < 0) { DialogUtils.showError(this, "Select an order to cancel."); return; }
         int id = (int) orderTableModel.getValueAt(row, 0);
-        if (!DialogUtils.confirm(this, "Delete order #" + id + "?", "Confirm Delete")) return;
+        if (!DialogUtils.confirm(this, "Cancel order #" + id + "?", "Confirm Cancel")) return;
         try {
-            orderService.deleteOrder(id);
+            orderService.cancelOrder(id, currentUser);
             refreshTable();
             resetForm();
-            DialogUtils.showSuccess(this, "Order deleted.");
+            DialogUtils.showSuccess(this, "Order cancelled.");
         } catch (Exception ex) {
             DialogUtils.showError(this, ex.getMessage());
         }
@@ -438,9 +454,14 @@ public class OrderPanel extends JPanel {
             return;
         }
         try {
-            String invoice = orderService.generateInvoice(selectedOrderId);
-            DialogUtils.showScrollableText(this, invoice,
-                    "Invoice — Order #" + selectedOrderId);
+            Optional<Order> orderOpt = orderService.getOrderById(selectedOrderId);
+            if (orderOpt.isPresent()) {
+                String invoice = billingService.generateInvoice(orderOpt.get());
+                DialogUtils.showScrollableText(this, invoice,
+                        "Invoice — Order #" + selectedOrderId);
+            } else {
+                DialogUtils.showError(this, "Order not found.");
+            }
         } catch (Exception ex) {
             DialogUtils.showError(this, ex.getMessage());
         }
@@ -461,8 +482,11 @@ public class OrderPanel extends JPanel {
         orderTableModel.setRowCount(0);
         for (Order o : list) {
             orderTableModel.addRow(new Object[]{
-                o.getOrderId(), o.getCustomerName(), o.getOrderDate(),
-                o.getStatus().name(), o.getTotalAmount()
+                o.getOrderId(), 
+                o.getCustomer() != null ? o.getCustomer().getCustomerName() : "Unknown", 
+                o.getOrderDate(),
+                o.getStatus() != null ? o.getStatus().name() : "N/A", 
+                o.getFinalTotal()
             });
         }
     }
@@ -472,7 +496,7 @@ public class OrderPanel extends JPanel {
             List<Customer> customers = customerService.getAllCustomers();
             customerCombo.removeAllItems();
             for (Customer c : customers) {
-                customerCombo.addItem(c.getId() + " - " + c.getName());
+                customerCombo.addItem(c.getCustomerId() + " - " + c.getCustomerName());
             }
         } catch (Exception ex) { /* ignore */ }
     }
@@ -482,7 +506,7 @@ public class OrderPanel extends JPanel {
             List<Item> items = itemService.getAllItems();
             itemCombo.removeAllItems();
             for (Item i : items) {
-                itemCombo.addItem(i.getSku() + " - " + i.getName()
+                itemCombo.addItem(i.getItemSku() + " - " + i.getItemName()
                         + " ($" + String.format("%.2f", i.getUnitPrice()) + ")");
             }
         } catch (Exception ex) { /* ignore */ }
@@ -491,7 +515,7 @@ public class OrderPanel extends JPanel {
     private void resetForm() {
         lineTableModel.setRowCount(0);
         couponField.setText("");
-        currentDiscount = 0;
+        currentDiscount = BigDecimal.ZERO;
         recalculateBill();
         selectedOrderId = null;
         orderTable.clearSelection();

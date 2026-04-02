@@ -245,11 +245,12 @@ public class BillingPanel extends JPanel {
         double discount = 0;
         if (!code.isEmpty()) {
             try {
-                if (!couponService.validateCoupon(code)) {
+                BigDecimal subtotal = BigDecimal.valueOf(price * qty);
+                if (!couponService.validateCoupon(code, subtotal)) {
                     DialogUtils.showError(this, "Coupon is invalid or expired.");
                     return;
                 }
-                discount = couponService.getDiscountAmount(code, price * qty);
+                discount = couponService.getDiscountAmount(code, subtotal).doubleValue();
             } catch (Exception ex) {
                 DialogUtils.showError(this, ex.getMessage());
                 return;

@@ -1,7 +1,6 @@
 package com.oop.project.ui.panels;
 
 import com.oop.project.model.*;
-import com.oop.project.model.OrderStatus;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.ui.components.SearchBar;
 import com.oop.project.ui.utils.DialogUtils;
@@ -115,41 +114,6 @@ public class OrderPanel extends JPanel {
         split.setBackground(UITheme.BORDER_COLOR);
         split.setBorder(null);
         return split;
-    }
-
-    // ── Left: order list ──────────────────────────────────────────────────────
-    private JPanel buildOrderListPanel() {
-        orderTableModel = TableUtils.nonEditableModel(ORDER_COLS);
-        orderTable = new JTable(orderTableModel);
-        TableUtils.applyDefaultRenderers(orderTable);
-
-        // Status badge on column 3, currency on column 4
-        orderTable.getColumnModel().getColumn(3)
-                  .setCellRenderer(TableUtils.statusBadgeRenderer());
-        orderTable.getColumnModel().getColumn(4)
-                  .setCellRenderer(TableUtils.currencyRenderer());
-        TableUtils.setColumnWidths(orderTable, 90, 170, 120, 100, 110);
-
-        orderTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) loadSelectedOrder();
-        });
-
-        JPanel p = new JPanel(new BorderLayout());
-        p.setBackground(UITheme.BG_DARK);
-        p.setBorder(BorderFactory.createEmptyBorder(0, 20, 16, 8));
-        p.add(UITheme.styledScrollPane(orderTable), BorderLayout.CENTER);
-
-        // Action buttons below list
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
-        actions.setBackground(UITheme.BG_DARK);
-        deleteOrderBtn    = UITheme.dangerButton("Cancel Order");
-        viewInvoiceBtn    = UITheme.ghostButton("View Invoice");
-        deleteOrderBtn.addActionListener(e -> cancelOrder());
-        viewInvoiceBtn.addActionListener(e -> viewInvoice());
-        actions.add(deleteOrderBtn);
-        actions.add(viewInvoiceBtn);
-        p.add(actions, BorderLayout.SOUTH);
-        return p;
     }
 
     // ── Right: create / update order form ─────────────────────────────────────
@@ -266,6 +230,42 @@ public class OrderPanel extends JPanel {
         }}, BorderLayout.CENTER);
 
         return panel;
+    }
+
+    
+    // ── Left: order list ──────────────────────────────────────────────────────
+    private JPanel buildOrderListPanel() {
+        orderTableModel = TableUtils.nonEditableModel(ORDER_COLS);
+        orderTable = new JTable(orderTableModel);
+        TableUtils.applyDefaultRenderers(orderTable);
+
+        // Status badge on column 3, currency on column 4
+        orderTable.getColumnModel().getColumn(3)
+                  .setCellRenderer(TableUtils.statusBadgeRenderer());
+        orderTable.getColumnModel().getColumn(4)
+                  .setCellRenderer(TableUtils.currencyRenderer());
+        TableUtils.setColumnWidths(orderTable, 90, 170, 120, 100, 110);
+
+        orderTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) loadSelectedOrder();
+        });
+
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(UITheme.BG_DARK);
+        p.setBorder(BorderFactory.createEmptyBorder(0, 20, 16, 8));
+        p.add(UITheme.styledScrollPane(orderTable), BorderLayout.CENTER);
+
+        // Action buttons below list
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+        actions.setBackground(UITheme.BG_DARK);
+        deleteOrderBtn    = UITheme.dangerButton("Cancel Order");
+        viewInvoiceBtn    = UITheme.primaryButton("View Invoice");
+        deleteOrderBtn.addActionListener(e -> cancelOrder());
+        viewInvoiceBtn.addActionListener(e -> viewInvoice());
+        actions.add(deleteOrderBtn);
+        actions.add(viewInvoiceBtn);
+        p.add(actions, BorderLayout.SOUTH);
+        return p;
     }
 
     private JPanel buildBillingSummary() {

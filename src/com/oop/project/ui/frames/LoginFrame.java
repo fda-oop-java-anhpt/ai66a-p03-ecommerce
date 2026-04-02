@@ -91,7 +91,7 @@ public class LoginFrame extends JFrame {
 
         c.gridy = 7; form.add(Box.createRigidArea(new Dimension(0, 10)), c);
 
-        loginButton = UITheme.primaryButton("Sign In  →");
+        loginButton = UITheme.primaryButton("Sign In");
         loginButton.setPreferredSize(new Dimension(280, 42));
         c.gridy = 8; form.add(loginButton, c);
 

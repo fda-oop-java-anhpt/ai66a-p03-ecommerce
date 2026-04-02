@@ -132,9 +132,9 @@ public class ItemPanel extends JPanel {
             fields.add(notice);
         }
 
-        addBtn    = UITheme.primaryButton("Add Item");
+        addBtn    = UITheme.ghostButton("Add Item");
         updateBtn = UITheme.ghostButton("Update");
-        deleteBtn = UITheme.dangerButton("Delete");
+        deleteBtn = UITheme.ghostButton("Delete");
 
         addBtn.addActionListener(e -> addItem());
         updateBtn.addActionListener(e -> updateItem());
@@ -147,7 +147,7 @@ public class ItemPanel extends JPanel {
         buttons.add(updateBtn);
         buttons.add(deleteBtn);
 
-        JButton clearBtn = UITheme.ghostButton("Clear Form");
+        JButton clearBtn = UITheme.dangerButton("Clear Form");
         clearBtn.addActionListener(e -> clearForm());
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setBackground(UITheme.BG_CARD);

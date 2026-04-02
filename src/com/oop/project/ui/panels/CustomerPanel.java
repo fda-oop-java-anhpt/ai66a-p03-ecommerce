@@ -112,9 +112,9 @@ public class CustomerPanel extends JPanel {
         fields.add(labeledField("Phone Number", phoneField));
         fields.add(labeledField("Email",        emailField));
 
-        addBtn        = UITheme.primaryButton("Add Customer");
+        addBtn        = UITheme.ghostButton("Add Customer");
         updateBtn     = UITheme.ghostButton("Update");
-        deleteBtn     = UITheme.dangerButton("Delete");
+        deleteBtn     = UITheme.ghostButton("Delete");
         viewOrdersBtn = UITheme.ghostButton("View Orders");
 
         addBtn.addActionListener(e -> addCustomer());
@@ -130,7 +130,7 @@ public class CustomerPanel extends JPanel {
         buttons.add(viewOrdersBtn);
         buttons.add(deleteBtn);
 
-        JButton clearBtn = UITheme.ghostButton("Clear Form");
+        JButton clearBtn = UITheme.dangerButton("Clear Form");
         clearBtn.addActionListener(e -> clearForm());
 
         JPanel bottom = new JPanel(new BorderLayout());

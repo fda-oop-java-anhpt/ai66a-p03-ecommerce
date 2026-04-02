@@ -89,41 +89,41 @@ public class UITheme {
     public static JButton ghostButton(String text) {
         JButton btn = new JButton(text);
         btn.setFont(FONT_BODY);
-        btn.setForeground(TEXT_MUTED);
+        btn.setForeground(ACCENT);
         btn.setBackground(BG_CARD);
         btn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
+            BorderFactory.createLineBorder(ACCENT, 1),
             new EmptyBorder(6, 14, 6, 14)
         ));
         btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                btn.setForeground(TEXT_PRIMARY);
-                btn.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ACCENT, 1),
-                    new EmptyBorder(6, 14, 6, 14)
-                ));
+                btn.setOpaque(true);
+                btn.setBackground(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 30));
             }
             public void mouseExited(java.awt.event.MouseEvent e) {
-                btn.setForeground(TEXT_MUTED);
-                btn.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                    new EmptyBorder(6, 14, 6, 14)
-                ));
+                btn.setOpaque(false);
             }
         });
         return btn;
     }
 
     private static void styleButton(JButton btn, Color bg, Color fg) {
-        btn.setFont(FONT_BODY);
-        btn.setForeground(fg.equals(BG_DARK) ? Color.WHITE : fg);
+        btn.setFont(FONT_HEADING);
+        btn.setForeground(fg); // Use dark text for better contrast on bright buttons
         btn.setBackground(bg);
-        btn.setBorder(new EmptyBorder(8, 18, 8, 18));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(bg.darker(), 1),
+            new EmptyBorder(8, 18, 8, 18)
+        ));
         btn.setFocusPainted(false);
         btn.setOpaque(true);
+        btn.setContentAreaFilled(true);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        
         Color hover = bg.brighter();
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(hover); }
@@ -258,9 +258,13 @@ public class UITheme {
         UIManager.put("Panel.background",                BG_DARK);
         UIManager.put("OptionPane.messageForeground",    TEXT_PRIMARY);
         UIManager.put("OptionPane.messageFont",          FONT_BODY);
-        UIManager.put("Button.background",               BG_INPUT);
-        UIManager.put("Button.foreground",               TEXT_PRIMARY);
-        UIManager.put("Button.font",                     FONT_BODY);
+        UIManager.put("Button.background",               BG_CARD);
+        UIManager.put("Button.foreground",               ACCENT);
+        UIManager.put("Button.font",                     FONT_HEADING);
+        UIManager.put("Button.border",                   BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER_COLOR, 1),
+            BorderFactory.createEmptyBorder(4, 12, 4, 12)
+        ));
         UIManager.put("TextField.background",            BG_INPUT);
         UIManager.put("TextField.foreground",            TEXT_PRIMARY);
         UIManager.put("TextField.caretForeground",       TEXT_PRIMARY);

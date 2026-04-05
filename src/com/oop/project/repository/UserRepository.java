@@ -1,14 +1,13 @@
 package com.oop.project.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import com.oop.project.model.User;
 
 public interface UserRepository {
+    User findByUsername(String username);
     List<User> findAll();
-    Optional<User> findById(int id);
-    boolean save(User user);
-    boolean update(User user);
-    boolean deleteById(int id);
+    boolean insert(User user);
+    boolean updateLastLogin(int userId, Timestamp timestamp);
 }

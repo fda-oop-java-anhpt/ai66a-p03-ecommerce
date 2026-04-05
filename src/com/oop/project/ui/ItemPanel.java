@@ -25,6 +25,8 @@ public class ItemPanel extends JPanel {
     private JTable            table;
     private JTextField        searchField;
 
+    private int lowStockLimit = 5;
+
     private static final String[] COLS = {"SKU", "Name", "Category", "Price ($)", "Stock"};
 
     public ItemPanel(MainFrame mf) {
@@ -204,10 +206,8 @@ public class ItemPanel extends JPanel {
         }
     }
 
-    // Fix 6: Stock cell renderer — red if qty <= LOW_STOCK_LIMIT
+    // Stock cell renderer: red if qty <= LOW_STOCK_LIMIT
     private javax.swing.table.TableCellRenderer stockRenderer() {
-        int limit = loadLowStockLimit();
-        final int LOW = limit;
         return new javax.swing.table.DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(
                     javax.swing.JTable t, Object v, boolean sel, boolean foc, int r, int c) {
@@ -215,11 +215,12 @@ public class ItemPanel extends JPanel {
                 l.setBorder(new javax.swing.border.EmptyBorder(0, 12, 0, 12));
                 if (!sel) {
                     int qty = v instanceof Number ? ((Number) v).intValue() : 0;
+                    int LOW = loadLowStockLimit(); // ← gọi ở đây thay vì bên ngoài
                     boolean low = qty <= LOW;
-                    l.setForeground(low ? UITheme.DANGER : UITheme.SUCCESS);
+                    l.setForeground(low ? UITheme.DANGER : UITheme.ACCENT);
                     l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);
                     l.setFont(low ? UITheme.FONT_BADGE : UITheme.FONT_BODY);
-                    l.setToolTipText(low ? "⚠ Low stock! Threshold: " + LOW : null);
+                    l.setToolTipText(low ? "⚠ Low stock!" : null);
                 }
                 return l;
             }
@@ -255,8 +256,13 @@ public class ItemPanel extends JPanel {
 
     // ── Data ──────────────────────────────────────────────────────────────────
     public void refresh() {
-        try { populate(svc.getAllItems()); }
-        catch (Exception ex) { UITheme.showError(this, "Failed to load items: " + ex.getMessage()); }
+        lowStockLimit = loadLowStockLimit(); // reload từ DB mỗi lần refresh
+        try { 
+            populate(svc.getAllItems());
+        }
+        catch (Exception ex) { 
+            UITheme.showError(this, "Failed to load items: " + ex.getMessage()); 
+        }
     }
 
     private void populate(List<Item> list) {

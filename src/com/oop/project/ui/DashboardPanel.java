@@ -55,7 +55,7 @@ public class DashboardPanel extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(16, 20, 8, 20));
         p.add(UITheme.title("Dashboard"), BorderLayout.WEST);
 
-        JButton refreshBtn = UITheme.primaryButton("⟳  Refresh");
+        JButton refreshBtn = UITheme.ghostButton("⟳  Refresh");
         refreshBtn.addActionListener(e -> refresh());
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         right.setOpaque(false);

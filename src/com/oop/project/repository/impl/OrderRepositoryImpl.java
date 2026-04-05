@@ -1,19 +1,19 @@
 package com.oop.project.repository.impl;
 
 import com.oop.project.model.*;
-import com.oop.project.repository.OrderRepository;
 import com.oop.project.util.DatabaseConnection;
+import com.oop.project.repository.OrderRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderRepositoryImpl implements OrderRepository {
+
     private final OrderDetailRepositoryImpl orderDetailRepo = new OrderDetailRepositoryImpl();
 
     // ==================== HELPER: Map ResultSet → Order (with Customer & Coupon) ====================
     private Order mapRow(ResultSet rs) throws SQLException {
-        // Build Customer object
         Customer customer = null;
         int customerId = rs.getInt("customer_id");
         if (!rs.wasNull()) {
@@ -27,7 +27,6 @@ public class OrderRepositoryImpl implements OrderRepository {
             );
         }
 
-        // Build Coupon object (nullable)
         Coupon coupon = null;
         String couponCode = rs.getString("coupon_code");
         if (couponCode != null) {
@@ -81,7 +80,6 @@ public class OrderRepositoryImpl implements OrderRepository {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 Order order = mapRow(rs);
-                // Load order details with item info
                 order.setOrderItems(orderDetailRepo.findByOrderId(id));
                 return order;
             }
@@ -197,7 +195,6 @@ public class OrderRepositoryImpl implements OrderRepository {
                 ResultSet keys = ps.getGeneratedKeys();
                 if (keys.next()) {
                     int orderId = keys.getInt(1);
-                    // Insert order details
                     if (!order.getOrderItems().isEmpty()) {
                         orderDetailRepo.insertBatch(orderId, order.getOrderItems());
                     }
@@ -235,7 +232,6 @@ public class OrderRepositoryImpl implements OrderRepository {
 
             boolean updated = ps.executeUpdate() > 0;
             if (updated) {
-                // Re-insert order details: clear old, insert new
                 orderDetailRepo.deleteByOrderId(order.getOrderId());
                 if (!order.getOrderItems().isEmpty()) {
                     orderDetailRepo.insertBatch(order.getOrderId(), order.getOrderItems());
@@ -264,7 +260,6 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     // ==================== FR-3.1: Delete order ====================
     public boolean delete(int orderId) {
-        // order_details are ON DELETE CASCADE, so only delete the order
         String sql = "DELETE FROM orders WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

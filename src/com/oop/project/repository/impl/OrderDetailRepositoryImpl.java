@@ -1,17 +1,13 @@
 package com.oop.project.repository.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.oop.project.model.Item;
 import com.oop.project.model.OrderDetail;
 import com.oop.project.repository.OrderDetailRepository;
 import com.oop.project.util.DatabaseConnection;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderDetailRepositoryImpl implements OrderDetailRepository {
 
@@ -63,7 +59,6 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
                 ps.addBatch();
             }
             int[] results = ps.executeBatch();
-            // All rows must be inserted successfully
             for (int r : results) {
                 if (r <= 0 && r != Statement.SUCCESS_NO_INFO) return false;
             }

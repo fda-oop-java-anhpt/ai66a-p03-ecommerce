@@ -124,4 +124,9 @@ public class Order {
         Order order = (Order) o;
         return orderId == order.orderId;
     }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(orderId);
+    }
 }

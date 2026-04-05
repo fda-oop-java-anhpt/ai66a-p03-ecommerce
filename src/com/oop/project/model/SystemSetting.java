@@ -42,4 +42,9 @@ public class SystemSetting {
         SystemSetting that = (SystemSetting) o;
         return Objects.equals(settingKey, that.settingKey);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(settingKey);
+    }
 }

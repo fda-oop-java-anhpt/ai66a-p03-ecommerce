@@ -55,4 +55,9 @@ public class AuditLog {
         AuditLog auditLog = (AuditLog) o;
         return logId == auditLog.logId;
     }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(logId);
+    }
 }

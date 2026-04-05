@@ -70,4 +70,8 @@ public class Customer {
         return customerId == customer.customerId;
     }
 
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(customerId);
+    }
 }

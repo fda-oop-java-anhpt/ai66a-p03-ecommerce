@@ -97,4 +97,9 @@ public class Coupon {
         Coupon coupon = (Coupon) o;
         return Objects.equals(couponCode, coupon.couponCode);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(couponCode);
+    }
 }

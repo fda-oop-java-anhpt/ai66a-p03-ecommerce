@@ -61,4 +61,9 @@ public class OrderDetail {
         OrderDetail orderDetail = (OrderDetail) o;
         return orderDetailId == orderDetail.orderDetailId;
     }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(orderDetailId);
+    }
 }

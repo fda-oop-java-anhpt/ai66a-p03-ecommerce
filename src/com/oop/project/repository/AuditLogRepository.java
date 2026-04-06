@@ -1,14 +1,10 @@
 package com.oop.project.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.oop.project.model.AuditLog;
 
+import java.util.List;
+
 public interface AuditLogRepository {
+    boolean insert(AuditLog log);
     List<AuditLog> findAll();
-    Optional<AuditLog> findById(int logId);
-    List<AuditLog> findByUserId(int userId);
-    boolean save(AuditLog log);
-    boolean deleteById(int logId);
 }

@@ -1,125 +1,15 @@
 package com.oop.project.repository.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.oop.project.model.Customer;
-import com.oop.project.repository.CustomerRepository;
 import com.oop.project.util.DatabaseConnection;
 
-public class CustomerRepositoryImpl implements CustomerRepository {
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-    @Override
-    public List<Customer> findAll() {
-        List<Customer> customers = new ArrayList<>();
-        String sql = """
-                SELECT customer_id, customer_name, phone, email, address, created_date
-                FROM customers
-                ORDER BY customer_id
-                """;
+public class CustomerRepositoryImpl {
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) customers.add(mapRow(rs));
-
-        } catch (SQLException e) {
-            System.err.println("Error in CustomerRepository.findAll(): " + e.getMessage());
-        }
-        return customers;
-    }
-
-    @Override
-    public Optional<Customer> findById(int id) {
-        String sql = """
-                SELECT customer_id, customer_name, phone, email, address, created_date
-                FROM customers
-                WHERE customer_id = ?
-                """;
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return Optional.of(mapRow(rs));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error in CustomerRepository.findById(): " + e.getMessage());
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean save(Customer customer) {
-        String sql = """
-                INSERT INTO customers (customer_name, phone, email, address, created_date)
-                VALUES (?, ?, ?, ?, ?)
-                """;
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, customer.getCustomerName());
-            ps.setString(2, customer.getPhone());
-            ps.setString(3, customer.getEmail());
-            ps.setString(4, customer.getAddress());
-            ps.setTimestamp(5, customer.getCreatedDate());
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error in CustomerRepository.save(): " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public boolean update(Customer customer) {
-        String sql = """
-                UPDATE customers
-                SET customer_name = ?, phone = ?, email = ?, address = ?, created_date = ?
-                WHERE customer_id = ?
-                """;
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, customer.getCustomerName());
-            ps.setString(2, customer.getPhone());
-            ps.setString(3, customer.getEmail());
-            ps.setString(4, customer.getAddress());
-            ps.setTimestamp(5, customer.getCreatedDate());
-            ps.setInt(6, customer.getCustomerId());
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error in CustomerRepository.update(): " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public boolean deleteById(int id) {
-        String sql = "DELETE FROM customers WHERE customer_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error in CustomerRepository.deleteById(): " + e.getMessage());
-            return false;
-        }
-    }
-
+    // ==================== HELPER: Map ResultSet → Customer ====================
     private Customer mapRow(ResultSet rs) throws SQLException {
         return new Customer(
                 rs.getInt("customer_id"),
@@ -129,5 +19,133 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                 rs.getString("address"),
                 rs.getTimestamp("created_date")
         );
+    }
+
+    // ==================== List all customers ====================
+    public List<Customer> findAll() {
+        List<Customer> list = new ArrayList<>();
+        String sql = "SELECT * FROM customers ORDER BY customer_id";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // ==================== Find by ID ====================
+    public Customer findById(int id) {
+        String sql = "SELECT * FROM customers WHERE customer_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // ==================== FR-1.3: Search by name or phone ====================
+    public List<Customer> searchByNameOrPhone(String keyword) {
+        List<Customer> list = new ArrayList<>();
+        String sql = "SELECT * FROM customers WHERE LOWER(customer_name) LIKE LOWER(?) OR phone LIKE ? ORDER BY customer_id";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String pattern = "%" + keyword + "%";
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // ==================== Check Duplicate Phone ====================
+    public boolean isPhoneExists(String phone, int excludeId) {
+        String sql = "SELECT 1 FROM customers WHERE phone = ? AND customer_id != ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, phone);
+            ps.setInt(2, excludeId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ==================== Check Duplicate Email ====================
+    public boolean isEmailExists(String email, int excludeId) {
+        String sql = "SELECT 1 FROM customers WHERE email = ? AND customer_id != ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, email);
+            ps.setInt(2, excludeId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ==================== FR-1.1: Insert customer ====================
+    public boolean insert(Customer c) {
+        String sql = "INSERT INTO customers (customer_name, phone, email, address) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCustomerName());
+            ps.setString(2, c.getPhone());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getAddress());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ==================== FR-1.1, FR-1.2: Update customer ====================
+    public boolean update(Customer c) {
+        String sql = "UPDATE customers SET customer_name = ?, phone = ?, email = ?, address = ? WHERE customer_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCustomerName());
+            ps.setString(2, c.getPhone());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getAddress());
+            ps.setInt(5, c.getCustomerId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ==================== Delete customer ====================
+    public boolean delete(int id) {
+        String sql = "DELETE FROM customers WHERE customer_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

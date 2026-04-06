@@ -1,14 +1,16 @@
 package com.oop.project.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.oop.project.model.Customer;
+
+import java.util.List;
 
 public interface CustomerRepository {
     List<Customer> findAll();
-    Optional<Customer> findById(int id);
-    boolean save(Customer customer);
-    boolean update(Customer customer);
-    boolean deleteById(int id);
+    Customer findById(int id);
+    List<Customer> searchByNameOrPhone(String keyword);
+    boolean isPhoneExists(String phone, int excludeId);
+    boolean isEmailExists(String email, int excludeId);
+    boolean insert(Customer c);
+    boolean update(Customer c);
+    boolean delete(int id);
 }

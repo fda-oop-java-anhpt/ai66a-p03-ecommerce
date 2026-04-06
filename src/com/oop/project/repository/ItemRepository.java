@@ -1,14 +1,15 @@
 package com.oop.project.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.oop.project.model.Item;
+
+import java.util.List;
 
 public interface ItemRepository {
     List<Item> findAll();
-    Optional<Item> findBySku(String sku);
-    boolean save(Item item);
+    Item findBySku(String sku);
+    boolean isSkuExists(String sku);
+    boolean insert(Item item);
     boolean update(Item item);
-    boolean deleteBySku(String sku);
+    boolean delete(String sku);
+    boolean updateStock(String sku, int quantityChange);
 }

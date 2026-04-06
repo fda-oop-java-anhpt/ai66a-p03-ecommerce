@@ -1,9 +1,9 @@
 package com.oop.project.repository;
 
+import com.oop.project.model.User;
+
 import java.sql.Timestamp;
 import java.util.List;
-
-import com.oop.project.model.User;
 
 public interface UserRepository {
     User findByUsername(String username);

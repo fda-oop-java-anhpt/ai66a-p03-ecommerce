@@ -1,14 +1,13 @@
 package com.oop.project.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.oop.project.model.Coupon;
+
+import java.util.List;
 
 public interface CouponRepository {
     List<Coupon> findAll();
-    Optional<Coupon> findByCode(String code);
-    boolean save(Coupon coupon);
-    boolean update(Coupon coupon);
-    boolean deleteByCode(String code);
+    Coupon findByCode(String code);
+    List<Coupon> findActiveCoupons();
+    boolean insert(Coupon c);
+    boolean update(Coupon c);
 }

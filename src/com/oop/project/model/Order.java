@@ -37,13 +37,13 @@ public class Order {
                  BigDecimal discountAmount, String discountInfo, OrderStatus status, 
                  BigDecimal subtotal, BigDecimal finalTotal, Timestamp orderDate) {
         this.orderId = orderId;
-        this.customer = customer;
-        this.coupon = coupon;
+        setCustomer(customer);
+        setCoupon(coupon);
         this.orderDetail = new ArrayList<>();
         setTaxRate(taxRate);
         setDiscountAmount(discountAmount);
         this.discountInfo = discountInfo;
-        this.status = status;
+        setStatus(status);
         setSubtotal(subtotal);
         setFinalTotal(finalTotal);
         this.orderDate = orderDate;
@@ -73,7 +73,13 @@ public class Order {
 
     public BigDecimal getTaxRate() { return taxRate; }
     public void setTaxRate(BigDecimal taxRate) { 
-        if (taxRate.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Tax rate cannot be negative!");
+        if (taxRate == null){
+            this.taxRate = new BigDecimal("8.00");
+            return;
+        }
+        if (taxRate.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Tax rate cannot be negative!");
+        }
         this.taxRate = taxRate; 
     }
 
@@ -87,13 +93,18 @@ public class Order {
     public String getDiscountInfo() { return discountInfo; }
     public void setDiscountInfo(String discountInfo) { this.discountInfo = discountInfo; }
 
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
+    public OrderStatus getStatus() { 
+        return status; 
+    }
+    public void setStatus(OrderStatus status) { 
+        if (status == null) throw new IllegalArgumentException("Status cannot be null!");
+        this.status = status; 
+    }
 
     public BigDecimal getSubtotal() { return subtotal; }
     public void setSubtotal(BigDecimal subtotal) {
         // Kiểm tra điều kiện CHECK (subtotal > 0)
-        if (subtotal.compareTo(BigDecimal.ZERO) <= 0){
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0){
         throw new IllegalArgumentException("Subtotal must be greater than 0!");
         } 
         this.subtotal = subtotal;
@@ -101,7 +112,7 @@ public class Order {
 
     public BigDecimal getFinalTotal() { return finalTotal; }
     public void setFinalTotal(BigDecimal finalTotal) {
-        if (finalTotal.compareTo(BigDecimal.ZERO) <= 0){ 
+        if (finalTotal == null || finalTotal.compareTo(BigDecimal.ZERO) <= 0){ 
             throw new IllegalArgumentException("Final total must be greater than 0 !");
         }
         this.finalTotal = finalTotal;

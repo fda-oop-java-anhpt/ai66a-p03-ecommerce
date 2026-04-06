@@ -12,15 +12,15 @@ public class User{
 
     public User(int userId, String userName, String userPassword, UserRole userRole, Timestamp createdDate, Timestamp lastLogin){
         this.userId = userId;
-        this.userName = userName;
-        this.userPassword = userPassword;
+        setUserName(userName);
+        setUserPassword(userPassword);
         this.userRole = userRole;
         this.createdDate = createdDate;
         this.lastLogin = lastLogin;
     }
     public User(int userId, String userName, UserRole userRole, Timestamp createdDate, Timestamp lastLogin) {
         this.userId = userId;
-        this.userName = userName;
+        setUserName(userName);
         this.userRole = userRole;
         this.createdDate = createdDate;
         this.lastLogin = lastLogin;
@@ -45,9 +45,10 @@ public class User{
         return userPassword;
     }
     public void setUserPassword(String userPassword){
-        if (userPassword != null && userPassword.length() >=6){
-            this.userPassword = userPassword;
+        if (userPassword == null || userPassword.length() < 6){
+            throw new IllegalArgumentException("Password must be at least 6 characters");
         }
+        this.userPassword = userPassword;
     }
 
     public UserRole getUserRole(){
@@ -82,12 +83,11 @@ public class User{
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId);
+        return Integer.hashCode(userId);
     }
 
     @Override
     public String toString() {
-        // In ra Role để dễ debug phân quyền
         return "User{id=" + userId + ", username='" + userName + "', role=" + userRole + "}";
     }
 }

@@ -13,7 +13,7 @@ public class SystemSetting {
 
     public SystemSetting(String settingKey, String settingValue, String description, Timestamp createdDate) {
         this.settingKey = settingKey;
-        this.settingValue = settingValue;
+        setSettingValue(settingValue);
         this.description = description;
         this.createdDate = createdDate;
     }
@@ -22,7 +22,11 @@ public class SystemSetting {
     public void setSettingKey(String settingKey) { this.settingKey = settingKey; }
 
     public String getSettingValue() { return settingValue; }
-    public void setSettingValue(String settingValue) { this.settingValue = settingValue; }
+    public void setSettingValue(String settingValue) { 
+        if (settingValue == null || settingValue.isBlank()){
+            throw new IllegalArgumentException("Setting value cannot be null or empty");
+        }
+        this.settingValue = settingValue; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

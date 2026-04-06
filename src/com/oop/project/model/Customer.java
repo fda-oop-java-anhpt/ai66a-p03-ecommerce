@@ -12,9 +12,9 @@ public class Customer {
 
     public Customer(int customerId, String customerName, String phone, String email, String address, Timestamp createdDate) {
         this.customerId = customerId;
-        this.customerName = customerName;
-        this.phone = phone;
-        this.email = email;
+        setCustomerName(customerName);
+        setPhone(phone);
+        setEmail(email);
         this.address = address;
         this.createdDate = createdDate;
     }
@@ -31,18 +31,27 @@ public class Customer {
         return customerName; 
     }
     public void setCustomerName(String customerName) {
+        if (customerName == null || customerName.isBlank()){
+            throw new IllegalArgumentException("Customer name cannot be null or empty");
+        }
         this.customerName = customerName;
     }
     public String getPhone(){ 
         return phone; 
     }
     public void setPhone(String phone) {
+        if (phone == null || phone.isBlank()){
+            throw new IllegalArgumentException("Phone cannot be null or empty");
+        }
         this.phone = phone;
     }
     public String getEmail(){
         return email;
     }
     public void setEmail(String email){
+        if (email == null || email.isBlank()){
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
         this.email = email;
     }
     public String getAddress(){ 

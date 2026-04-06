@@ -16,9 +16,9 @@ public class AuditLog {
     public AuditLog(int logId, User user, String actions, String targetType, String targetId, Timestamp createdDate){
         this.logId = logId;
         setUser(user);
-        this.actions = actions;
-        this.targetType = targetType;
-        this.targetId = targetId; 
+        setActions(actions);
+        setTargetType(targetType);
+        setTargetId(targetId); 
         this.createdDate = createdDate;
     }
     public int getLogId(){ return logId;}
@@ -30,14 +30,34 @@ public class AuditLog {
         }
         this.user = user;
     }
-    public String getActions() { return actions; }
-    public void setActions(String actions) { this.actions = actions; }
+    public String getActions() {
+        return actions; 
+    }
+    public void setActions(String actions) { 
+        if (actions == null || actions.trim().isEmpty()){
+            throw new IllegalArgumentException("Actions cannot be null or empty");
+        }
+        this.actions = actions; 
+    }
+
 
     public String getTargetType() { return targetType; }
-    public void setTargetType(String targetType) { this.targetType = targetType; }
+    public void setTargetType(String targetType) { 
+        if (targetType == null || targetType.trim().isEmpty()){
+            throw new IllegalArgumentException("Target type cannot be null or empty");
+        }
+        this.targetType = targetType; 
+    }
 
-    public String getTargetId() { return targetId; }
-    public void setTargetId(String targetId) { this.targetId = targetId; }
+    public String getTargetId() {
+        return targetId; 
+    }
+    public void setTargetId(String targetId) { 
+        if (targetId == null || targetId.trim().isEmpty()){
+            throw new IllegalArgumentException("Target ID cannot be null or empty");
+        }
+        this.targetId = targetId; 
+    }
 
     public Timestamp getCreatedDate() { return createdDate; }
     public void setCreatedDate(Timestamp createdDate) { this.createdDate = createdDate; }

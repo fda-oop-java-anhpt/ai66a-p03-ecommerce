@@ -20,25 +20,28 @@ public class Coupon {
 
     public Coupon(String couponCode, BigDecimal discountValue, DiscountType discountType, 
                   BigDecimal minOrderValue, Timestamp createdDate, Date expiryDate, boolean isActive) {
-        this.couponCode = couponCode;
-        this.discountValue = discountValue;
-        this.discountType = discountType;
-        this.minOrderValue = minOrderValue;
-        this.createdDate = createdDate;
-        this.expiryDate = expiryDate;
+        setCouponCode(couponCode);
+        setDiscountValue(discountValue);
+        setDiscountType(discountType);
+        setMinOrderValue(minOrderValue);
+        setCreatedDate(createdDate);
+        setExpiryDate(expiryDate);
         this.isActive = isActive;
     }
     public String getCouponCode(){
         return couponCode;
     }
     public void setCouponCode(String couponCode){
+        if (couponCode == null || couponCode.isBlank()){
+            throw new IllegalArgumentException("Coupon code cannot be null or empty");
+        }
         this.couponCode = couponCode;
     }
     public BigDecimal getDiscountValue(){ 
         return discountValue; 
     }
     public void setDiscountValue(BigDecimal discountValue){ 
-        if (discountValue.compareTo(BigDecimal.ZERO) <=0 ){
+        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <=0 ){
             throw new IllegalArgumentException("Error: Discount value must be greater than 0");
         }
         this.discountValue = discountValue; 
@@ -48,6 +51,9 @@ public class Coupon {
         return discountType; 
     }
     public void setDiscountType(DiscountType discountType) { 
+        if (discountType == null){
+            throw new IllegalArgumentException("Discount type cannot be null");
+        }
         this.discountType = discountType; 
     }
 
@@ -55,7 +61,7 @@ public class Coupon {
         return minOrderValue; 
     }
     public void setMinOrderValue(BigDecimal minOrderValue){ 
-        if (minOrderValue.compareTo(BigDecimal.ZERO) <0){
+        if (minOrderValue == null || minOrderValue.compareTo(BigDecimal.ZERO) <0){
             throw new IllegalArgumentException("Error: Min order value cannot be a negative number");
         }
         this.minOrderValue = minOrderValue; 
@@ -72,7 +78,10 @@ public class Coupon {
         return expiryDate; 
     }
     public void setExpiryDate(Date expiryDate) { 
-        this.expiryDate = expiryDate; 
+        if (expiryDate == null){
+            throw new IllegalArgumentException("Expiry date cannot be null");
+        }
+        this.expiryDate = expiryDate;   
     }
 
     public boolean isActive() { 
@@ -84,7 +93,7 @@ public class Coupon {
 
     @Override
     public String toString(){
-        return "Coupon{" + "code=" + couponCode + ", value=' " + discountValue + "'" + ", type='" + discountType + "'" +  ", active='" + isActive + "'";
+        return "Coupon{" + "code=" + couponCode + ", value=' " + discountValue + "'" + ", type='" + discountType + "'" +  ", active='" + isActive + "'}";
     }
     @Override
     public boolean equals(Object o){

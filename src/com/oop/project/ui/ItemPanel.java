@@ -206,7 +206,7 @@ public class ItemPanel extends JPanel {
         }
     }
 
-    // Stock cell renderer: red if qty <= LOW_STOCK_LIMIT
+    // Fix 6: Stock cell renderer — red if qty <= LOW_STOCK_LIMIT
     private javax.swing.table.TableCellRenderer stockRenderer() {
         return new javax.swing.table.DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(
@@ -215,12 +215,12 @@ public class ItemPanel extends JPanel {
                 l.setBorder(new javax.swing.border.EmptyBorder(0, 12, 0, 12));
                 if (!sel) {
                     int qty = v instanceof Number ? ((Number) v).intValue() : 0;
-                    int LOW = loadLowStockLimit(); // ← gọi ở đây thay vì bên ngoài
+                    int LOW = lowStockLimit; // ← gọi ở đây thay vì bên ngoài
                     boolean low = qty <= LOW;
-                    l.setForeground(low ? UITheme.DANGER : UITheme.ACCENT);
+                    l.setForeground(low ? UITheme.DANGER : UITheme.SUCCESS);
                     l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);
                     l.setFont(low ? UITheme.FONT_BADGE : UITheme.FONT_BODY);
-                    l.setToolTipText(low ? "⚠ Low stock!" : null);
+                    l.setToolTipText(low ? "⚠ Low stock! Threshold: " + LOW : null);
                 }
                 return l;
             }
@@ -256,13 +256,9 @@ public class ItemPanel extends JPanel {
 
     // ── Data ──────────────────────────────────────────────────────────────────
     public void refresh() {
-        lowStockLimit = loadLowStockLimit(); // reload từ DB mỗi lần refresh
-        try { 
-            populate(svc.getAllItems());
-        }
-        catch (Exception ex) { 
-            UITheme.showError(this, "Failed to load items: " + ex.getMessage()); 
-        }
+        lowStockLimit = loadLowStockLimit(); // ← reload từ DB mỗi lần refresh
+        try { populate(svc.getAllItems()); }
+        catch (Exception ex) { UITheme.showError(this, "Failed to load items: " + ex.getMessage()); }
     }
 
     private void populate(List<Item> list) {

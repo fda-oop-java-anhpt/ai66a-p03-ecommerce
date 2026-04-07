@@ -3,12 +3,13 @@ package com.oop.project.repository.impl;
 import com.oop.project.model.Coupon;
 import com.oop.project.model.DiscountType;
 import com.oop.project.util.DatabaseConnection;
+import com.oop.project.repository.CouponRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CouponRepositoryImpl {
+public class CouponRepositoryImpl implements CouponRepository { 
 
     // ==================== HELPER: Map ResultSet → Coupon ====================
     private Coupon mapRow(ResultSet rs) throws SQLException {

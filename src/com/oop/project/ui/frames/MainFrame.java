@@ -2,7 +2,7 @@ package com.oop.project.ui.frames;
 
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
-import com.oop.project.service.*;
+import com.oop.project.service.interfaces.*;
 import com.oop.project.ui.panel.CouponPanel;
 import com.oop.project.ui.panel.CustomerPanel;
 import com.oop.project.ui.panel.DashboardPanel;
@@ -10,6 +10,8 @@ import com.oop.project.ui.panel.ItemPanel;
 import com.oop.project.ui.panel.OrderPanel;
 import com.oop.project.ui.panel.SettingsPanel;
 import com.oop.project.ui.utils.UITheme;
+import com.oop.project.repository.SystemSettingRepository;
+import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
@@ -24,13 +26,13 @@ import java.awt.event.*;
 public class MainFrame extends JFrame {
 
     private final User        currentUser;
-    private final AuthService authService;
+    private final IAuthService authService;
 
-    final CustomerService  customerService  = new CustomerService();
-    final ItemService      itemService      = new ItemService();
-    final BillingService   billingService   = new BillingService();
-    final CouponService    couponService    = new CouponService();
-    final DashboardService dashboardService = new DashboardService();
+    ICustomerService  customerService;
+    IItemService      itemService;
+    IBillingService   billingService;   
+    ICouponService    couponService;    
+    IDashboardService dashboardService; 
 
     private JTabbedPane    tabs;
     private CustomerPanel  customerPanel;
@@ -40,7 +42,7 @@ public class MainFrame extends JFrame {
     private DashboardPanel dashboardPanel;
     private SettingsPanel  settingsPanel;  // Admin only
 
-    public MainFrame(User user, AuthService authService) {
+    public MainFrame(User user, IAuthService authService) {
         this.currentUser = user;
         this.authService = authService;
         buildUI();
@@ -258,7 +260,7 @@ public class MainFrame extends JFrame {
         l.setFont(UITheme.FONT_SMALL);
         String taxInfo = "";
         try {
-            com.oop.project.repository.SystemSettingRepository sr = new com.oop.project.repository.SystemSettingRepository();
+            SystemSettingRepository sr = new SystemSettingRepositoryImpl();
             com.oop.project.model.SystemSetting s = sr.findByKey("TAX_RATE");
             if (s != null) taxInfo = "  |  Tax Rate: " + s.getSettingValue() + "%";
         } catch (Exception ignored) {}

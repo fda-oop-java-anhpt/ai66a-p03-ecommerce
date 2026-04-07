@@ -1,13 +1,15 @@
 package com.oop.project.repository.impl;
 
 import com.oop.project.model.SystemSetting;
+import com.oop.project.repository.SystemSettingRepository;
 import com.oop.project.util.DatabaseConnection;
 
 import java.sql.*;
 
-public class SystemSettingRepositoryImpl {
+public class SystemSettingRepositoryImpl implements SystemSettingRepository {
 
     // ==================== Find setting by key ====================
+    @Override
     public SystemSetting findByKey(String key) {
         String sql = "SELECT * FROM system_settings WHERE setting_key = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -29,6 +31,7 @@ public class SystemSettingRepositoryImpl {
     }
 
     // ==================== Update setting value ====================
+    @Override
     public boolean update(String key, String value) {
         String sql = "UPDATE system_settings SET setting_value = ? WHERE setting_key = ?";
         try (Connection conn = DatabaseConnection.getConnection();

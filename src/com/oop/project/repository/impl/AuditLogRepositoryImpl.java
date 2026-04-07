@@ -3,13 +3,14 @@ package com.oop.project.repository.impl;
 import com.oop.project.model.AuditLog;
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
+import com.oop.project.repository.AuditLogRepository;
 import com.oop.project.util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AuditLogRepositoryImpl {
+public class AuditLogRepositoryImpl implements AuditLogRepository {
 
     // ==================== HELPER: Map ResultSet → AuditLog ====================
     private AuditLog mapRow(ResultSet rs) throws SQLException {
@@ -37,6 +38,7 @@ public class AuditLogRepositoryImpl {
             "JOIN users u ON al.user_id = u.user_id ";
 
     // ==================== FR-0.5, FR-4.4: Insert audit log ====================
+    @Override
     public boolean insert(AuditLog log) {
         String sql = "INSERT INTO audit_logs (user_id, actions, target_type, target_id) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -53,6 +55,7 @@ public class AuditLogRepositoryImpl {
     }
 
     // ==================== List all audit logs ====================
+    @Override
     public List<AuditLog> findAll() {
         List<AuditLog> list = new ArrayList<>();
         String sql = BASE_SELECT + "ORDER BY al.created_date DESC";

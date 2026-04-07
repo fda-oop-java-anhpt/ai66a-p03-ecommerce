@@ -4,6 +4,7 @@ import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.User;
 import com.oop.project.repository.AuditLogRepository;
 import com.oop.project.repository.impl.UserRepositoryImpl;
+import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.service.interfaces.IAuthService;
 import com.oop.project.service.impl.AuthServiceImpl;
 import com.oop.project.ui.utils.UITheme;
@@ -24,7 +25,7 @@ public class LoginFrame extends JFrame {
     private JButton        loginBtn;
 
     public LoginFrame() {
-        this.authService = new AuthServiceImpl(new UserRepositoryImpl(), new AuditLogRepository());
+        this.authService = new AuthServiceImpl(new UserRepositoryImpl(), new AuditLogRepositoryImpl());
         UITheme.installGlobalDefaults();
         buildUI();
     }

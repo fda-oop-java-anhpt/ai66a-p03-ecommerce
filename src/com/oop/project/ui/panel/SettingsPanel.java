@@ -44,7 +44,7 @@ public class SettingsPanel extends JPanel {
     private JButton    saveBtn, cancelEditBtn;
     private JPanel     editPanel;
 
-    private static final String[] COLS = {"Setting Key", "Current Value", "Description"};
+    private static final String[] COLS = {"Settings", "Current Value", "Description"};
 
     public SettingsPanel(MainFrame mf) {
         this.mf = mf;

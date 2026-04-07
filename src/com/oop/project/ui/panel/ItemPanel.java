@@ -105,18 +105,18 @@ public class ItemPanel extends JPanel {
         JButton addBtn     = UITheme.primaryButton("+ Add Item");
         JButton editBtn    = UITheme.ghostButton("Edit");
         JButton deleteBtn  = UITheme.dangerButton("Delete");
-        JButton stockBtn   = UITheme.ghostButton("Add Stock");
-        JButton refreshBtn = UITheme.ghostButton("Refresh");
+        JButton stockBtn   = UITheme.primaryButton("Add Stock");
+        // JButton refreshBtn = UITheme.ghostButton("Refresh");
 
         addBtn    .addActionListener(e -> openAddDialog());
         editBtn   .addActionListener(e -> openEditDialog());
         deleteBtn .addActionListener(e -> deleteSelected());
         stockBtn  .addActionListener(e -> addStock());
-        refreshBtn.addActionListener(e -> refresh());
+        // refreshBtn.addActionListener(e -> refresh());
 
         p.add(addBtn); p.add(editBtn); p.add(deleteBtn);
         p.add(Box.createHorizontalStrut(12));
-        p.add(stockBtn); p.add(refreshBtn);
+        // p.add(stockBtn); p.add(refreshBtn);
 
         if (!mf.isAdmin()) {
             JLabel note = UITheme.label("  ⚠  Price editing restricted to Admin.");

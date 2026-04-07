@@ -2,7 +2,10 @@ package com.oop.project.ui.frames;
 
 import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.User;
-import com.oop.project.service.AuthService;
+import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.repository.impl.UserRepositoryImpl;
+import com.oop.project.service.interfaces.IAuthService;
+import com.oop.project.service.impl.AuthServiceImpl;
 import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
@@ -14,13 +17,14 @@ import java.awt.event.*;
  */
 public class LoginFrame extends JFrame {
 
-    private final AuthService authService = new AuthService();
+    private final IAuthService authService;
     private JTextField     usernameField;
     private JPasswordField passwordField;
     private JLabel         errorLabel;
     private JButton        loginBtn;
 
     public LoginFrame() {
+        this.authService = new AuthServiceImpl(new UserRepositoryImpl(), new AuditLogRepository());
         UITheme.installGlobalDefaults();
         buildUI();
     }

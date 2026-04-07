@@ -1,6 +1,6 @@
 package com.oop.project.ui.frames;
 
-import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
 
@@ -18,7 +18,7 @@ import java.awt.event.KeyEvent;
  */
 public class AuditLogFrame extends JFrame {
 
-    private final AuditLogRepository auditRepo = new AuditLogRepository();
+    private final AuditLogRepositoryImpl auditRepo = new AuditLogRepositoryImpl();
 
     private DefaultTableModel model;
     private JTable            table;
@@ -87,13 +87,13 @@ public class AuditLogFrame extends JFrame {
 
         JButton searchBtn  = UITheme.primaryButton("Search");
         JButton clearBtn   = UITheme.ghostButton("Clear");
-        JButton refreshBtn = UITheme.ghostButton("⟳");
+        // JButton refreshBtn = UITheme.ghostButton("⟳");
         searchBtn .addActionListener(e -> applyFilter());
         clearBtn  .addActionListener(e -> { searchField.setText(""); actionFilter.setSelectedIndex(0); refresh(); });
-        refreshBtn.addActionListener(e -> refresh());
+        // refreshBtn.addActionListener(e -> refresh());
         filters.add(searchBtn);
         filters.add(clearBtn);
-        filters.add(refreshBtn);
+        // filters.add(refreshBtn);
 
         p.add(titleBlock, BorderLayout.WEST);
         p.add(filters,    BorderLayout.EAST);

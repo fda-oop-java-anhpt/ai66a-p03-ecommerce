@@ -99,18 +99,18 @@ public class CustomerPanel extends JPanel {
         JButton addBtn     = UITheme.primaryButton("+ Add Customer");
         JButton editBtn    = UITheme.primaryButton("Edit");
         JButton deleteBtn  = UITheme.dangerButton("Delete");
-        JButton ordersBtn  = UITheme.ghostButton("View Orders");
-        JButton refreshBtn = UITheme.ghostButton("Refresh");
+        JButton ordersBtn  = UITheme.primaryButton("View Orders");
+        // JButton refreshBtn = UITheme.ghostButton("Refresh");
 
         addBtn    .addActionListener(e -> openAddDialog());
         editBtn   .addActionListener(e -> openEditDialog());
         deleteBtn .addActionListener(e -> deleteSelected());
         ordersBtn .addActionListener(e -> viewOrders());
-        refreshBtn.addActionListener(e -> refresh());
+        // refreshBtn.addActionListener(e -> refresh());
 
         p.add(addBtn); p.add(editBtn); p.add(deleteBtn);
         p.add(Box.createHorizontalStrut(12));
-        p.add(ordersBtn); p.add(refreshBtn);
+        // p.add(ordersBtn); p.add(refreshBtn);
         return p;
     }
 

@@ -98,6 +98,9 @@ public class OrderPanel extends JPanel {
             applyFilter((String) statusFilter.getSelectedItem(),
                         null, null, searchField.getText().trim()));
 
+        JButton allBtn = UITheme.ghostButton("Show All");
+        allBtn.addActionListener(e -> refresh());
+
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         right.setOpaque(false);
         right.add(UITheme.label("Status:"));
@@ -105,6 +108,7 @@ public class OrderPanel extends JPanel {
         right.add(UITheme.label("Search:"));
         right.add(searchField);
         right.add(searchBtn);
+        right.add(allBtn);
         p.add(right, BorderLayout.EAST);
         return p;
     }

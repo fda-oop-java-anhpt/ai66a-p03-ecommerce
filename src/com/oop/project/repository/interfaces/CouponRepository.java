@@ -1,4 +1,4 @@
-package com.oop.project.repository;
+package com.oop.project.repository.interfaces;
 
 import com.oop.project.model.Coupon;
 

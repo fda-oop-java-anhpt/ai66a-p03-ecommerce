@@ -1,7 +1,8 @@
-package com.oop.project.ui;
+package com.oop.project.ui.dialogs;
 
 import com.oop.project.model.Coupon;
 import com.oop.project.model.DiscountType;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import java.awt.*;

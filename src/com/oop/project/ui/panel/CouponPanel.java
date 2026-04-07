@@ -1,9 +1,13 @@
-package com.oop.project.ui;
+package com.oop.project.ui.panel;
 
 import com.oop.project.model.Coupon;
 import com.oop.project.model.DiscountType;
 import com.oop.project.repository.CouponRepository;
 import com.oop.project.service.CouponService;
+import com.oop.project.ui.dialogs.CouponDialog;
+import com.oop.project.ui.frames.MainFrame;
+import com.oop.project.ui.utils.TableRenderer;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

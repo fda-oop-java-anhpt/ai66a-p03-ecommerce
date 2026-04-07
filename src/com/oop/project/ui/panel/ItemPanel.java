@@ -1,9 +1,13 @@
-package com.oop.project.ui;
+package com.oop.project.ui.panel;
 
 import com.oop.project.exception.DuplicateException;
 import com.oop.project.repository.SystemSettingRepository;
 import com.oop.project.model.Item;
 import com.oop.project.service.ItemService;
+import com.oop.project.ui.dialogs.ItemDialog;
+import com.oop.project.ui.frames.MainFrame;
+import com.oop.project.ui.utils.TableRenderer;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

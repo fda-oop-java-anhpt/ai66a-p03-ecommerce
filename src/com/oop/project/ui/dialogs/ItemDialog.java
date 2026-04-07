@@ -1,6 +1,7 @@
-package com.oop.project.ui;
+package com.oop.project.ui.dialogs;
 
 import com.oop.project.model.Item;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import java.awt.*;

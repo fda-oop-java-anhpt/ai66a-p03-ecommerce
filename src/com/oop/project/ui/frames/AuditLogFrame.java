@@ -1,6 +1,8 @@
-package com.oop.project.ui;
+package com.oop.project.ui.frames;
 
 import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.ui.utils.TableRenderer;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

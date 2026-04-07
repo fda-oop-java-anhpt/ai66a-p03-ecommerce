@@ -1,9 +1,12 @@
-package com.oop.project.ui;
+package com.oop.project.ui.panel;
 
 import com.oop.project.model.SystemSetting;
 import com.oop.project.repository.AuditLogRepository;
 import com.oop.project.model.AuditLog;
 import com.oop.project.repository.SystemSettingRepository;
+import com.oop.project.ui.frames.MainFrame;
+import com.oop.project.ui.utils.TableRenderer;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

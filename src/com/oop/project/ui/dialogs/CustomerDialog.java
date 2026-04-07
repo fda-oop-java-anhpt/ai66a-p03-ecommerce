@@ -1,6 +1,7 @@
-package com.oop.project.ui;
+package com.oop.project.ui.dialogs;
 
 import com.oop.project.model.Customer;
+import com.oop.project.ui.utils.UITheme;
 import com.oop.project.util.Validator;
 
 import javax.swing.*;

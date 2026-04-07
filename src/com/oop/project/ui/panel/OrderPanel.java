@@ -1,4 +1,4 @@
-package com.oop.project.ui;
+package com.oop.project.ui.panel;
 
 import com.oop.project.model.*;
 import com.oop.project.repository.OrderRepository;
@@ -6,6 +6,9 @@ import com.oop.project.service.BillingService;
 import com.oop.project.service.CouponService;
 import com.oop.project.service.CustomerService;
 import com.oop.project.service.ItemService;
+import com.oop.project.ui.frames.MainFrame;
+import com.oop.project.ui.utils.TableRenderer;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

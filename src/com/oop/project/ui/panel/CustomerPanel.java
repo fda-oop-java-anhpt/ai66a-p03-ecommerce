@@ -1,8 +1,12 @@
-package com.oop.project.ui;
+package com.oop.project.ui.panel;
 
 import com.oop.project.model.Customer;
 import com.oop.project.model.Order;
 import com.oop.project.service.CustomerService;
+import com.oop.project.ui.dialogs.CustomerDialog;
+import com.oop.project.ui.frames.MainFrame;
+import com.oop.project.ui.utils.TableRenderer;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

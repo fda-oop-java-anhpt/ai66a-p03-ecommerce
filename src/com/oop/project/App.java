@@ -1,6 +1,6 @@
 package com.oop.project;
 
-import com.oop.project.service.impl.AuthenticationServiceImpl;
+import com.oop.project.service.impl.AuthServiceImpl;
 import com.oop.project.ui.frames.LoginFrame;
 import com.oop.project.ui.utils.UITheme;
 
@@ -21,7 +21,7 @@ public class App {
         UITheme.installGlobalDefaults();
 
         SwingUtilities.invokeLater(() -> {
-            AuthenticationServiceImpl authService = new AuthenticationServiceImpl();
+            AuthServiceImpl authService = new AuthServiceImpl();
             LoginFrame login = new LoginFrame(authService);
             login.setVisible(true);
         });

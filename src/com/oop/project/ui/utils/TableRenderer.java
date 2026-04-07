@@ -1,4 +1,4 @@
-package com.oop.project.ui;
+package com.oop.project.ui.utils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

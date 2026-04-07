@@ -1,8 +1,15 @@
-package com.oop.project.ui;
+package com.oop.project.ui.frames;
 
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
 import com.oop.project.service.*;
+import com.oop.project.ui.panel.CouponPanel;
+import com.oop.project.ui.panel.CustomerPanel;
+import com.oop.project.ui.panel.DashboardPanel;
+import com.oop.project.ui.panel.ItemPanel;
+import com.oop.project.ui.panel.OrderPanel;
+import com.oop.project.ui.panel.SettingsPanel;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;

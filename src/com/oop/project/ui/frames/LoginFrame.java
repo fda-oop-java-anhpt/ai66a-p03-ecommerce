@@ -1,8 +1,9 @@
-package com.oop.project.ui;
+package com.oop.project.ui.frames;
 
 import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.User;
 import com.oop.project.service.AuthService;
+import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
 import java.awt.*;

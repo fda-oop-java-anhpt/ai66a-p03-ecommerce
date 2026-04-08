@@ -3,8 +3,10 @@ package com.oop.project.service.impl;
 import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.AuditLog;
 import com.oop.project.model.User;
-import com.oop.project.repository.AuditLogRepository;
-import com.oop.project.repository.UserRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
+import com.oop.project.repository.interfaces.UserRepository;
+import com.oop.project.repository.impl.AuditLogRepositoryImpl;
+import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.service.interfaces.IAuthService;
 import com.oop.project.util.Validator;
 
@@ -15,6 +17,12 @@ public class AuthServiceImpl implements IAuthService {
     private final UserRepository userRepo;
     private final AuditLogRepository auditLogRepo;
 
+    public AuthServiceImpl() {
+        this.userRepo = new UserRepositoryImpl();
+        this.auditLogRepo = new AuditLogRepositoryImpl();
+    }
+
+    // For dependency injection (testing)
     public AuthServiceImpl(UserRepository userRepo, AuditLogRepository auditLogRepo) {
         this.userRepo = userRepo;
         this.auditLogRepo = auditLogRepo;
@@ -39,24 +47,28 @@ public class AuthServiceImpl implements IAuthService {
         userRepo.updateLastLogin(user.getUserId(), now);
         user.setLastLogin(now);
 
-        logAudit(user, "LOGIN", "USER", String.valueOf(user.getUserId()));
+        // Audit log
+        AuditLog log = new AuditLog();
+        log.setUser(user);
+        log.setActions("LOGIN");
+        log.setTargetType("USER");
+        log.setTargetId(String.valueOf(user.getUserId()));
+        log.setCreatedDate(now);
+        auditLogRepo.insert(log);
+
         return user;
     }
 
     @Override
     public void logout(User user) {
         if (user != null) {
-            logAudit(user, "LOGOUT", "USER", String.valueOf(user.getUserId()));
+            AuditLog log = new AuditLog();
+            log.setUser(user);
+            log.setActions("LOGOUT");
+            log.setTargetType("USER");
+            log.setTargetId(String.valueOf(user.getUserId()));
+            log.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+            auditLogRepo.insert(log);
         }
-    }
-
-    private void logAudit(User user, String action, String targetType, String targetId) {
-        AuditLog log = new AuditLog();
-        log.setUser(user);
-        log.setActions(action);
-        log.setTargetType(targetType);
-        log.setTargetId(targetId);
-        log.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-        auditLogRepo.insert(log);
     }
 }

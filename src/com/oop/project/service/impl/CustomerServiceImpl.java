@@ -1,188 +1,117 @@
 package com.oop.project.service.impl;
 
+import com.oop.project.exception.DuplicateException;
+import com.oop.project.exception.ResourceNotFoundException;
+import com.oop.project.exception.ValidationException;
 import com.oop.project.model.Customer;
 import com.oop.project.model.Order;
-import com.oop.project.model.User;
-import com.oop.project.model.UserRole;
-import com.oop.project.repository.impl.CustomerRepositoryImpl;
-import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.repository.interfaces.CustomerRepository;
 import com.oop.project.repository.interfaces.OrderRepository;
-import com.oop.project.service.interfaces.CustomerService;
+import com.oop.project.repository.impl.CustomerRepositoryImpl;
+import com.oop.project.repository.impl.OrderRepositoryImpl;
+import com.oop.project.service.interfaces.ICustomerService;
 import com.oop.project.util.Validator;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-/**
- * Implementation of CustomerService.
- *
- * FR-1: Customer Management
- *
- * Responsibilities:
- * - CRUD operations on Customer records (FR-1.1)
- * - Validate phone number and email format (FR-1.2)
- * - Search customers by name or phone (FR-1.3)
- * - Display customer order history (FR-1.4)
- * - Enforce ADMIN role for delete operations
- *
- * @author Lan - Service Layer
- */
-public class CustomerServiceImpl implements CustomerService {
+public class CustomerServiceImpl implements ICustomerService {
 
-    // ── Dependencies ──────────────────────────────────────────────
-    private final CustomerRepository customerRepository;
-    private final OrderRepository    orderRepository;
+    private final CustomerRepository customerRepo;
+    private final OrderRepository orderRepo;
 
-    // ── Constructor ───────────────────────────────────────────────
     public CustomerServiceImpl() {
-        this.customerRepository = new CustomerRepositoryImpl();
-        this.orderRepository    = new OrderRepositoryImpl();
+        this.customerRepo = new CustomerRepositoryImpl();
+        this.orderRepo = new OrderRepositoryImpl();
     }
 
-    public CustomerServiceImpl(CustomerRepository customerRepository,
-                                OrderRepository orderRepository) {
-        this.customerRepository = customerRepository;
-        this.orderRepository    = orderRepository;
+    public CustomerServiceImpl(CustomerRepository customerRepo, OrderRepository orderRepo) {
+        this.customerRepo = customerRepo;
+        this.orderRepo = orderRepo;
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // READ
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+        return customerRepo.findAll();
     }
 
     @Override
-    public Optional<Customer> getCustomerById(int customerId) {
-        return customerRepository.findById(customerId);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // CREATE — FR-1.1 + FR-1.2
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * Validate and save a new customer.
-     *
-     * Validation (FR-1.2):
-     *  - Name must not be blank and within length limits
-     *  - Phone must match PHONE_PATTERN
-     *  - Email must match EMAIL_PATTERN
-     */
-    @Override
-    public boolean addCustomer(Customer customer) {
-        validateCustomer(customer);  // throws IllegalArgumentException if invalid
-        return customerRepository.save(customer);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // UPDATE — FR-1.1 + FR-1.2
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    public boolean updateCustomer(Customer customer) {
-        // Make sure the customer exists
-        customerRepository.findById(customer.getCustomerId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Customer not found: ID " + customer.getCustomerId()));
-
-        validateCustomer(customer);
-        return customerRepository.update(customer);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // DELETE — FR-1.1 (ADMIN only)
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    public boolean deleteCustomer(int customerId, User actor) {
-        // Enforce ADMIN-only permission
-        if (actor == null || actor.getUserRole() != UserRole.ADMIN) {
-            throw new SecurityException("DELETE_CUSTOMER requires ADMIN role.");
-        }
-
-        customerRepository.findById(customerId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Customer not found: ID " + customerId));
-
-        return customerRepository.deleteById(customerId);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // SEARCH — FR-1.3
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * Search customers by name or phone (case-insensitive, partial match).
-     */
-    @Override
-    public List<Customer> searchCustomer(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) return getAllCustomers();
-
-        String lower = keyword.trim().toLowerCase();
-        return customerRepository.findAll().stream()
-            .filter(c ->
-                c.getCustomerName().toLowerCase().contains(lower) ||
-                c.getPhone().contains(keyword.trim())
-            )
-            .collect(Collectors.toList());
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // ORDER HISTORY — FR-1.4
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    public List<Order> getCustomerOrderHistory(int customerId) {
-        // Ensure customer exists first
-        customerRepository.findById(customerId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Customer not found: ID " + customerId));
-
-        return orderRepository.findAll().stream()
-            .filter(o -> o.getCustomer() != null &&
-                         o.getCustomer().getCustomerId() == customerId)
-            .collect(Collectors.toList());
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // PRIVATE VALIDATION HELPER — FR-1.2
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * Validate customer name, phone, and email.
-     * Throws IllegalArgumentException with a clear message if any field is invalid.
-     */
-    private void validateCustomer(Customer customer) {
-        if (customer == null) throw new IllegalArgumentException("Customer cannot be null.");
-
+    public boolean addCustomer(Customer c) {
+        if (c == null) throw new ValidationException("Customer cannot be null.");
         // Validate name
-        String name = customer.getCustomerName();
-        if (name == null || name.trim().isEmpty() ||
-            name.trim().length() < Validator.MIN_NAME_LENGTH ||
-            name.trim().length() > Validator.MAX_NAME_LENGTH) {
-            throw new IllegalArgumentException(
-                "Customer name must be between " +
-                Validator.MIN_NAME_LENGTH + " and " +
-                Validator.MAX_NAME_LENGTH + " characters.");
+        if (Validator.checkEmpty(c.getCustomerName()) || c.getCustomerName().trim().length() < Validator.MIN_NAME_LENGTH ||
+                c.getCustomerName().trim().length() > Validator.MAX_NAME_LENGTH) {
+            throw new ValidationException("Customer name must be between " + Validator.MIN_NAME_LENGTH + " and " + Validator.MAX_NAME_LENGTH + " characters.");
         }
+        // Validate phone
+        if (!Validator.isValidPhone(c.getPhone())) {
+            throw new ValidationException("Invalid phone number format. Expected Vietnamese format (e.g., 0912345678).");
+        }
+        // Validate email
+        if (!Validator.isValidEmail(c.getEmail())) {
+            throw new ValidationException("Invalid email format.");
+        }
+        // Check duplicate phone
+        if (customerRepo.isPhoneExists(c.getPhone(), 0)) {
+            throw new DuplicateException("Phone number already exists: " + c.getPhone());
+        }
+        // Check duplicate email
+        if (customerRepo.isEmailExists(c.getEmail(), 0)) {
+            throw new DuplicateException("Email already exists: " + c.getEmail());
+        }
+        return customerRepo.insert(c);
+    }
 
-        // Validate phone (FR-1.2)
-        String phone = customer.getPhone();
-        if (phone == null || !Validator.PHONE_PATTERN.matcher(phone.trim()).matches()) {
-            throw new IllegalArgumentException(
-                "Invalid phone number format. Expected Vietnamese format (e.g., 0912345678).");
+    @Override
+    public boolean updateCustomer(Customer c) {
+        if (c == null) throw new ValidationException("Customer cannot be null.");
+        Customer existing = customerRepo.findById(c.getCustomerId());
+        if (existing == null) {
+            throw new ResourceNotFoundException("Customer not found: ID " + c.getCustomerId());
         }
+        // Validate fields
+        if (Validator.checkEmpty(c.getCustomerName()) || c.getCustomerName().trim().length() < Validator.MIN_NAME_LENGTH ||
+                c.getCustomerName().trim().length() > Validator.MAX_NAME_LENGTH) {
+            throw new ValidationException("Customer name must be between " + Validator.MIN_NAME_LENGTH + " and " + Validator.MAX_NAME_LENGTH + " characters.");
+        }
+        if (!Validator.isValidPhone(c.getPhone())) {
+            throw new ValidationException("Invalid phone number format.");
+        }
+        if (!Validator.isValidEmail(c.getEmail())) {
+            throw new ValidationException("Invalid email format.");
+        }
+        // Check duplicate phone excluding current
+        if (customerRepo.isPhoneExists(c.getPhone(), c.getCustomerId())) {
+            throw new DuplicateException("Phone number already exists: " + c.getPhone());
+        }
+        if (customerRepo.isEmailExists(c.getEmail(), c.getCustomerId())) {
+            throw new DuplicateException("Email already exists: " + c.getEmail());
+        }
+        return customerRepo.update(c);
+    }
 
-        // Validate email (FR-1.2)
-        String email = customer.getEmail();
-        if (email == null || !Validator.EMAIL_PATTERN.matcher(email.trim()).matches()) {
-            throw new IllegalArgumentException(
-                "Invalid email format. Expected: user@domain.com");
+    @Override
+    public boolean deleteCustomer(int id) {
+        Customer existing = customerRepo.findById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Customer not found: ID " + id);
         }
+        return customerRepo.delete(id);
+    }
+
+    @Override
+    public List<Customer> search(String keyword) {
+        if (Validator.checkEmpty(keyword)) {
+            return getAllCustomers();
+        }
+        return customerRepo.searchByNameOrPhone(keyword.trim());
+    }
+
+    @Override
+    public List<Order> getOrderHistory(int customerId) {
+        Customer existing = customerRepo.findById(customerId);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Customer not found: ID " + customerId);
+        }
+        return orderRepo.findByCustomerId(customerId);
     }
 }

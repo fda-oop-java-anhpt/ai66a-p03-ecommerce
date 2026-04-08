@@ -1,234 +1,138 @@
 package com.oop.project.service.impl;
 
+import com.oop.project.exception.ResourceNotFoundException;
+import com.oop.project.exception.ValidationException;
 import com.oop.project.model.*;
-import com.oop.project.repository.*;
+import com.oop.project.repository.interfaces.*;
 import com.oop.project.repository.impl.*;
-import com.oop.project.repository.interfaces.AuditLogRepository;
-import com.oop.project.repository.interfaces.CustomerRepository;
-import com.oop.project.repository.interfaces.OrderDetailRepository;
-import com.oop.project.repository.interfaces.OrderRepository;
-import com.oop.project.service.interfaces.BillingService;
-import com.oop.project.service.interfaces.CouponService;
-import com.oop.project.service.interfaces.OrderService;
+import com.oop.project.service.interfaces.IOrderService;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-/**
- * Implementation of OrderService.
- *
- * FR-3: Order and Billing Management
- * FR-4.3: Order status categories (Pending, Paid, Cancelled)
- * FR-4.4: Audit log for order creation, updates, and cancellations
- * FR-5: Order Dashboard and Search
- *
- * @author Lan - Service Layer
- */
-public class OrderServiceImpl implements OrderService {
+public class OrderServiceImpl implements IOrderService {
 
-    // ── Dependencies ──────────────────────────────────────────────
-    private final OrderRepository       orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final CustomerRepository    customerRepository;
-    private final AuditLogRepository    auditLogRepository;
-    private final BillingService        billingService;
-    
-    // ── Constructor ───────────────────────────────────────────────
+    private final OrderRepository orderRepo;
+    private final OrderDetailRepository orderDetailRepo;
+    private final AuditLogRepository auditLogRepo;
+
     public OrderServiceImpl() {
-        this.orderRepository       = new OrderRepositoryImpl();
-        this.orderDetailRepository = new OrderDetailRepositoryImpl();
-        this.customerRepository    = new CustomerRepositoryImpl();
-        this.auditLogRepository    = new AuditLogRepositoryImpl();
-        this.billingService        = new BillingServiceImpl();
+        this.orderRepo = new OrderRepositoryImpl();
+        this.orderDetailRepo = new OrderDetailRepositoryImpl();
+        this.auditLogRepo = new AuditLogRepositoryImpl();
     }
 
-    public OrderServiceImpl(OrderRepository orderRepository,
-                            OrderDetailRepository orderDetailRepository,
-                            CustomerRepository customerRepository,
-                            AuditLogRepository auditLogRepository,
-                            BillingService billingService,
-                            CouponService couponService) {
-        this.orderRepository       = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
-        this.customerRepository    = customerRepository;
-        this.auditLogRepository    = auditLogRepository;
-        this.billingService        = billingService;
+    public OrderServiceImpl(OrderRepository orderRepo, OrderDetailRepository orderDetailRepo, AuditLogRepository auditLogRepo) {
+        this.orderRepo = orderRepo;
+        this.orderDetailRepo = orderDetailRepo;
+        this.auditLogRepo = auditLogRepo;
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // READ — FR-5.1
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+        return orderRepo.findAll();
     }
 
     @Override
-    public Optional<Order> getOrderById(int orderId) {
-        return orderRepository.findById(orderId);
+    public Optional<Order> getOrderById(int id) {
+        Order order = orderRepo.findById(id);
+        if (order != null) {
+            // Load order details
+            List<OrderDetail> details = orderDetailRepo.findByOrderId(id);
+            order.setOrderItems(details);
+        }
+        return Optional.ofNullable(order);
     }
-
-    @Override
-    public List<Order> getOrdersByCustomerId(int customerId) {
-        return orderRepository.findAll().stream()
-            .filter(o -> o.getCustomer() != null &&
-                         o.getCustomer().getCustomerId() == customerId)
-            .collect(Collectors.toList());
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // CREATE — FR-3.1 + FR-3.2 + FR-4.4
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * Create a new order with billing calculation.
-     *
-     * Steps:
-     *  1. Validate customer exists
-     *  2. Validate orderDetails list is not empty
-     *  3. Apply coupon if attached to the order
-     *  4. Calculate billing (via BillingService)
-     *  5. Set initial status to PENDING
-     *  6. Save Order to DB → get orderId
-     *  7. Save each OrderDetail with the new orderId
-     *  8. Record "CREATE_ORDER" in AuditLog (FR-4.4)
-     */
-    @Override
-    public Order createOrder(Order order, List<OrderDetail> orderDetails, User actor) {
-        // Step 1: Validate customer
-        if (order.getCustomer() == null) {
-            throw new IllegalArgumentException("Order must have a customer.");
-        }
-        customerRepository.findById(order.getCustomer().getCustomerId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Customer not found: ID " + order.getCustomer().getCustomerId()));
-
-        // Step 2: Validate items
-        if (orderDetails == null || orderDetails.isEmpty()) {
-            throw new IllegalArgumentException("Order must contain at least one item.");
-        }
-
-        // Step 3: Attach orderDetails to the Order object
-        order.setOrderItems(orderDetails);
-
-        // Step 4: Calculate billing (calls BillingService.calculateOrderBilling)
-        billingService.calculateOrderBilling(order);
-
-        // Step 5: Set default status and timestamp
-        order.setStatus(OrderStatus.PENDING);
-        order.setOrderDate(Timestamp.from(Instant.now()));
-
-        // Step 6: Save order to DB
-        boolean saved = orderRepository.save(order);
-        if (!saved) return null;
-
-        // Step 7: Save each OrderDetail (link orderId)
-        for (OrderDetail detail : orderDetails) {
-            detail.setOrderId(order.getOrderId());
-            orderDetailRepository.save(detail);
-        }
-
-        // Step 8: Audit log (FR-4.4)
-        recordAuditLog(actor, "CREATE_ORDER", "ORDER", String.valueOf(order.getOrderId()));
-
-        return order;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // UPDATE STATUS — FR-3.1 + FR-4.3 + FR-4.4
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    public boolean updateOrderStatus(int orderId, OrderStatus newStatus, User actor) {
-        Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Order not found: ID " + orderId));
-
-        order.setStatus(newStatus);
-        boolean result = orderRepository.update(order);
-
-        if (result) {
-            // Audit log (FR-4.4)
-            recordAuditLog(actor, "UPDATE_STATUS → " + newStatus.name(), "ORDER",
-                String.valueOf(orderId));
-        }
-
-        return result;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // CANCEL — FR-3.1 + FR-4.4
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    public boolean cancelOrder(int orderId, User actor) {
-        Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Order not found: ID " + orderId));
-
-        if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalArgumentException("Order is already cancelled: ID " + orderId);
-        }
-
-        order.setStatus(OrderStatus.CANCELLED);
-        boolean result = orderRepository.update(order);
-
-        if (result) {
-            // Audit log cancellation (FR-4.4)
-            recordAuditLog(actor, "CANCEL_ORDER", "ORDER", String.valueOf(orderId));
-        }
-
-        return result;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // SEARCH + FILTER — FR-5.2 + FR-5.3
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     public List<Order> searchOrders(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) return getAllOrders();
-
-        String lower = keyword.trim().toLowerCase();
-        return orderRepository.findAll().stream()
-            .filter(o ->
-                String.valueOf(o.getOrderId()).contains(keyword.trim()) ||
-                (o.getCustomer() != null &&
-                 o.getCustomer().getCustomerName().toLowerCase().contains(lower))
-            )
-            .collect(Collectors.toList());
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return orderRepo.findAll();
+        }
+        return orderRepo.searchByCustomerNameOrId(keyword.trim());
     }
 
     @Override
     public List<Order> filterByStatus(OrderStatus status) {
-        return orderRepository.findAll().stream()
-            .filter(o -> o.getStatus() == status)
-            .collect(Collectors.toList());
+        if (status == null) return orderRepo.findAll();
+        return orderRepo.filterByStatusOrDateRange(status.name(), null, null);
     }
 
     @Override
-    public List<Order> filterByDateRange(Timestamp from, Timestamp to) {
-        return orderRepository.findAll().stream()
-            .filter(o -> o.getOrderDate() != null &&
-                         !o.getOrderDate().before(from) &&
-                         !o.getOrderDate().after(to))
-            .collect(Collectors.toList());
+    public List<Order> filterByDateRange(Timestamp start, Timestamp end) {
+        if (start == null || end == null) throw new ValidationException("Start and end dates must be provided.");
+        return orderRepo.filterByStatusOrDateRange(null, start, end);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // PRIVATE HELPER
-    // ─────────────────────────────────────────────────────────────
+    @Override
+    public void createOrder(Order order, List<OrderDetail> details, User currentUser) {
+        if (order == null) throw new ValidationException("Order cannot be null.");
+        if (details == null || details.isEmpty()) throw new ValidationException("Order must have at least one item.");
+        if (currentUser == null) throw new ValidationException("Current user cannot be null.");
+        if (order.getCustomer() == null) throw new ValidationException("Order must have a customer.");
 
-    private void recordAuditLog(User actor, String action, String targetType, String targetId) {
-        if (actor == null) return;
-        AuditLog log = new AuditLog(
-            0, actor, action, targetType, targetId,
-            Timestamp.from(Instant.now())
-        );
-        auditLogRepository.save(log);
+        // Basic validation: ensure each detail has item and quantity >0
+        for (OrderDetail detail : details) {
+            if (detail.getItem() == null) throw new ValidationException("Order detail missing item.");
+            if (detail.getQuantity() <= 0) throw new ValidationException("Quantity must be positive.");
+            if (detail.getPriceAtTime() == null || detail.getPriceAtTime().compareTo(java.math.BigDecimal.ZERO) <= 0)
+                throw new ValidationException("Price at time must be positive.");
+        }
+
+        order.setOrderItems(details);
+        order.setStatus(OrderStatus.PENDING);
+        if (order.getOrderDate() == null) {
+            order.setOrderDate(new Timestamp(System.currentTimeMillis()));
+        }
+
+        int orderId = orderRepo.insert(order);
+        if (orderId <= 0) throw new RuntimeException("Failed to create order.");
+        order.setOrderId(orderId);
+
+        for (OrderDetail detail : details) {
+            detail.setOrderId(orderId);
+        }
+        orderDetailRepo.insertBatch(orderId, details);
+
+        // Audit log
+        logAudit(currentUser, "CREATE_ORDER", "ORDER", String.valueOf(orderId));
+    }
+
+    @Override
+    public void updateOrderStatus(int id, OrderStatus status, User currentUser) {
+        if (currentUser == null) throw new ValidationException("Current user cannot be null.");
+        Order existing = orderRepo.findById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Order not found with ID: " + id);
+        }
+        boolean updated = orderRepo.updateStatus(id, status.name());
+        if (!updated) throw new RuntimeException("Failed to update order status.");
+        logAudit(currentUser, "UPDATE_STATUS_TO_" + status.name(), "ORDER", String.valueOf(id));
+    }
+
+    @Override
+    public void cancelOrder(int id, User currentUser) {
+        if (currentUser == null) throw new ValidationException("Current user cannot be null.");
+        Order existing = orderRepo.findById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Order not found with ID: " + id);
+        }
+        if (existing.getStatus() == OrderStatus.CANCELLED) {
+            throw new ValidationException("Order is already cancelled.");
+        }
+        boolean updated = orderRepo.updateStatus(id, OrderStatus.CANCELLED.name());
+        if (!updated) throw new RuntimeException("Failed to cancel order.");
+        logAudit(currentUser, "CANCEL_ORDER", "ORDER", String.valueOf(id));
+    }
+
+    private void logAudit(User user, String action, String targetType, String targetId) {
+        AuditLog log = new AuditLog();
+        log.setUser(user);
+        log.setActions(action);
+        log.setTargetType(targetType);
+        log.setTargetId(targetId);
+        log.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+        auditLogRepo.insert(log);
     }
 }

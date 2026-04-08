@@ -4,50 +4,61 @@ import com.oop.project.exception.CouponExpiredException;
 import com.oop.project.exception.InsufficientStockException;
 import com.oop.project.exception.ValidationException;
 import com.oop.project.model.*;
-import com.oop.project.repository.*;
+import com.oop.project.repository.interfaces.*;
 import com.oop.project.repository.impl.*;
 import com.oop.project.service.interfaces.IBillingService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.List;
 
 public class BillingServiceImpl implements IBillingService {
 
     private final OrderRepository orderRepo;
-    private final AuditLogRepository auditLogRepo;
-    private final SystemSettingRepository settingRepo;
-    private final CouponRepository couponRepo;
-    private final ItemRepository itemRepo;
     private final OrderDetailRepository orderDetailRepo;
+    private final ItemRepository itemRepo;
+    private final CouponRepository couponRepo;
+    private final SystemSettingRepository settingRepo;
+    private final AuditLogRepository auditLogRepo;
 
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("8.00");
 
-    public BillingServiceImpl(OrderRepository orderRepo, AuditLogRepository auditLogRepo,
-                              SystemSettingRepository settingRepo, CouponRepository couponRepo,
-                              ItemRepository itemRepo, OrderDetailRepository orderDetailRepo) {
+    public BillingServiceImpl() {
+        this.orderRepo = new OrderRepositoryImpl();
+        this.orderDetailRepo = new OrderDetailRepositoryImpl();
+        this.itemRepo = new ItemRepositoryImpl();
+        this.couponRepo = new CouponRepositoryImpl();
+        this.settingRepo = new SystemSettingRepositoryImpl();
+        this.auditLogRepo = new AuditLogRepositoryImpl();
+    }
+
+    // Constructor for dependency injection
+    public BillingServiceImpl(OrderRepository orderRepo, OrderDetailRepository orderDetailRepo,
+                              ItemRepository itemRepo, CouponRepository couponRepo,
+                              SystemSettingRepository settingRepo, AuditLogRepository auditLogRepo) {
         this.orderRepo = orderRepo;
-        this.auditLogRepo = auditLogRepo;
-        this.settingRepo = settingRepo;
-        this.couponRepo = couponRepo;
-        this.itemRepo = itemRepo;
         this.orderDetailRepo = orderDetailRepo;
+        this.itemRepo = itemRepo;
+        this.couponRepo = couponRepo;
+        this.settingRepo = settingRepo;
+        this.auditLogRepo = auditLogRepo;
     }
 
     @Override
     public BigDecimal computeBill(BigDecimal price) {
-        return price;
+        return price != null ? price : BigDecimal.ZERO;
     }
 
     @Override
     public BigDecimal computeBill(BigDecimal price, int quantity) {
+        if (price == null) return BigDecimal.ZERO;
         return price.multiply(BigDecimal.valueOf(quantity));
     }
 
     @Override
     public BigDecimal computeBill(BigDecimal price, int quantity, BigDecimal couponDiscount) {
-        BigDecimal lineTotal = price.multiply(BigDecimal.valueOf(quantity));
+        BigDecimal lineTotal = computeBill(price, quantity);
+        if (couponDiscount == null) return lineTotal;
         BigDecimal result = lineTotal.subtract(couponDiscount);
         return result.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : result;
     }
@@ -60,21 +71,42 @@ public class BillingServiceImpl implements IBillingService {
         if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
             throw new ValidationException("Order must contain at least one item.");
         }
+        if (order.getCustomer() == null) {
+            throw new ValidationException("Order must have a customer.");
+        }
 
-        validateStock(order.getOrderItems());
+        // Validate stock
+        for (OrderDetail detail : order.getOrderItems()) {
+            if (detail.getItem() == null || detail.getItem().getItemSku() == null) continue;
+            Item dbItem = itemRepo.findBySku(detail.getItem().getItemSku());
+            if (dbItem == null) {
+                throw new ValidationException("Item not found: " + detail.getItem().getItemSku());
+            }
+            if (detail.getQuantity() > dbItem.getStockQuantity()) {
+                throw new InsufficientStockException("Insufficient stock for '" + dbItem.getItemName() +
+                        "'. Requested: " + detail.getQuantity() + ", Available: " + dbItem.getStockQuantity());
+            }
+        }
 
-        BigDecimal subtotal = calculateSubtotal(order.getOrderItems());
+        // Calculate subtotal
+        BigDecimal subtotal = BigDecimal.ZERO;
+        for (OrderDetail detail : order.getOrderItems()) {
+            BigDecimal lineTotal = computeBill(detail.getPriceAtTime(), detail.getQuantity());
+            subtotal = subtotal.add(lineTotal);
+        }
         order.setSubtotal(subtotal);
 
+        // Apply coupon if present
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (order.getCoupon() != null && order.getCoupon().getCouponCode() != null) {
-            Coupon validCoupon = validateCoupon(order.getCoupon().getCouponCode(), subtotal);
-            discountAmount = calculateDiscount(validCoupon, subtotal);
-            order.setCoupon(validCoupon);
-            order.setDiscountInfo(validCoupon.getDiscountType() + ": " + validCoupon.getDiscountValue());
+            Coupon coupon = validateCoupon(order.getCoupon().getCouponCode(), subtotal);
+            discountAmount = calculateDiscount(coupon, subtotal);
+            order.setCoupon(coupon);
+            order.setDiscountInfo(coupon.getDiscountType() + ": " + coupon.getDiscountValue());
         }
         order.setDiscountAmount(discountAmount);
 
+        // Tax rate
         BigDecimal taxRate = getTaxRate();
         order.setTaxRate(taxRate);
 
@@ -85,18 +117,29 @@ public class BillingServiceImpl implements IBillingService {
         order.setFinalTotal(finalTotal);
 
         order.setStatus(OrderStatus.PENDING);
-        if (order.getOrderDate() == null) order.setOrderDate(new Timestamp(System.currentTimeMillis()));
-
-        int orderId = orderRepo.insert(order);
-        if (orderId <= 0) throw new RuntimeException("Failed to persist order.");
-        order.setOrderId(orderId);
-
-        orderDetailRepo.insertBatch(orderId, order.getOrderItems());
-
-        for (OrderDetail detail : order.getOrderItems()) {
-            itemRepo.updateStock(detail.getItem().getItemSku(), -detail.getQuantity());
+        if (order.getOrderDate() == null) {
+            order.setOrderDate(new Timestamp(System.currentTimeMillis()));
         }
 
+        // Save order
+        int orderId = orderRepo.insert(order);
+        if (orderId <= 0) throw new RuntimeException("Failed to create order.");
+        order.setOrderId(orderId);
+
+        // Save order details
+        for (OrderDetail detail : order.getOrderItems()) {
+            detail.setOrderId(orderId);
+        }
+        orderDetailRepo.insertBatch(orderId, order.getOrderItems());
+
+        // Update stock
+        for (OrderDetail detail : order.getOrderItems()) {
+            if (detail.getItem() != null && detail.getItem().getItemSku() != null) {
+                itemRepo.updateStock(detail.getItem().getItemSku(), -detail.getQuantity());
+            }
+        }
+
+        // Audit log
         logAudit(currentUser, "CREATE_ORDER", "ORDER", String.valueOf(orderId));
         return order;
     }
@@ -106,18 +149,27 @@ public class BillingServiceImpl implements IBillingService {
         if (order == null || currentUser == null) {
             throw new ValidationException("Order and current user must not be null.");
         }
+        Order existing = orderRepo.findById(order.getOrderId());
+        if (existing == null) {
+            throw new ValidationException("Order not found: " + order.getOrderId());
+        }
 
-        validateStock(order.getOrderItems());
-
-        BigDecimal subtotal = calculateSubtotal(order.getOrderItems());
+        // Similar logic as create but update instead of insert
+        // (simplified: recalc, then update order and details)
+        // Recalculate subtotal
+        BigDecimal subtotal = BigDecimal.ZERO;
+        for (OrderDetail detail : order.getOrderItems()) {
+            BigDecimal lineTotal = computeBill(detail.getPriceAtTime(), detail.getQuantity());
+            subtotal = subtotal.add(lineTotal);
+        }
         order.setSubtotal(subtotal);
 
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (order.getCoupon() != null && order.getCoupon().getCouponCode() != null) {
-            Coupon validCoupon = validateCoupon(order.getCoupon().getCouponCode(), subtotal);
-            discountAmount = calculateDiscount(validCoupon, subtotal);
-            order.setCoupon(validCoupon);
-            order.setDiscountInfo(validCoupon.getDiscountType() + ": " + validCoupon.getDiscountValue());
+            Coupon coupon = validateCoupon(order.getCoupon().getCouponCode(), subtotal);
+            discountAmount = calculateDiscount(coupon, subtotal);
+            order.setCoupon(coupon);
+            order.setDiscountInfo(coupon.getDiscountType() + ": " + coupon.getDiscountValue());
         }
         order.setDiscountAmount(discountAmount);
 
@@ -132,7 +184,12 @@ public class BillingServiceImpl implements IBillingService {
 
         boolean updated = orderRepo.update(order);
         if (!updated) throw new RuntimeException("Failed to update order.");
+
+        // Replace order details
         orderDetailRepo.deleteByOrderId(order.getOrderId());
+        for (OrderDetail detail : order.getOrderItems()) {
+            detail.setOrderId(order.getOrderId());
+        }
         orderDetailRepo.insertBatch(order.getOrderId(), order.getOrderItems());
 
         logAudit(currentUser, "UPDATE_ORDER", "ORDER", String.valueOf(order.getOrderId()));
@@ -144,10 +201,14 @@ public class BillingServiceImpl implements IBillingService {
         if (currentUser == null) throw new ValidationException("Current user must not be null.");
         Order order = orderRepo.findById(orderId);
         if (order == null) throw new ValidationException("Order not found.");
+
         boolean cancelled = orderRepo.updateStatus(orderId, OrderStatus.CANCELLED.name());
         if (cancelled && order.getOrderItems() != null) {
+            // Restore stock
             for (OrderDetail detail : order.getOrderItems()) {
-                itemRepo.updateStock(detail.getItem().getItemSku(), detail.getQuantity());
+                if (detail.getItem() != null && detail.getItem().getItemSku() != null) {
+                    itemRepo.updateStock(detail.getItem().getItemSku(), detail.getQuantity());
+                }
             }
             logAudit(currentUser, "CANCEL_ORDER", "ORDER", String.valueOf(orderId));
         }
@@ -162,7 +223,7 @@ public class BillingServiceImpl implements IBillingService {
         sb.append("                  INVOICE                   \n");
         sb.append("════════════════════════════════════════════\n");
         sb.append(String.format("  Order ID   : #%d\n", order.getOrderId()));
-        sb.append(String.format("  Date       : %s\n", order.getOrderDate() != null ? order.getOrderDate().toString() : "N/A"));
+        sb.append(String.format("  Date       : %s\n", order.getOrderDate() != null ? order.getOrderDate() : "N/A"));
         if (order.getCustomer() != null) {
             sb.append(String.format("  Customer   : %s\n", order.getCustomer().getCustomerName()));
             sb.append(String.format("  Phone      : %s\n", order.getCustomer().getPhone()));
@@ -201,41 +262,18 @@ public class BillingServiceImpl implements IBillingService {
         return sb.toString();
     }
 
-    private void validateStock(List<OrderDetail> items) {
-        if (items == null) return;
-        for (OrderDetail detail : items) {
-            if (detail.getItem() != null && detail.getItem().getItemSku() != null) {
-                Item dbItem = itemRepo.findBySku(detail.getItem().getItemSku());
-                if (dbItem != null && detail.getQuantity() > dbItem.getStockQuantity()) {
-                    throw new InsufficientStockException(
-                            "Insufficient stock for '" + dbItem.getItemName() +
-                            "'. Requested: " + detail.getQuantity() +
-                            ", Available: " + dbItem.getStockQuantity() + ".");
-                }
-            }
-        }
-    }
-
-    private BigDecimal calculateSubtotal(List<OrderDetail> items) {
-        BigDecimal subtotal = BigDecimal.ZERO;
-        for (OrderDetail detail : items) {
-            BigDecimal lineTotal = computeBill(detail.getPriceAtTime(), detail.getQuantity());
-            subtotal = subtotal.add(lineTotal);
-        }
-        return subtotal;
-    }
-
+    // Private helpers
     private Coupon validateCoupon(String code, BigDecimal orderTotal) {
         Coupon coupon = couponRepo.findByCode(code);
         if (coupon == null) {
-            throw new ValidationException("Coupon '" + code + "' not found.");
+            throw new CouponExpiredException("Coupon '" + code + "' not found.");
         }
         if (!coupon.isActive()) {
             throw new CouponExpiredException("Coupon '" + code + "' is no longer active.");
         }
         java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
         if (coupon.getExpiryDate() != null && coupon.getExpiryDate().before(today)) {
-            throw new CouponExpiredException("Coupon '" + code + "' has expired on " + coupon.getExpiryDate() + ".");
+            throw new CouponExpiredException("Coupon '" + code + "' has expired on " + coupon.getExpiryDate());
         }
         if (coupon.getMinOrderValue() != null && orderTotal.compareTo(coupon.getMinOrderValue()) < 0) {
             throw new CouponExpiredException("Order total must be at least " + coupon.getMinOrderValue() + " to use coupon '" + code + "'.");

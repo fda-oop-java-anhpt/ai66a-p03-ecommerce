@@ -4,11 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+
+
 public class DatabaseConnection {
-    // 1. Các thông số kết nối (Thay password của bạn vào đây)
-    private static final String URL = "jdbc:postgresql://localhost:5432/E-commerce";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "123456"; 
+    private static final String URL = System.getenv("DB_URL");
+    private static final String USER = System.getenv("DB_USER");
+    private static final String PASSWORD = System.getenv("DB_PASSWORD");
 
     private static Connection connection = null;
 

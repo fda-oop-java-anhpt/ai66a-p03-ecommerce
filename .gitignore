@@ -4,6 +4,9 @@
 # Log file
 *.log
 
+# File .env
+.env
+
 # Markdown & pdf file
 *.md
 *.pdf

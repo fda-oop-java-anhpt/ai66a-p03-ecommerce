@@ -1,14 +1,19 @@
 package com.oop.project.repository.impl;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.oop.project.model.AuditLog;
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
-import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.util.DatabaseConnection;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AuditLogRepositoryImpl implements AuditLogRepository {
 

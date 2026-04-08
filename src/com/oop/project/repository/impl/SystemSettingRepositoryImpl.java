@@ -1,10 +1,14 @@
 package com.oop.project.repository.impl;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.oop.project.model.SystemSetting;
-import com.oop.project.repository.SystemSettingRepository;
+import com.oop.project.repository.interfaces.SystemSettingRepository;
 import com.oop.project.util.DatabaseConnection;
 
-import java.sql.*;
 
 public class SystemSettingRepositoryImpl implements SystemSettingRepository {
 
@@ -31,6 +35,7 @@ public class SystemSettingRepositoryImpl implements SystemSettingRepository {
     }
 
     // ==================== Update setting value ====================
+    
     @Override
     public boolean update(String key, String value) {
         String sql = "UPDATE system_settings SET setting_value = ? WHERE setting_key = ?";

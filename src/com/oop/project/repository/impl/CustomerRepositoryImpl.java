@@ -1,13 +1,20 @@
 package com.oop.project.repository.impl;
 
-import com.oop.project.model.Customer;
-import com.oop.project.util.DatabaseConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerRepositoryImpl {
+import com.oop.project.model.Customer;
+import com.oop.project.util.DatabaseConnection;
+import com.oop.project.repository.interfaces.CustomerRepository;
+
+
+
+public class CustomerRepositoryImpl implements CustomerRepository {
 
     // ==================== HELPER: Map ResultSet → Customer ====================
     private Customer mapRow(ResultSet rs) throws SQLException {
@@ -22,6 +29,8 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== List all customers ====================
+    
+    @Override
     public List<Customer> findAll() {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers ORDER BY customer_id";
@@ -38,6 +47,8 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== Find by ID ====================
+    
+    @Override
     public Customer findById(int id) {
         String sql = "SELECT * FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -54,6 +65,8 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== FR-1.3: Search by name or phone ====================
+    
+    @Override
     public List<Customer> searchByNameOrPhone(String keyword) {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers WHERE LOWER(customer_name) LIKE LOWER(?) OR phone LIKE ? ORDER BY customer_id";
@@ -73,6 +86,7 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== Check Duplicate Phone ====================
+    @Override
     public boolean isPhoneExists(String phone, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE phone = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -88,6 +102,7 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== Check Duplicate Email ====================
+    @Override
     public boolean isEmailExists(String email, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE email = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -104,6 +119,8 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== FR-1.1: Insert customer ====================
+    
+    @Override
     public boolean insert(Customer c) {
         String sql = "INSERT INTO customers (customer_name, phone, email, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -120,6 +137,7 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== FR-1.1, FR-1.2: Update customer ====================
+    @Override
     public boolean update(Customer c) {
         String sql = "UPDATE customers SET customer_name = ?, phone = ?, email = ?, address = ? WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -137,6 +155,7 @@ public class CustomerRepositoryImpl {
     }
 
     // ==================== Delete customer ====================
+    @Override
     public boolean delete(int id) {
         String sql = "DELETE FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

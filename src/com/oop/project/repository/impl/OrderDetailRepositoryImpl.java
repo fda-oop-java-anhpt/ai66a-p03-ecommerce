@@ -1,17 +1,22 @@
 package com.oop.project.repository.impl;
 
-import com.oop.project.model.Item;
-import com.oop.project.model.OrderDetail;
-import com.oop.project.repository.OrderDetailRepository;
-import com.oop.project.util.DatabaseConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.oop.project.model.Item;
+import com.oop.project.model.OrderDetail;
+import com.oop.project.repository.interfaces.OrderDetailRepository;
+import com.oop.project.util.DatabaseConnection;
 
 public class OrderDetailRepositoryImpl implements OrderDetailRepository {
 
     // ==================== Find all details for an order (JOIN items) ====================
+    @Override
     public List<OrderDetail> findByOrderId(int orderId) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = "SELECT od.*, i.item_name, i.category, i.unit_price, i.stock_quantity " +
@@ -47,6 +52,8 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
     }
 
     // ==================== Bulk insert order details ====================
+    
+    @Override
     public boolean insertBatch(int orderId, List<OrderDetail> details) {
         String sql = "INSERT INTO order_details (order_id, item_sku, quantity, price_at_time) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -70,6 +77,8 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
     }
 
     // ==================== Delete all details for an order ====================
+    
+    @Override
     public boolean deleteByOrderId(int orderId) {
         String sql = "DELETE FROM order_details WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

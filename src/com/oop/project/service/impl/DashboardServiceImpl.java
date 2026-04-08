@@ -1,65 +1,69 @@
 package com.oop.project.service.impl;
 
 import com.oop.project.model.Order;
-import com.oop.project.repository.OrderRepository;
-import com.oop.project.service.interfaces.IDashboardService;
+import com.oop.project.model.OrderStatus;
+import com.oop.project.repository.impl.OrderRepositoryImpl;
+import com.oop.project.repository.interfaces.OrderRepository;
+import com.oop.project.service.interfaces.DashboardService;
 
-import java.sql.Timestamp;
-import java.util.*;
+import java.math.BigDecimal;
 
-public class DashboardServiceImpl implements IDashboardService {
+/**
+ * Implementation of DashboardService.
+ *
+ * FR-5.4: Dashboard summary statistics
+ *   - Total orders count
+ *   - Total revenue (PAID orders)
+ *   - Cancelled orders count
+ *   - Pending orders count
+ *
+ * @author Lan - Service Layer
+ */
+public class DashboardServiceImpl implements DashboardService {
 
-    private final OrderRepository orderRepo;
+    // ── Dependencies ──────────────────────────────────────────────
+    private final OrderRepository orderRepository;
 
-    public DashboardServiceImpl(OrderRepository orderRepo) {
-        this.orderRepo = orderRepo;
+    // ── Constructor ───────────────────────────────────────────────
+    public DashboardServiceImpl() {
+        this.orderRepository = new OrderRepositoryImpl();
+    }
+
+    public DashboardServiceImpl(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // FR-5.4: SUMMARY STATISTICS
+    // ─────────────────────────────────────────────────────────────
+
+    @Override
+    public int getTotalOrderCount() {
+        return orderRepository.findAll().size();
+    }
+
+    /**
+     * Total revenue = sum of finalTotal for all PAID orders only.
+     */
+    @Override
+    public BigDecimal getTotalRevenue() {
+        return orderRepository.findAll().stream()
+            .filter(o -> o.getStatus() == OrderStatus.PAID && o.getFinalTotal() != null)
+            .map(Order::getFinalTotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Override
-    public List<Order> getAllOrders(String sortBy, boolean ascending) {
-        List<Order> orders = orderRepo.findAll();
-        Comparator<Order> comparator;
-        switch (sortBy != null ? sortBy.toLowerCase() : "date") {
-            case "customer":
-                comparator = Comparator.comparing(
-                        o -> o.getCustomer() != null ? o.getCustomer().getCustomerName() : "",
-                        String.CASE_INSENSITIVE_ORDER);
-                break;
-            case "amount":
-                comparator = Comparator.comparing(Order::getFinalTotal);
-                break;
-            case "status":
-                comparator = Comparator.comparing(o -> o.getStatus().name());
-                break;
-            case "date":
-            default:
-                comparator = Comparator.comparing(Order::getOrderDate, Comparator.nullsLast(Comparator.naturalOrder()));
-                break;
-        }
-        if (!ascending) comparator = comparator.reversed();
-        orders.sort(comparator);
-        return orders;
+    public int getCancelledOrderCount() {
+        return (int) orderRepository.findAll().stream()
+            .filter(o -> o.getStatus() == OrderStatus.CANCELLED)
+            .count();
     }
 
     @Override
-    public List<Order> filterOrders(String status, Timestamp from, Timestamp to) {
-        return orderRepo.filterByStatusOrDateRange(status, from, to);
-    }
-
-    @Override
-    public List<Order> searchOrders(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return orderRepo.findAll();
-        }
-        return orderRepo.searchByCustomerNameOrId(keyword.trim());
-    }
-
-    @Override
-    public Map<String, Object> getSummaryStatistics() {
-        Map<String, Object> stats = new LinkedHashMap<>();
-        stats.put("totalOrders", orderRepo.countAll());
-        stats.put("totalRevenue", orderRepo.sumRevenue());
-        stats.put("cancelledOrders", orderRepo.countByStatus("CANCELLED"));
-        return stats;
+    public int getPendingOrderCount() {
+        return (int) orderRepository.findAll().stream()
+            .filter(o -> o.getStatus() == OrderStatus.PENDING)
+            .count();
     }
 }

@@ -1,8 +1,8 @@
-package com.oop.project.repository;
-
-import com.oop.project.model.Customer;
+package com.oop.project.repository.interfaces;
 
 import java.util.List;
+
+import com.oop.project.model.Customer;
 
 public interface CustomerRepository {
     List<Customer> findAll();

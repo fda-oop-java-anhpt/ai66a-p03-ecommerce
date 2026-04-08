@@ -1,8 +1,8 @@
-package com.oop.project.repository;
-
-import com.oop.project.model.OrderDetail;
+package com.oop.project.repository.interfaces;
 
 import java.util.List;
+
+import com.oop.project.model.OrderDetail;
 
 public interface OrderDetailRepository {
     List<OrderDetail> findByOrderId(int orderId);

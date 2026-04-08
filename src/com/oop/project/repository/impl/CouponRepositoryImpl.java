@@ -1,15 +1,21 @@
 package com.oop.project.repository.impl;
 
-import com.oop.project.model.Coupon;
-import com.oop.project.model.DiscountType;
-import com.oop.project.util.DatabaseConnection;
-import com.oop.project.repository.CouponRepository;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CouponRepositoryImpl implements CouponRepository { 
+import com.oop.project.model.Coupon;
+import com.oop.project.model.DiscountType;
+import com.oop.project.repository.interfaces.CouponRepository;
+import com.oop.project.util.DatabaseConnection;
+
+
+
+public class CouponRepositoryImpl implements CouponRepository {
 
     // ==================== HELPER: Map ResultSet → Coupon ====================
     private Coupon mapRow(ResultSet rs) throws SQLException {
@@ -25,6 +31,8 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     // ==================== List all coupons ====================
+    
+    @Override
     public List<Coupon> findAll() {
         List<Coupon> list = new ArrayList<>();
         String sql = "SELECT * FROM coupons ORDER BY coupon_code";
@@ -41,6 +49,7 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     // ==================== Find by coupon code ====================
+    @Override
     public Coupon findByCode(String code) {
         String sql = "SELECT * FROM coupons WHERE coupon_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -57,6 +66,7 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     // ==================== FR-4.2: Find active, non-expired coupons ====================
+    @Override
     public List<Coupon> findActiveCoupons() {
         List<Coupon> list = new ArrayList<>();
         String sql = "SELECT * FROM coupons WHERE is_active = TRUE AND expiry_date >= CURRENT_DATE ORDER BY coupon_code";
@@ -73,6 +83,7 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     // ==================== FR-4.1: Insert coupon ====================
+    @Override
     public boolean insert(Coupon c) {
         String sql = "INSERT INTO coupons (coupon_code, discount_value, discount_type, min_order_value, expiry_date, is_active) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -91,6 +102,7 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     // ==================== Update coupon ====================
+    @Override
     public boolean update(Coupon c) {
         String sql = "UPDATE coupons SET discount_value = ?, discount_type = ?, min_order_value = ?, expiry_date = ?, is_active = ? WHERE coupon_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();

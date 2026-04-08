@@ -1,10 +1,10 @@
-package com.oop.project.repository;
-
-import com.oop.project.model.Order;
+package com.oop.project.repository.interfaces;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+
+import com.oop.project.model.Order;
 
 public interface OrderRepository {
     List<Order> findAll();

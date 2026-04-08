@@ -1,13 +1,20 @@
 package com.oop.project.repository.impl;
 
-import com.oop.project.model.Item;
-import com.oop.project.util.DatabaseConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemRepositoryImpl {
+import com.oop.project.model.Item;
+import com.oop.project.repository.interfaces.ItemRepository;
+import com.oop.project.util.DatabaseConnection;
+
+
+
+public class ItemRepositoryImpl implements ItemRepository {
 
     // ==================== HELPER: Map ResultSet → Item ====================
     private Item mapRow(ResultSet rs) throws SQLException {
@@ -21,6 +28,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== List all items ====================
+    @Override
     public List<Item> findAll() {
         List<Item> list = new ArrayList<>();
         String sql = "SELECT * FROM items ORDER BY item_sku";
@@ -37,6 +45,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== Find by SKU ====================
+    @Override
     public Item findBySku(String sku) {
         String sql = "SELECT * FROM items WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -53,6 +62,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== FR-2.3: Check duplicate SKU ====================
+    @Override
     public boolean isSkuExists(String sku) {
         String sql = "SELECT 1 FROM items WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -67,6 +77,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== FR-2.1: Insert item ====================
+    @Override
     public boolean insert(Item item) {
         String sql = "INSERT INTO items (item_sku, item_name, category, unit_price, stock_quantity) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -84,6 +95,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== FR-2.1, FR-2.4: Update item ====================
+    @Override
     public boolean update(Item item) {
         String sql = "UPDATE items SET item_name = ?, category = ?, unit_price = ?, stock_quantity = ? WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -101,6 +113,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== FR-2.1: Delete item ====================
+    @Override
     public boolean delete(String sku) {
         String sql = "DELETE FROM items WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -114,6 +127,7 @@ public class ItemRepositoryImpl {
     }
 
     // ==================== Update stock quantity ====================
+    @Override
     public boolean updateStock(String sku, int quantityChange) {
         String sql = "UPDATE items SET stock_quantity = stock_quantity + ? WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();

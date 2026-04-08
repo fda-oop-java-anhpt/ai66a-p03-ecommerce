@@ -1,8 +1,8 @@
-package com.oop.project.repository;
-
-import com.oop.project.model.Item;
+package com.oop.project.repository.interfaces;
 
 import java.util.List;
+
+import com.oop.project.model.Item;
 
 public interface ItemRepository {
     List<Item> findAll();

@@ -1,12 +1,22 @@
 package com.oop.project.repository.impl;
 
-import com.oop.project.model.*;
-import com.oop.project.util.DatabaseConnection;
-import com.oop.project.repository.OrderRepository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.oop.project.model.Coupon;
+import com.oop.project.model.Customer;
+import com.oop.project.model.Order;
+import com.oop.project.model.OrderStatus;
+import com.oop.project.repository.interfaces.OrderRepository;
+import com.oop.project.util.DatabaseConnection;
 
 public class OrderRepositoryImpl implements OrderRepository {
 
@@ -56,6 +66,8 @@ public class OrderRepositoryImpl implements OrderRepository {
             "LEFT JOIN customers c ON o.customer_id = c.customer_id ";
 
     // ==================== FR-5.1: List all orders ====================
+    
+    @Override
     public List<Order> findAll() {
         List<Order> list = new ArrayList<>();
         String sql = BASE_SELECT + "ORDER BY o.order_date DESC";
@@ -72,6 +84,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== Find by order ID (with details) ====================
+    @Override
     public Order findById(int id) {
         String sql = BASE_SELECT + "WHERE o.order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -90,6 +103,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-1.4: Find orders by customer ID ====================
+    @Override
     public List<Order> findByCustomerId(int customerId) {
         List<Order> list = new ArrayList<>();
         String sql = BASE_SELECT + "WHERE o.customer_id = ? ORDER BY o.order_date DESC";
@@ -109,6 +123,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-5.3: Search by customer name or order ID ====================
+    @Override
     public List<Order> searchByCustomerNameOrId(String keyword) {
         List<Order> list = new ArrayList<>();
         String sql = BASE_SELECT +
@@ -130,6 +145,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-5.2: Filter by status and/or date range ====================
+    @Override
     public List<Order> filterByStatusOrDateRange(String status, Timestamp from, Timestamp to) {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT + "WHERE 1=1 ");
@@ -170,6 +186,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-3.1: Insert order (returns generated order_id) ====================
+    @Override
     public int insert(Order order) {
         String sql = "INSERT INTO orders (customer_id, coupon_code, tax_rate, discount_amount, discount_info, status, subtotal, final_total) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -208,6 +225,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-3.1: Update order header ====================
+    @Override
     public boolean update(Order order) {
         String sql = "UPDATE orders SET customer_id = ?, coupon_code = ?, tax_rate = ?, " +
                      "discount_amount = ?, discount_info = ?, status = ?, subtotal = ?, final_total = ? " +
@@ -245,6 +263,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-4.3: Update order status only ====================
+    
+    @Override
     public boolean updateStatus(int orderId, String status) {
         String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -259,6 +279,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-3.1: Delete order ====================
+    
+    @Override
     public boolean delete(int orderId) {
         String sql = "DELETE FROM orders WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -272,6 +294,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     // ==================== FR-5.4: Summary statistics ====================
+    
+    @Override
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM orders";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -284,6 +308,8 @@ public class OrderRepositoryImpl implements OrderRepository {
         return 0;
     }
 
+    
+    @Override
     public int countByStatus(String status) {
         String sql = "SELECT COUNT(*) FROM orders WHERE status = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -297,6 +323,8 @@ public class OrderRepositoryImpl implements OrderRepository {
         return 0;
     }
 
+    
+    @Override
     public java.math.BigDecimal sumRevenue() {
         String sql = "SELECT COALESCE(SUM(final_total), 0) FROM orders WHERE status = 'PAID'";
         try (Connection conn = DatabaseConnection.getConnection();

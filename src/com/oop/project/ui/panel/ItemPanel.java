@@ -32,7 +32,7 @@ public class ItemPanel extends JPanel {
 
     private int lowStockLimit = 5;
 
-    private static final String[] COLS = { "SKU", "Name", "Category", "Price ($)", "Stock" };
+    private static final String[] COLS = { "SKU", "Name", "Category", "Price (VNĐ)", "Stock" };
 
     public ItemPanel(MainFrame mf) {
         this.mf = mf;
@@ -105,16 +105,14 @@ public class ItemPanel extends JPanel {
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR));
 
         JButton addBtn = UITheme.primaryButton("+ Add Item");
-        JButton editBtn = UITheme.ghostButton("Edit");
+        JButton editBtn = UITheme.primaryButton("Edit");
         JButton deleteBtn = UITheme.dangerButton("Delete");
         JButton stockBtn = UITheme.primaryButton("Add Stock");
-        // JButton refreshBtn = UITheme.ghostButton("Refresh");
 
         addBtn.addActionListener(e -> openAddDialog());
         editBtn.addActionListener(e -> openEditDialog());
         deleteBtn.addActionListener(e -> deleteSelected());
         stockBtn.addActionListener(e -> addStock());
-        // refreshBtn.addActionListener(e -> refresh());
 
         p.add(addBtn);
         p.add(editBtn);

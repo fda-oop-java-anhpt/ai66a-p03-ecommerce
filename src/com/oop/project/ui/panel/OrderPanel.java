@@ -4,6 +4,8 @@ import com.oop.project.model.*;
 import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
+import com.oop.project.repository.interfaces.SystemSettingRepository;
+import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -30,6 +32,7 @@ public class OrderPanel extends JPanel {
     private final IItemService itemSvc;
     private final ICouponService couponSvc;
     private final OrderRepository orderRepo = new OrderRepositoryImpl(); // for view/delete
+    private final SystemSettingRepository settingRepo = new SystemSettingRepositoryImpl();
 
     // Order list (left side)
     private DefaultTableModel orderModel;
@@ -48,7 +51,7 @@ public class OrderPanel extends JPanel {
     private JComboBox<String> statusCombo;
 
     // Billing display labels
-    private JLabel subtotalLbl, discountLbl, taxLbl, totalLbl;
+    private JLabel subtotalLbl, discountLbl, taxLbl, totalLbl, taxNameLbl;
 
     // Coupon applied to current form
     private Coupon appliedCoupon = null;
@@ -184,13 +187,13 @@ public class OrderPanel extends JPanel {
         custCombo = new JComboBox<>();
         custCombo.setFont(UITheme.FONT_BODY);
         custCombo.setBackground(UITheme.BG_INPUT);
-        custCombo.setForeground(UITheme.TEXT_PRIMARY);
+        custCombo.setForeground(UITheme.TEXT_DARK);
 
         // Item combo + qty
         itemCombo = new JComboBox<>();
         itemCombo.setFont(UITheme.FONT_BODY);
         itemCombo.setBackground(UITheme.BG_INPUT);
-        itemCombo.setForeground(UITheme.TEXT_PRIMARY);
+        itemCombo.setForeground(UITheme.TEXT_DARK);
         qtySpinner = UITheme.styledSpinner(1, 9999, 1);
 
         JPanel itemRow = new JPanel(new BorderLayout(6, 0));
@@ -290,20 +293,22 @@ public class OrderPanel extends JPanel {
         p.setAlignmentX(Component.LEFT_ALIGNMENT);
         p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
 
-        subtotalLbl = moneyLbl("$0.00");
-        discountLbl = moneyLbl("$0.00");
+        subtotalLbl = moneyLbl("0 VNĐ");
+        discountLbl = moneyLbl("0 VNĐ");
         discountLbl.setForeground(UITheme.DANGER);
-        taxLbl = moneyLbl("$0.00");
+        taxLbl = moneyLbl("0 VNĐ");
         taxLbl.setForeground(UITheme.WARNING);
-        totalLbl = moneyLbl("$0.00");
+        totalLbl = moneyLbl("0 VNĐ");
         totalLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         totalLbl.setForeground(UITheme.ACCENT);
+
+        taxNameLbl = UITheme.label("Tax:");
 
         p.add(UITheme.label("Subtotal:"));
         p.add(subtotalLbl);
         p.add(UITheme.label("Discount:"));
         p.add(discountLbl);
-        p.add(UITheme.label("Tax (8%):"));
+        p.add(taxNameLbl);
         p.add(taxLbl);
         p.add(UITheme.heading("TOTAL:"));
         p.add(totalLbl);
@@ -317,9 +322,24 @@ public class OrderPanel extends JPanel {
             return;
         int qty = (int) qtySpinner.getValue();
         BigDecimal price = sel.item.getUnitPrice();
+        // fix duplicate item in order
+        String sku = sel.item.getItemSku();
+        for (int i = 0; i < lineModel.getRowCount(); i++) {
+            if (sku.equals(lineModel.getValueAt(i, 0))) {
+                int existingQty = (int) lineModel.getValueAt(i, 2);
+                int newQty = existingQty + qty;
+                BigDecimal newLineTotal = billSvc.computeBill(price, newQty);
+                lineModel.setValueAt(newQty, i, 2);
+                lineModel.setValueAt(newLineTotal, i, 4);
+                recalc();
+                return;
+            }
+        }
+
         BigDecimal lineTotal = billSvc.computeBill(price, qty);
         lineModel.addRow(new Object[] {
-                sel.item.getItemSku(), sel.item.getItemName(), qty, price, lineTotal
+                // fix duplicate item in order
+                sku, sel.item.getItemName(), qty, price, lineTotal
         });
         recalc();
     }
@@ -375,13 +395,26 @@ public class OrderPanel extends JPanel {
         // computeBill(price=subtotal-discount, qty=1, couponDiscount=0) to get
         // after-discount subtotal
         BigDecimal afterDiscount = subtotal.subtract(discount).max(BigDecimal.ZERO);
-        BigDecimal tax = afterDiscount.multiply(new BigDecimal("0.08")).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal taxRate = getTaxRate();
+        BigDecimal tax = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
         BigDecimal total = afterDiscount.add(tax);
 
-        subtotalLbl.setText(String.format("$%.2f", subtotal));
-        discountLbl.setText(String.format("-$%.2f", discount));
-        taxLbl.setText(String.format("+$%.2f", tax));
-        totalLbl.setText(String.format("$%.2f", total));
+        subtotalLbl.setText(String.format("%,.0f VNĐ", subtotal));
+        discountLbl.setText(String.format("-%,.0f VNĐ", discount));
+        taxNameLbl.setText(String.format("Tax (%s%%):", taxRate.stripTrailingZeros().toPlainString()));
+        taxLbl.setText(String.format("+%,.0f VNĐ", tax));
+        totalLbl.setText(String.format("%,.0f VNĐ", total));
+    }
+
+    private BigDecimal getTaxRate() {
+        SystemSetting setting = settingRepo.findByKey("TAX_RATE");
+        if (setting != null && setting.getSettingValue() != null) {
+            try {
+                return new BigDecimal(setting.getSettingValue());
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return new BigDecimal("8.00");
     }
 
     private BigDecimal currentSubtotal() {
@@ -453,7 +486,12 @@ public class OrderPanel extends JPanel {
         }
         String newStatus = (String) statusCombo.getSelectedItem();
         try {
-            orderRepo.updateStatus(selectedOrderId, newStatus);
+            // if status is CANCELLED, call cancelOrder method
+            if ("CANCELLED".equals(newStatus)) {
+                billSvc.cancelOrder(selectedOrderId, mf.getCurrentUser());
+            } else {
+                orderRepo.updateStatus(selectedOrderId, newStatus);
+            }
             refresh();
             UITheme.showSuccess(this, "Status updated to " + newStatus + ".");
         } catch (Exception ex) {
@@ -526,6 +564,7 @@ public class OrderPanel extends JPanel {
         try {
             populateOrderTable(orderRepo.findAll());
             loadCombos();
+            recalc();
         } catch (Exception ex) {
             UITheme.showError(this, "Failed to load orders: " + ex.getMessage());
         }
@@ -635,9 +674,10 @@ public class OrderPanel extends JPanel {
 
         public String toString() {
             String price = item.getUnitPrice() != null
-                    ? String.format("$%.2f", item.getUnitPrice().doubleValue())
-                    : "$0.00";
-            return item.getItemSku() + "  –  " + item.getItemName() + "  (" + price + ")";
+                    ? String.format("%,.0f VNĐ", item.getUnitPrice().doubleValue())
+                    : "0 VNĐ";
+            return item.getItemSku() + "  –  " + item.getItemName() + "  (" + price + ")  | Tồn: "
+                    + item.getStockQuantity();
         }
     }
 }

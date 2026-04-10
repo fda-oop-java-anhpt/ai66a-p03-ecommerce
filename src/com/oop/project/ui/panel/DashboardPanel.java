@@ -39,7 +39,7 @@ public class DashboardPanel extends JPanel {
     private JComboBox<String> statusFilter, sortByCombo, sortDirCombo;
     private JTextField searchField;
 
-    private static final String[] ORDER_COLS = { "ID", "Customer", "Date", "Status", "Total ($)" };
+    private static final String[] ORDER_COLS = { "ID", "Customer", "Date", "Status", "Total (VNĐ)" };
 
     public DashboardPanel(MainFrame mf) {
         this.dashSvc = mf.dashboardService;
@@ -57,7 +57,7 @@ public class DashboardPanel extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(16, 20, 8, 20));
         p.add(UITheme.title("Dashboard"), BorderLayout.WEST);
 
-        JButton refreshBtn = UITheme.primaryButton("⟳  Refresh");
+        JButton refreshBtn = UITheme.primaryButton("Refresh");
         refreshBtn.addActionListener(e -> refresh());
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         right.setOpaque(false);
@@ -82,7 +82,7 @@ public class DashboardPanel extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(0, 20, 14, 20));
 
         totalOrdersVal = kpiCard("Total Orders", "0", UITheme.ACCENT, p);
-        revenueVal = kpiCard("Total Revenue", "$0.00", UITheme.SUCCESS, p);
+        revenueVal = kpiCard("Total Revenue", "0 VNĐ", UITheme.SUCCESS, p);
         pendingVal = kpiCard("Pending", "0", UITheme.WARNING, p);
         cancelledVal = kpiCard("Cancelled", "0", UITheme.DANGER, p);
         return p;
@@ -251,9 +251,9 @@ public class DashboardPanel extends JPanel {
 
             Object rev = stats.get("totalRevenue");
             if (rev instanceof BigDecimal) {
-                revenueVal.setText(String.format("$%.2f", ((BigDecimal) rev).doubleValue()));
+                revenueVal.setText(String.format("%,.0f VNĐ", ((BigDecimal) rev).doubleValue()));
             } else {
-                revenueVal.setText("$0.00");
+                revenueVal.setText("0 VNĐ");
             }
 
             Object cancelled = stats.get("cancelledOrders");

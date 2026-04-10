@@ -22,13 +22,13 @@ public class CouponDialog extends JDialog {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private Coupon  result  = null;
+    private Coupon result = null;
     private final boolean isEdit;
 
-    private JTextField        codeField, valueField, minOrderField, expiryField;
+    private JTextField codeField, valueField, minOrderField, expiryField;
     private JComboBox<String> typeCombo;
-    private JCheckBox         activeCheck;
-    private JLabel            previewLbl;
+    private JCheckBox activeCheck;
+    private JLabel previewLbl;
 
     public CouponDialog(Window owner, Coupon toEdit) {
         super(owner, toEdit == null ? "Add Coupon" : "Edit Coupon", ModalityType.APPLICATION_MODAL);
@@ -47,35 +47,45 @@ public class CouponDialog extends JDialog {
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 18, 0));
         root.add(title, BorderLayout.NORTH);
 
-        codeField     = UITheme.styledTextField();
-        valueField    = UITheme.styledTextField();
+        codeField = UITheme.styledTextField();
+        valueField = UITheme.styledTextField();
         minOrderField = UITheme.styledTextField();
-        expiryField   = UITheme.styledTextField();
+        expiryField = UITheme.styledTextField();
         expiryField.setText(LocalDate.now().plusMonths(1).format(FMT));
 
-        typeCombo  = UITheme.styledComboBox(new String[]{"Percent", "Fixed"});
-        activeCheck = new JCheckBox("Active"); activeCheck.setSelected(true);
-        activeCheck.setFont(UITheme.FONT_BODY); activeCheck.setForeground(UITheme.TEXT_PRIMARY);
-        activeCheck.setBackground(UITheme.BG_CARD); activeCheck.setOpaque(false);
+        typeCombo = UITheme.styledComboBox(new String[] { "Percent", "Fixed" });
+        activeCheck = new JCheckBox("Active");
+        activeCheck.setSelected(true);
+        activeCheck.setFont(UITheme.FONT_BODY);
+        activeCheck.setForeground(UITheme.TEXT_PRIMARY);
+        activeCheck.setBackground(UITheme.BG_CARD);
+        activeCheck.setOpaque(false);
 
         previewLbl = UITheme.label("Preview: —");
         previewLbl.setForeground(UITheme.ACCENT);
         previewLbl.setFont(UITheme.FONT_SMALL);
 
         if (isEdit && c != null) {
-            codeField    .setText(c.getCouponCode() != null ? c.getCouponCode() : "");
-            codeField    .setEditable(false);
-            codeField    .setForeground(UITheme.TEXT_MUTED);
-            valueField   .setText(c.getDiscountValue() != null ? c.getDiscountValue().toPlainString() : "");
+            codeField.setText(c.getCouponCode() != null ? c.getCouponCode() : "");
+            codeField.setEditable(false);
+            codeField.setForeground(UITheme.TEXT_MUTED);
+            valueField.setText(c.getDiscountValue() != null ? c.getDiscountValue().toPlainString() : "");
             minOrderField.setText(c.getMinOrderValue() != null ? c.getMinOrderValue().toPlainString() : "0");
-            expiryField  .setText(c.getExpiryDate()    != null ? c.getExpiryDate().toString() : "");
-            typeCombo    .setSelectedItem(c.getDiscountType() != null ? c.getDiscountType().name() : "Percent");
-            activeCheck  .setSelected(c.isActive());
+            expiryField.setText(c.getExpiryDate() != null ? c.getExpiryDate().toString() : "");
+            typeCombo.setSelectedItem(c.getDiscountType() != null ? c.getDiscountType().name() : "Percent");
+            activeCheck.setSelected(c.isActive());
+            // if coupon is expired, disable active checkbox
+            if (c.getExpiryDate() != null && c.getExpiryDate().before(new java.sql.Date(System.currentTimeMillis()))) {
+                activeCheck.setEnabled(false);
+                activeCheck.setToolTipText("Cannot activate an expired coupon. Update expiry date first.");
+            }
         }
 
         // Live preview on key release
         KeyAdapter kl = new KeyAdapter() {
-            public void keyReleased(KeyEvent e) { updatePreview(); }
+            public void keyReleased(KeyEvent e) {
+                updatePreview();
+            }
         };
         valueField.addKeyListener(kl);
         typeCombo.addActionListener(e -> updatePreview());
@@ -85,24 +95,25 @@ public class CouponDialog extends JDialog {
         fields.add(UITheme.labeledField("Coupon Code *" + (isEdit ? "  (locked)" : ""), codeField));
         fields.add(UITheme.labeledField("Discount Type", typeCombo));
         fields.add(UITheme.labeledField("Discount Value *", valueField));
-        fields.add(UITheme.labeledField("Min Order Value ($)", minOrderField));
+        fields.add(UITheme.labeledField("Min Order Value (VNĐ)", minOrderField));
         fields.add(UITheme.labeledField("Expiry Date *  (yyyy-MM-dd)", expiryField));
         fields.add(activeCheck);
         fields.add(previewLbl);
         root.add(fields, BorderLayout.CENTER);
 
-        JButton save   = UITheme.primaryButton(isEdit ? "Update Coupon" : "Add Coupon");
+        JButton save = UITheme.primaryButton(isEdit ? "Update Coupon" : "Add Coupon");
         JButton cancel = UITheme.ghostButton("Cancel");
-        save  .addActionListener(e -> onSave());
+        save.addActionListener(e -> onSave());
         cancel.addActionListener(e -> dispose());
         getRootPane().setDefaultButton(save);
         getRootPane().registerKeyboardAction(e -> dispose(),
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         JPanel btn = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btn.setBackground(UITheme.BG_CARD);
         btn.setBorder(BorderFactory.createEmptyBorder(18, 0, 0, 0));
-        btn.add(cancel); btn.add(save);
+        btn.add(cancel);
+        btn.add(save);
         root.add(btn, BorderLayout.SOUTH);
 
         pack();
@@ -112,11 +123,11 @@ public class CouponDialog extends JDialog {
 
     private void updatePreview() {
         try {
-            double val  = Double.parseDouble(valueField.getText().trim());
+            double val = Double.parseDouble(valueField.getText().trim());
             String type = (String) typeCombo.getSelectedItem();
             previewLbl.setText("Percent".equals(type)
-                ? String.format("Preview: %.0f%% off the order", val)
-                : String.format("Preview: $%.2f off the order", val));
+                    ? String.format("Preview: %.0f%% off the order", val)
+                    : String.format("Preview: %,.0f VNĐ off the order", val));
             previewLbl.setForeground(UITheme.ACCENT);
         } catch (NumberFormatException e) {
             previewLbl.setText("Preview: enter a valid value");
@@ -125,31 +136,39 @@ public class CouponDialog extends JDialog {
     }
 
     private void onSave() {
-        String code     = codeField    .getText().trim().toUpperCase();
-        String valStr   = valueField   .getText().trim();
-        String minStr   = minOrderField.getText().trim();
-        String expStr   = expiryField  .getText().trim();
-        String typeStr  = (String) typeCombo.getSelectedItem();
+        String code = codeField.getText().trim().toUpperCase();
+        String valStr = valueField.getText().trim();
+        String minStr = minOrderField.getText().trim();
+        String expStr = expiryField.getText().trim();
+        String typeStr = (String) typeCombo.getSelectedItem();
 
         if (!isEdit && code.isEmpty()) {
-            UITheme.showError(this, "Coupon code is required."); codeField.requestFocus(); return;
+            UITheme.showError(this, "Coupon code is required.");
+            codeField.requestFocus();
+            return;
         }
 
         BigDecimal value;
         try {
             value = new BigDecimal(valStr);
-            if (value.compareTo(BigDecimal.ZERO) <= 0) throw new NumberFormatException();
+            if (value.compareTo(BigDecimal.ZERO) <= 0)
+                throw new NumberFormatException();
         } catch (NumberFormatException ex) {
-            UITheme.showError(this, "Discount value must be a positive number."); valueField.requestFocus(); return;
+            UITheme.showError(this, "Discount value must be a positive number.");
+            valueField.requestFocus();
+            return;
         }
 
         BigDecimal minOrder = BigDecimal.ZERO;
         if (!minStr.isEmpty()) {
             try {
                 minOrder = new BigDecimal(minStr);
-                if (minOrder.compareTo(BigDecimal.ZERO) < 0) throw new NumberFormatException();
+                if (minOrder.compareTo(BigDecimal.ZERO) < 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException ex) {
-                UITheme.showError(this, "Min order value must be 0 or positive."); minOrderField.requestFocus(); return;
+                UITheme.showError(this, "Min order value must be 0 or positive.");
+                minOrderField.requestFocus();
+                return;
             }
         }
 
@@ -157,11 +176,15 @@ public class CouponDialog extends JDialog {
         try {
             LocalDate ld = LocalDate.parse(expStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             if (ld.isBefore(LocalDate.now())) {
-                UITheme.showError(this, "Expiry date must be in the future."); expiryField.requestFocus(); return;
+                UITheme.showError(this, "Expiry date must be in the future.");
+                expiryField.requestFocus();
+                return;
             }
             expiry = Date.valueOf(ld);
         } catch (DateTimeParseException ex) {
-            UITheme.showError(this, "Expiry date must be in yyyy-MM-dd format."); expiryField.requestFocus(); return;
+            UITheme.showError(this, "Expiry date must be in yyyy-MM-dd format.");
+            expiryField.requestFocus();
+            return;
         }
 
         result = new Coupon();
@@ -174,5 +197,7 @@ public class CouponDialog extends JDialog {
         dispose();
     }
 
-    public Coupon getResult() { return result; }
+    public Coupon getResult() {
+        return result;
+    }
 }

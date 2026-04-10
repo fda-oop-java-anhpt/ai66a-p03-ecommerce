@@ -58,9 +58,11 @@ public class DashboardServiceImpl implements IDashboardService {
     @Override
     public Map<String, Object> getSummaryStatistics() {
         Map<String, Object> stats = new LinkedHashMap<>();
-        stats.put("totalOrders", orderRepo.countAll());
+        int total = orderRepo.countAll();
+        int cancelled = orderRepo.countByStatus("CANCELLED");
+        stats.put("totalOrders", total - cancelled);
         stats.put("totalRevenue", orderRepo.sumRevenue());
-        stats.put("cancelledOrders", orderRepo.countByStatus("CANCELLED"));
+        stats.put("cancelledOrders", cancelled);
         return stats;
     }
 }

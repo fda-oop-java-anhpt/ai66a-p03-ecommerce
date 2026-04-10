@@ -4,13 +4,44 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class DatabaseConnection {
-    // 1. Các thông số kết nối (Thay password của bạn vào đây)
-    private static final String URL = "jdbc:postgresql://localhost:5432/ecommerce_db";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "081106";
+    // 1. Các thông số kết nối
+    private static String URL = "jdbc:postgresql://localhost:5432/ecommerce_db";
+    private static String USER = "postgres";
+    private static String PASSWORD = "password";
 
     private static Connection connection = null;
+
+    static {
+        loadEnv();
+    }
+
+    private static void loadEnv() {
+        try (BufferedReader br = new BufferedReader(new FileReader(".env"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                // Bỏ qua dòng trống hoặc comment
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                
+                String[] parts = line.split("=", 2);
+                if (parts.length == 2) {
+                    String key = parts[0].trim();
+                    String value = parts[1].trim();
+                    
+                    if (key.equals("DB_URL")) URL = value;
+                    else if (key.equals("DB_USER")) USER = value;
+                    else if (key.equals("DB_PASSWORD")) PASSWORD = value;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("⚠️ Không tìm thấy file .env, sử dụng cấu hình mặc định.");
+        }
+    }
 
     // 2. PHƯƠNG THỨC LẤY KẾT NỐI (Phải có chữ static)
     public static Connection getConnection() {

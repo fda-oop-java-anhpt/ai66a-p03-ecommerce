@@ -1,9 +1,9 @@
 package com.oop.project.service.impl;
 
 import com.oop.project.model.*;
-import com.oop.project.repository.AuditLogRepository;
-import com.oop.project.repository.OrderDetailRepository;
-import com.oop.project.repository.OrderRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
+import com.oop.project.repository.interfaces.OrderDetailRepository;
+import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.service.interfaces.IOrderService;
 
 import java.sql.Timestamp;
@@ -16,7 +16,8 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderDetailRepository orderDetailRepo;
     private final AuditLogRepository auditLogRepo;
 
-    public OrderServiceImpl(OrderRepository orderRepo, OrderDetailRepository orderDetailRepo, AuditLogRepository auditLogRepo) {
+    public OrderServiceImpl(OrderRepository orderRepo, OrderDetailRepository orderDetailRepo,
+            AuditLogRepository auditLogRepo) {
         this.orderRepo = orderRepo;
         this.orderDetailRepo = orderDetailRepo;
         this.auditLogRepo = auditLogRepo;

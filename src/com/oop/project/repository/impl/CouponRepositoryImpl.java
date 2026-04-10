@@ -2,13 +2,14 @@ package com.oop.project.repository.impl;
 
 import com.oop.project.model.Coupon;
 import com.oop.project.model.DiscountType;
+import com.oop.project.repository.interfaces.CouponRepository;
 import com.oop.project.util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CouponRepositoryImpl {
+public class CouponRepositoryImpl implements CouponRepository {
 
     // ==================== HELPER: Map ResultSet → Coupon ====================
     private Coupon mapRow(ResultSet rs) throws SQLException {
@@ -19,8 +20,7 @@ public class CouponRepositoryImpl {
                 rs.getBigDecimal("min_order_value"),
                 rs.getTimestamp("created_date"),
                 rs.getDate("expiry_date"),
-                rs.getBoolean("is_active")
-        );
+                rs.getBoolean("is_active"));
     }
 
     // ==================== List all coupons ====================
@@ -28,8 +28,8 @@ public class CouponRepositoryImpl {
         List<Coupon> list = new ArrayList<>();
         String sql = "SELECT * FROM coupons ORDER BY coupon_code";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }
@@ -43,7 +43,7 @@ public class CouponRepositoryImpl {
     public Coupon findByCode(String code) {
         String sql = "SELECT * FROM coupons WHERE coupon_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -55,13 +55,14 @@ public class CouponRepositoryImpl {
         return null;
     }
 
-    // ==================== FR-4.2: Find active, non-expired coupons ====================
+    // ==================== FR-4.2: Find active, non-expired coupons
+    // ====================
     public List<Coupon> findActiveCoupons() {
         List<Coupon> list = new ArrayList<>();
         String sql = "SELECT * FROM coupons WHERE is_active = TRUE AND expiry_date >= CURRENT_DATE ORDER BY coupon_code";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }
@@ -75,7 +76,7 @@ public class CouponRepositoryImpl {
     public boolean insert(Coupon c) {
         String sql = "INSERT INTO coupons (coupon_code, discount_value, discount_type, min_order_value, expiry_date, is_active) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCouponCode());
             ps.setBigDecimal(2, c.getDiscountValue());
             ps.setString(3, c.getDiscountType().name());
@@ -93,7 +94,7 @@ public class CouponRepositoryImpl {
     public boolean update(Coupon c) {
         String sql = "UPDATE coupons SET discount_value = ?, discount_type = ?, min_order_value = ?, expiry_date = ?, is_active = ? WHERE coupon_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBigDecimal(1, c.getDiscountValue());
             ps.setString(2, c.getDiscountType().name());
             ps.setBigDecimal(3, c.getMinOrderValue());

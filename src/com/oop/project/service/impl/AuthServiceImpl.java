@@ -3,8 +3,8 @@ package com.oop.project.service.impl;
 import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.AuditLog;
 import com.oop.project.model.User;
-import com.oop.project.repository.AuditLogRepository;
-import com.oop.project.repository.UserRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
+import com.oop.project.repository.interfaces.UserRepository;
 import com.oop.project.service.interfaces.IAuthService;
 import com.oop.project.util.Validator;
 

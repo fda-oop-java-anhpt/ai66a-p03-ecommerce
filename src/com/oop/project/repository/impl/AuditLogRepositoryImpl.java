@@ -3,13 +3,14 @@ package com.oop.project.repository.impl;
 import com.oop.project.model.AuditLog;
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AuditLogRepositoryImpl {
+public class AuditLogRepositoryImpl implements AuditLogRepository {
 
     // ==================== HELPER: Map ResultSet → AuditLog ====================
     private AuditLog mapRow(ResultSet rs) throws SQLException {
@@ -18,21 +19,19 @@ public class AuditLogRepositoryImpl {
                 rs.getString("user_name"),
                 UserRole.valueOf(rs.getString("user_role")),
                 rs.getTimestamp("user_created"),
-                rs.getTimestamp("last_login")
-        );
+                rs.getTimestamp("last_login"));
         return new AuditLog(
                 rs.getInt("log_id"),
                 user,
                 rs.getString("actions"),
                 rs.getString("target_type"),
                 rs.getString("target_id"),
-                rs.getTimestamp("created_date")
-        );
+                rs.getTimestamp("created_date"));
     }
 
     // Base SELECT with JOIN to users
-    private static final String BASE_SELECT =
-            "SELECT al.*, u.user_name, u.user_role, u.created_date AS user_created, u.last_login " +
+    private static final String BASE_SELECT = "SELECT al.*, u.user_name, u.user_role, u.created_date AS user_created, u.last_login "
+            +
             "FROM audit_logs al " +
             "JOIN users u ON al.user_id = u.user_id ";
 
@@ -40,7 +39,7 @@ public class AuditLogRepositoryImpl {
     public boolean insert(AuditLog log) {
         String sql = "INSERT INTO audit_logs (user_id, actions, target_type, target_id) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, log.getUser().getUserId());
             ps.setString(2, log.getActions());
             ps.setString(3, log.getTargetType());
@@ -57,8 +56,8 @@ public class AuditLogRepositoryImpl {
         List<AuditLog> list = new ArrayList<>();
         String sql = BASE_SELECT + "ORDER BY al.created_date DESC";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }

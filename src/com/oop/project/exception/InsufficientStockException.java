@@ -1,7 +1,8 @@
 package com.oop.project.exception;
 
 /**
- * Thrown when an order's requested quantity exceeds the available stock for an item.
+ * Thrown when an order's requested quantity exceeds the available stock for an
+ * item.
  */
 public class InsufficientStockException extends RuntimeException {
 

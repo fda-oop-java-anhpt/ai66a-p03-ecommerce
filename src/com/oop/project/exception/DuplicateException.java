@@ -1,6 +1,8 @@
 package com.oop.project.exception;
+
 /**
- * Thrown when attempting to create a record that would violate a uniqueness constraint —
+ * Thrown when attempting to create a record that would violate a uniqueness
+ * constraint —
  * e.g. duplicate SKU or duplicate username.
  */
 public class DuplicateException extends RuntimeException {

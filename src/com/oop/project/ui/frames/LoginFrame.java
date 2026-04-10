@@ -2,12 +2,11 @@ package com.oop.project.ui.frames;
 
 import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.User;
-import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.service.interfaces.IAuthService;
 import com.oop.project.service.impl.AuthServiceImpl;
 import com.oop.project.ui.utils.UITheme;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -18,13 +17,13 @@ import java.awt.event.*;
 public class LoginFrame extends JFrame {
 
     private final IAuthService authService;
-    private JTextField     usernameField;
+    private JTextField usernameField;
     private JPasswordField passwordField;
-    private JLabel         errorLabel;
-    private JButton        loginBtn;
+    private JLabel errorLabel;
+    private JButton loginBtn;
 
     public LoginFrame() {
-        this.authService = new AuthServiceImpl(new UserRepositoryImpl(), new AuditLogRepository());
+        this.authService = new AuthServiceImpl(new UserRepositoryImpl(), new AuditLogRepositoryImpl());
         UITheme.installGlobalDefaults();
         buildUI();
     }
@@ -43,51 +42,70 @@ public class LoginFrame extends JFrame {
         brand.setBackground(new Color(10, 14, 24));
         brand.setPreferredSize(new Dimension(280, 0));
         GridBagConstraints g = new GridBagConstraints();
-        g.gridx = 0; g.insets = new Insets(6, 0, 6, 0);
+        g.gridx = 0;
+        g.insets = new Insets(6, 0, 6, 0);
 
-        JLabel ico  = new JLabel("🛒"); ico.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 50));
-        JLabel name = new JLabel("ShopFlow"); name.setFont(new Font("Segoe UI", Font.BOLD, 24)); name.setForeground(UITheme.ACCENT);
-        JLabel sub  = UITheme.label("Billing & Order System");
+        JLabel ico = new JLabel("🛒");
+        ico.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 50));
+        JLabel name = new JLabel("ShopFlow");
+        name.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        name.setForeground(UITheme.ACCENT);
+        JLabel sub = UITheme.label("Billing & Order System");
 
-        g.gridy=0; brand.add(ico,g);
-        g.gridy=1; brand.add(name,g);
-        g.gridy=2; brand.add(sub,g);
+        g.gridy = 0;
+        brand.add(ico, g);
+        g.gridy = 1;
+        brand.add(name, g);
+        g.gridy = 2;
+        brand.add(sub, g);
         root.add(brand, BorderLayout.WEST);
 
         // Form panel (right)
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(UITheme.BG_CARD);
-        form.setBorder(BorderFactory.createEmptyBorder(46,46,46,46));
+        form.setBorder(BorderFactory.createEmptyBorder(46, 46, 46, 46));
 
         GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL; c.insets = new Insets(5,0,5,0);
-        c.gridx = 0; c.weightx = 1.0;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(5, 0, 5, 0);
+        c.gridx = 0;
+        c.weightx = 1.0;
 
-        c.gridy=0; form.add(UITheme.title("Welcome back"), c);
-        c.gridy=1; form.add(UITheme.label("Sign in to your account"), c);
-        c.gridy=2; form.add(Box.createRigidArea(new Dimension(0,8)), c);
+        c.gridy = 0;
+        form.add(UITheme.title("Welcome back"), c);
+        c.gridy = 1;
+        form.add(UITheme.label("Sign in to your account"), c);
+        c.gridy = 2;
+        form.add(Box.createRigidArea(new Dimension(0, 8)), c);
 
-        c.gridy=3; form.add(UITheme.label("Username"), c);
+        c.gridy = 3;
+        form.add(UITheme.label("Username"), c);
         usernameField = UITheme.styledTextField();
         usernameField.setPreferredSize(new Dimension(280, 38));
-        c.gridy=4; form.add(usernameField, c);
+        c.gridy = 4;
+        form.add(usernameField, c);
 
-        c.gridy=5; form.add(UITheme.label("Password"), c);
+        c.gridy = 5;
+        form.add(UITheme.label("Password"), c);
         passwordField = UITheme.styledPasswordField();
         passwordField.setPreferredSize(new Dimension(280, 38));
-        c.gridy=6; form.add(passwordField, c);
+        c.gridy = 6;
+        form.add(passwordField, c);
 
-        c.gridy=7; form.add(Box.createRigidArea(new Dimension(0,6)), c);
+        c.gridy = 7;
+        form.add(Box.createRigidArea(new Dimension(0, 6)), c);
 
         loginBtn = UITheme.primaryButton("Sign In");
         loginBtn.setPreferredSize(new Dimension(280, 42));
-        c.gridy=8; form.add(loginBtn, c);
+        c.gridy = 8;
+        form.add(loginBtn, c);
 
         errorLabel = new JLabel(" ");
         errorLabel.setFont(UITheme.FONT_SMALL);
         errorLabel.setForeground(UITheme.DANGER);
         errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        c.gridy=9; form.add(errorLabel, c);
+        c.gridy = 9;
+        form.add(errorLabel, c);
 
         root.add(form, BorderLayout.CENTER);
 
@@ -105,12 +123,17 @@ public class LoginFrame extends JFrame {
         String user = usernameField.getText().trim();
         String pass = new String(passwordField.getPassword());
         if (user.isEmpty() || pass.isEmpty()) {
-            errorLabel.setText("Username and password are required."); return;
+            errorLabel.setText("Username and password are required.");
+            return;
         }
-        loginBtn.setEnabled(false); loginBtn.setText("Signing in…");
+        loginBtn.setEnabled(false);
+        loginBtn.setText("Signing in…");
 
         SwingWorker<User, Void> w = new SwingWorker<>() {
-            protected User doInBackground() { return authService.login(user, pass); }
+            protected User doInBackground() {
+                return authService.login(user, pass);
+            }
+
             protected void done() {
                 try {
                     User u = get();
@@ -119,9 +142,11 @@ public class LoginFrame extends JFrame {
                 } catch (Exception ex) {
                     Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                     errorLabel.setText(cause instanceof AuthenticationException
-                        ? cause.getMessage() : "Login error: " + cause.getMessage());
+                            ? cause.getMessage()
+                            : "Login error: " + cause.getMessage());
                     passwordField.setText("");
-                    loginBtn.setEnabled(true); loginBtn.setText("Sign In  →");
+                    loginBtn.setEnabled(true);
+                    loginBtn.setText("Sign In  →");
                 }
             }
         };

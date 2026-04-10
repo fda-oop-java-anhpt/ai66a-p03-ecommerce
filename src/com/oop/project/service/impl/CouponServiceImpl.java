@@ -3,7 +3,7 @@ package com.oop.project.service.impl;
 import com.oop.project.exception.CouponExpiredException;
 import com.oop.project.exception.ValidationException;
 import com.oop.project.model.Coupon;
-import com.oop.project.repository.CouponRepository;
+import com.oop.project.repository.interfaces.CouponRepository;
 import com.oop.project.service.interfaces.ICouponService;
 
 import java.math.BigDecimal;
@@ -48,7 +48,8 @@ public class CouponServiceImpl implements ICouponService {
             throw new CouponExpiredException("Coupon '" + code + "' has expired on " + coupon.getExpiryDate() + ".");
         }
         if (coupon.getMinOrderValue() != null && orderTotal.compareTo(coupon.getMinOrderValue()) < 0) {
-            throw new CouponExpiredException("Order total must be at least " + coupon.getMinOrderValue() + " to use coupon '" + code + "'.");
+            throw new CouponExpiredException(
+                    "Order total must be at least " + coupon.getMinOrderValue() + " to use coupon '" + code + "'.");
         }
         return coupon;
     }

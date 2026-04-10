@@ -1,13 +1,14 @@
 package com.oop.project.repository.impl;
 
 import com.oop.project.model.Customer;
+import com.oop.project.repository.interfaces.CustomerRepository;
 import com.oop.project.util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerRepositoryImpl {
+public class CustomerRepositoryImpl implements CustomerRepository {
 
     // ==================== HELPER: Map ResultSet → Customer ====================
     private Customer mapRow(ResultSet rs) throws SQLException {
@@ -17,8 +18,7 @@ public class CustomerRepositoryImpl {
                 rs.getString("phone"),
                 rs.getString("email"),
                 rs.getString("address"),
-                rs.getTimestamp("created_date")
-        );
+                rs.getTimestamp("created_date"));
     }
 
     // ==================== List all customers ====================
@@ -26,8 +26,8 @@ public class CustomerRepositoryImpl {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers ORDER BY customer_id";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }
@@ -41,7 +41,7 @@ public class CustomerRepositoryImpl {
     public Customer findById(int id) {
         String sql = "SELECT * FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -58,7 +58,7 @@ public class CustomerRepositoryImpl {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers WHERE LOWER(customer_name) LIKE LOWER(?) OR phone LIKE ? ORDER BY customer_id";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             String pattern = "%" + keyword + "%";
             ps.setString(1, pattern);
             ps.setString(2, pattern);
@@ -76,7 +76,7 @@ public class CustomerRepositoryImpl {
     public boolean isPhoneExists(String phone, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE phone = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, phone);
             ps.setInt(2, excludeId);
             ResultSet rs = ps.executeQuery();
@@ -91,7 +91,7 @@ public class CustomerRepositoryImpl {
     public boolean isEmailExists(String email, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE email = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setString(2, email);
             ps.setInt(2, excludeId);
@@ -107,7 +107,7 @@ public class CustomerRepositoryImpl {
     public boolean insert(Customer c) {
         String sql = "INSERT INTO customers (customer_name, phone, email, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCustomerName());
             ps.setString(2, c.getPhone());
             ps.setString(3, c.getEmail());
@@ -123,7 +123,7 @@ public class CustomerRepositoryImpl {
     public boolean update(Customer c) {
         String sql = "UPDATE customers SET customer_name = ?, phone = ?, email = ?, address = ? WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCustomerName());
             ps.setString(2, c.getPhone());
             ps.setString(3, c.getEmail());
@@ -140,7 +140,7 @@ public class CustomerRepositoryImpl {
     public boolean delete(int id) {
         String sql = "DELETE FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {

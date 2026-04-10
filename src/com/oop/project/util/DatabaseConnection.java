@@ -6,9 +6,9 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
     // 1. Các thông số kết nối (Thay password của bạn vào đây)
-    private static final String URL = "jdbc:postgresql://localhost:5432/E-commerce";
+    private static final String URL = "jdbc:postgresql://localhost:5432/ecommerce_db";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "123456"; 
+    private static final String PASSWORD = "081106";
 
     private static Connection connection = null;
 
@@ -41,7 +41,7 @@ public class DatabaseConnection {
     public static void main(String[] args) {
         System.out.println("Đang kiểm tra kết nối...");
         Connection conn = getConnection(); // Gọi hàm này không còn bị lỗi "undefined" nữa
-        
+
         if (conn != null) {
             System.out.println("✅ CHÚC MỪNG: Kết nối thành công tới PostgreSQL!");
             closeConnection();

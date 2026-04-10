@@ -1,8 +1,8 @@
 package com.oop.project.ui.panel;
 
 import com.oop.project.model.Order;
-import com.oop.project.repository.AuditLogRepository;
-import com.oop.project.service.DashboardService;
+import com.oop.project.service.interfaces.IDashboardService;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -26,27 +26,26 @@ import java.util.Map;
  */
 public class DashboardPanel extends JPanel {
 
-    private final DashboardService     dashSvc;
-    
+    private final IDashboardService dashSvc;
+
     // KPI labels
     private JLabel totalOrdersVal, revenueVal, cancelledVal, pendingVal;
 
     // Orders table
     private DefaultTableModel orderModel;
-    private JTable            orderTable;
+    private JTable orderTable;
 
     // Filter controls
     private JComboBox<String> statusFilter, sortByCombo, sortDirCombo;
-    private JTextField        searchField;
+    private JTextField searchField;
 
-    private static final String[] ORDER_COLS =
-        {"ID", "Customer", "Date", "Status", "Total ($)"};
-    
+    private static final String[] ORDER_COLS = { "ID", "Customer", "Date", "Status", "Total ($)" };
+
     public DashboardPanel(MainFrame mf) {
         this.dashSvc = mf.dashboardService;
         setBackground(UITheme.BG_DARK);
         setLayout(new BorderLayout());
-        add(buildTop(),     BorderLayout.NORTH);
+        add(buildTop(), BorderLayout.NORTH);
         add(buildContent(), BorderLayout.CENTER);
         refresh();
     }
@@ -71,8 +70,8 @@ public class DashboardPanel extends JPanel {
     private JPanel buildContent() {
         JPanel p = new JPanel(new BorderLayout(0, 0));
         p.setBackground(UITheme.BG_DARK);
-        p.add(buildKpiRow(),     BorderLayout.NORTH);
-        p.add(buildMain(),       BorderLayout.CENTER);
+        p.add(buildKpiRow(), BorderLayout.NORTH);
+        p.add(buildMain(), BorderLayout.CENTER);
         return p;
     }
 
@@ -82,10 +81,10 @@ public class DashboardPanel extends JPanel {
         p.setBackground(UITheme.BG_DARK);
         p.setBorder(BorderFactory.createEmptyBorder(0, 20, 14, 20));
 
-        totalOrdersVal = kpiCard("Total Orders",   "0",      UITheme.ACCENT,   p);
-        revenueVal     = kpiCard("Total Revenue",  "$0.00",  UITheme.SUCCESS,  p);
-        pendingVal     = kpiCard("Pending",        "0",      UITheme.WARNING,  p);
-        cancelledVal   = kpiCard("Cancelled",      "0",      UITheme.DANGER,   p);
+        totalOrdersVal = kpiCard("Total Orders", "0", UITheme.ACCENT, p);
+        revenueVal = kpiCard("Total Revenue", "$0.00", UITheme.SUCCESS, p);
+        pendingVal = kpiCard("Pending", "0", UITheme.WARNING, p);
+        cancelledVal = kpiCard("Cancelled", "0", UITheme.DANGER, p);
         return p;
     }
 
@@ -100,8 +99,8 @@ public class DashboardPanel extends JPanel {
         };
         card.setBackground(UITheme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(accent.darker().darker(), 1),
-            new EmptyBorder(18, 20, 18, 20)));
+                BorderFactory.createLineBorder(accent.darker().darker(), 1),
+                new EmptyBorder(18, 20, 18, 20)));
 
         JLabel titleLbl = new JLabel(title.toUpperCase());
         titleLbl.setFont(UITheme.FONT_BADGE);
@@ -112,7 +111,7 @@ public class DashboardPanel extends JPanel {
         valLbl.setForeground(accent);
 
         card.add(titleLbl, BorderLayout.NORTH);
-        card.add(valLbl,   BorderLayout.CENTER);
+        card.add(valLbl, BorderLayout.CENTER);
         parent.add(card);
         return valLbl;
     }
@@ -135,18 +134,18 @@ public class DashboardPanel extends JPanel {
         // Status filter (FR-5.2)
         p.add(UITheme.label("Status:"));
         statusFilter = UITheme.styledComboBox(
-            new String[]{"All", "PENDING", "PAID", "CANCELLED"});
+                new String[] { "All", "PENDING", "PAID", "CANCELLED" });
         statusFilter.addActionListener(e -> applyFilters());
         p.add(statusFilter);
 
         // Sort (FR-5.1)
         p.add(UITheme.label("Sort by:"));
         sortByCombo = UITheme.styledComboBox(
-            new String[]{"date", "customer", "amount", "status"});
+                new String[] { "date", "customer", "amount", "status" });
         sortByCombo.addActionListener(e -> applyFilters());
         p.add(sortByCombo);
 
-        sortDirCombo = UITheme.styledComboBox(new String[]{"Desc", "Asc"});
+        sortDirCombo = UITheme.styledComboBox(new String[] { "Desc", "Asc" });
         sortDirCombo.addActionListener(e -> applyFilters());
         p.add(sortDirCombo);
 
@@ -191,7 +190,7 @@ public class DashboardPanel extends JPanel {
         JLabel lbl = UITheme.heading("All Orders");
         JLabel hint = UITheme.label("Sorted by: date ↓  |  Click column header to sort");
         hint.setFont(UITheme.FONT_SMALL);
-        header.add(lbl,  BorderLayout.WEST);
+        header.add(lbl, BorderLayout.WEST);
         header.add(hint, BorderLayout.EAST);
         header.setBorder(BorderFactory.createEmptyBorder(4, 0, 6, 0));
 
@@ -209,9 +208,9 @@ public class DashboardPanel extends JPanel {
     private void applyFilters() {
         try {
             String keyword = searchField != null ? searchField.getText().trim() : "";
-            String status  = statusFilter != null ? (String) statusFilter.getSelectedItem() : "All";
-            String sortBy  = sortByCombo  != null ? (String) sortByCombo .getSelectedItem() : "date";
-            boolean asc    = sortDirCombo != null && "Asc".equals(sortDirCombo.getSelectedItem());
+            String status = statusFilter != null ? (String) statusFilter.getSelectedItem() : "All";
+            String sortBy = sortByCombo != null ? (String) sortByCombo.getSelectedItem() : "date";
+            boolean asc = sortDirCombo != null && "Asc".equals(sortDirCombo.getSelectedItem());
 
             List<Order> list;
             if (!keyword.isEmpty()) {
@@ -234,10 +233,10 @@ public class DashboardPanel extends JPanel {
         orderModel.setRowCount(0);
         for (Order o : list) {
             String cname = o.getCustomer() != null ? o.getCustomer().getCustomerName() : "—";
-            orderModel.addRow(new Object[]{
-                o.getOrderId(), cname, o.getOrderDate(),
-                o.getStatus() != null ? o.getStatus().name() : "—",
-                o.getFinalTotal()
+            orderModel.addRow(new Object[] {
+                    o.getOrderId(), cname, o.getOrderDate(),
+                    o.getStatus() != null ? o.getStatus().name() : "—",
+                    o.getFinalTotal()
             });
         }
     }
@@ -264,7 +263,8 @@ public class DashboardPanel extends JPanel {
             try {
                 List<Order> pending = dashSvc.filterOrders("PENDING", null, null);
                 pendingVal.setText(String.valueOf(pending.size()));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
         } catch (Exception ex) {
             UITheme.showError(this, "Failed to load statistics: " + ex.getMessage());

@@ -1,7 +1,7 @@
 package com.oop.project.service.impl;
 
 import com.oop.project.model.Order;
-import com.oop.project.repository.OrderRepository;
+import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.service.interfaces.IDashboardService;
 
 import java.sql.Timestamp;
@@ -36,7 +36,8 @@ public class DashboardServiceImpl implements IDashboardService {
                 comparator = Comparator.comparing(Order::getOrderDate, Comparator.nullsLast(Comparator.naturalOrder()));
                 break;
         }
-        if (!ascending) comparator = comparator.reversed();
+        if (!ascending)
+            comparator = comparator.reversed();
         orders.sort(comparator);
         return orders;
     }

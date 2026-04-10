@@ -2,7 +2,7 @@ package com.oop.project.repository.impl;
 
 import com.oop.project.model.Item;
 import com.oop.project.model.OrderDetail;
-import com.oop.project.repository.OrderDetailRepository;
+import com.oop.project.repository.interfaces.OrderDetailRepository;
 import com.oop.project.util.DatabaseConnection;
 
 import java.sql.*;
@@ -11,16 +11,17 @@ import java.util.List;
 
 public class OrderDetailRepositoryImpl implements OrderDetailRepository {
 
-    // ==================== Find all details for an order (JOIN items) ====================
+    // ==================== Find all details for an order (JOIN items)
+    // ====================
     public List<OrderDetail> findByOrderId(int orderId) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = "SELECT od.*, i.item_name, i.category, i.unit_price, i.stock_quantity " +
-                     "FROM order_details od " +
-                     "JOIN items i ON od.item_sku = i.item_sku " +
-                     "WHERE od.order_id = ? " +
-                     "ORDER BY od.order_detail_id";
+                "FROM order_details od " +
+                "JOIN items i ON od.item_sku = i.item_sku " +
+                "WHERE od.order_id = ? " +
+                "ORDER BY od.order_detail_id";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -29,15 +30,13 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
                         rs.getString("item_name"),
                         rs.getString("category"),
                         rs.getBigDecimal("unit_price"),
-                        rs.getInt("stock_quantity")
-                );
+                        rs.getInt("stock_quantity"));
                 OrderDetail detail = new OrderDetail(
                         rs.getInt("order_detail_id"),
                         rs.getInt("order_id"),
                         item,
                         rs.getInt("quantity"),
-                        rs.getBigDecimal("price_at_time")
-                );
+                        rs.getBigDecimal("price_at_time"));
                 list.add(detail);
             }
         } catch (SQLException e) {
@@ -50,7 +49,7 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
     public boolean insertBatch(int orderId, List<OrderDetail> details) {
         String sql = "INSERT INTO order_details (order_id, item_sku, quantity, price_at_time) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             for (OrderDetail d : details) {
                 ps.setInt(1, orderId);
                 ps.setString(2, d.getItem().getItemSku());
@@ -60,7 +59,8 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
             }
             int[] results = ps.executeBatch();
             for (int r : results) {
-                if (r <= 0 && r != Statement.SUCCESS_NO_INFO) return false;
+                if (r <= 0 && r != Statement.SUCCESS_NO_INFO)
+                    return false;
             }
             return true;
         } catch (SQLException e) {
@@ -73,7 +73,7 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
     public boolean deleteByOrderId(int orderId) {
         String sql = "DELETE FROM order_details WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             ps.executeUpdate();
             return true;

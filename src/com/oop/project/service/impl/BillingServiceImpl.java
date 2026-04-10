@@ -4,7 +4,7 @@ import com.oop.project.exception.CouponExpiredException;
 import com.oop.project.exception.InsufficientStockException;
 import com.oop.project.exception.ValidationException;
 import com.oop.project.model.*;
-import com.oop.project.repository.*;
+import com.oop.project.repository.interfaces.*;
 import com.oop.project.service.interfaces.IBillingService;
 
 import java.math.BigDecimal;
@@ -24,8 +24,8 @@ public class BillingServiceImpl implements IBillingService {
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("8.00");
 
     public BillingServiceImpl(OrderRepository orderRepo, AuditLogRepository auditLogRepo,
-                              SystemSettingRepository settingRepo, CouponRepository couponRepo,
-                              ItemRepository itemRepo, OrderDetailRepository orderDetailRepo) {
+            SystemSettingRepository settingRepo, CouponRepository couponRepo,
+            ItemRepository itemRepo, OrderDetailRepository orderDetailRepo) {
         this.orderRepo = orderRepo;
         this.auditLogRepo = auditLogRepo;
         this.settingRepo = settingRepo;
@@ -78,16 +78,19 @@ public class BillingServiceImpl implements IBillingService {
         order.setTaxRate(taxRate);
 
         BigDecimal afterDiscount = subtotal.subtract(discountAmount);
-        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0) afterDiscount = BigDecimal.ZERO;
+        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0)
+            afterDiscount = BigDecimal.ZERO;
         BigDecimal taxAmount = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
         BigDecimal finalTotal = afterDiscount.add(taxAmount);
         order.setFinalTotal(finalTotal);
 
         order.setStatus(OrderStatus.PENDING);
-        if (order.getOrderDate() == null) order.setOrderDate(new Timestamp(System.currentTimeMillis()));
+        if (order.getOrderDate() == null)
+            order.setOrderDate(new Timestamp(System.currentTimeMillis()));
 
         int orderId = orderRepo.insert(order);
-        if (orderId <= 0) throw new RuntimeException("Failed to persist order.");
+        if (orderId <= 0)
+            throw new RuntimeException("Failed to persist order.");
         order.setOrderId(orderId);
 
         orderDetailRepo.insertBatch(orderId, order.getOrderItems());
@@ -124,13 +127,15 @@ public class BillingServiceImpl implements IBillingService {
         order.setTaxRate(taxRate);
 
         BigDecimal afterDiscount = subtotal.subtract(discountAmount);
-        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0) afterDiscount = BigDecimal.ZERO;
+        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0)
+            afterDiscount = BigDecimal.ZERO;
         BigDecimal taxAmount = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
         BigDecimal finalTotal = afterDiscount.add(taxAmount);
         order.setFinalTotal(finalTotal);
 
         boolean updated = orderRepo.update(order);
-        if (!updated) throw new RuntimeException("Failed to update order.");
+        if (!updated)
+            throw new RuntimeException("Failed to update order.");
         orderDetailRepo.deleteByOrderId(order.getOrderId());
         orderDetailRepo.insertBatch(order.getOrderId(), order.getOrderItems());
 
@@ -140,9 +145,11 @@ public class BillingServiceImpl implements IBillingService {
 
     @Override
     public boolean cancelOrder(int orderId, User currentUser) {
-        if (currentUser == null) throw new ValidationException("Current user must not be null.");
+        if (currentUser == null)
+            throw new ValidationException("Current user must not be null.");
         Order order = orderRepo.findById(orderId);
-        if (order == null) throw new ValidationException("Order not found.");
+        if (order == null)
+            throw new ValidationException("Order not found.");
         boolean cancelled = orderRepo.updateStatus(orderId, OrderStatus.CANCELLED.name());
         if (cancelled && order.getOrderItems() != null) {
             for (OrderDetail detail : order.getOrderItems()) {
@@ -155,13 +162,15 @@ public class BillingServiceImpl implements IBillingService {
 
     @Override
     public String generateInvoice(Order order) {
-        if (order == null) return "";
+        if (order == null)
+            return "";
         StringBuilder sb = new StringBuilder();
         sb.append("════════════════════════════════════════════\n");
         sb.append("                  INVOICE                   \n");
         sb.append("════════════════════════════════════════════\n");
         sb.append(String.format("  Order ID   : #%d\n", order.getOrderId()));
-        sb.append(String.format("  Date       : %s\n", order.getOrderDate() != null ? order.getOrderDate().toString() : "N/A"));
+        sb.append(String.format("  Date       : %s\n",
+                order.getOrderDate() != null ? order.getOrderDate().toString() : "N/A"));
         if (order.getCustomer() != null) {
             sb.append(String.format("  Customer   : %s\n", order.getCustomer().getCustomerName()));
             sb.append(String.format("  Phone      : %s\n", order.getCustomer().getPhone()));
@@ -181,19 +190,22 @@ public class BillingServiceImpl implements IBillingService {
             }
         }
         sb.append("────────────────────────────────────────────\n");
-        sb.append(String.format("  Subtotal            : %15s\n", order.getSubtotal().setScale(2, RoundingMode.HALF_UP)));
+        sb.append(
+                String.format("  Subtotal            : %15s\n", order.getSubtotal().setScale(2, RoundingMode.HALF_UP)));
         if (order.getDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
             sb.append(String.format("  Discount (%s) : -%14s\n",
                     order.getDiscountInfo() != null ? order.getDiscountInfo() : "",
                     order.getDiscountAmount().setScale(2, RoundingMode.HALF_UP)));
         }
         BigDecimal afterDiscount = order.getSubtotal().subtract(order.getDiscountAmount());
-        BigDecimal taxAmount = afterDiscount.multiply(order.getTaxRate()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        BigDecimal taxAmount = afterDiscount.multiply(order.getTaxRate()).divide(new BigDecimal("100"), 2,
+                RoundingMode.HALF_UP);
         sb.append(String.format("  Tax (%s%%)          : %15s\n",
                 order.getTaxRate().setScale(2, RoundingMode.HALF_UP),
                 taxAmount.setScale(2, RoundingMode.HALF_UP)));
         sb.append("════════════════════════════════════════════\n");
-        sb.append(String.format("  FINAL TOTAL         : %15s\n", order.getFinalTotal().setScale(2, RoundingMode.HALF_UP)));
+        sb.append(String.format("  FINAL TOTAL         : %15s\n",
+                order.getFinalTotal().setScale(2, RoundingMode.HALF_UP)));
         sb.append("════════════════════════════════════════════\n");
         sb.append(String.format("  Status: %s\n", order.getStatus()));
         sb.append("\n  Thank you for your purchase!\n");
@@ -201,15 +213,16 @@ public class BillingServiceImpl implements IBillingService {
     }
 
     private void validateStock(List<OrderDetail> items) {
-        if (items == null) return;
+        if (items == null)
+            return;
         for (OrderDetail detail : items) {
             if (detail.getItem() != null && detail.getItem().getItemSku() != null) {
                 Item dbItem = itemRepo.findBySku(detail.getItem().getItemSku());
                 if (dbItem != null && detail.getQuantity() > dbItem.getStockQuantity()) {
                     throw new InsufficientStockException(
                             "Insufficient stock for '" + dbItem.getItemName() +
-                            "'. Requested: " + detail.getQuantity() +
-                            ", Available: " + dbItem.getStockQuantity() + ".");
+                                    "'. Requested: " + detail.getQuantity() +
+                                    ", Available: " + dbItem.getStockQuantity() + ".");
                 }
             }
         }
@@ -237,7 +250,8 @@ public class BillingServiceImpl implements IBillingService {
             throw new CouponExpiredException("Coupon '" + code + "' has expired on " + coupon.getExpiryDate() + ".");
         }
         if (coupon.getMinOrderValue() != null && orderTotal.compareTo(coupon.getMinOrderValue()) < 0) {
-            throw new CouponExpiredException("Order total must be at least " + coupon.getMinOrderValue() + " to use coupon '" + code + "'.");
+            throw new CouponExpiredException(
+                    "Order total must be at least " + coupon.getMinOrderValue() + " to use coupon '" + code + "'.");
         }
         return coupon;
     }
@@ -256,7 +270,8 @@ public class BillingServiceImpl implements IBillingService {
         if (setting != null && setting.getSettingValue() != null) {
             try {
                 return new BigDecimal(setting.getSettingValue());
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         return DEFAULT_TAX_RATE;
     }
@@ -272,7 +287,8 @@ public class BillingServiceImpl implements IBillingService {
     }
 
     private String truncate(String str, int maxLen) {
-        if (str == null) return "";
+        if (str == null)
+            return "";
         return str.length() <= maxLen ? str : str.substring(0, maxLen - 2) + "..";
     }
 }

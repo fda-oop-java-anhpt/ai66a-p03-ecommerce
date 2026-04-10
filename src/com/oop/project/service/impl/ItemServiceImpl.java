@@ -5,7 +5,7 @@ import com.oop.project.exception.ValidationException;
 import com.oop.project.model.Item;
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
-import com.oop.project.repository.ItemRepository;
+import com.oop.project.repository.interfaces.ItemRepository;
 import com.oop.project.service.interfaces.IItemService;
 import com.oop.project.util.Validator;
 

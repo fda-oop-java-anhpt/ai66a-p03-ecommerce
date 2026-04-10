@@ -5,16 +5,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Order {
     private int orderId;
-    
+
     // TỐI ƯU OOP: Thay thế customerId và couponCode bằng Object
-    private Customer customer; 
-    private Coupon coupon;     
-    
+    private Customer customer;
+    private Coupon coupon;
+
     // TỐI ƯU OOP: Đơn hàng tự quản lý danh sách các món hàng bên trong nó
-    private List<OrderDetail> orderDetail; 
+    private List<OrderDetail> orderDetail;
 
     private BigDecimal taxRate;
     private BigDecimal discountAmount;
@@ -33,9 +32,9 @@ public class Order {
         this.finalTotal = BigDecimal.ZERO;
     }
 
-    public Order(int orderId, Customer customer, Coupon coupon, BigDecimal taxRate, 
-                 BigDecimal discountAmount, String discountInfo, OrderStatus status, 
-                 BigDecimal subtotal, BigDecimal finalTotal, Timestamp orderDate) {
+    public Order(int orderId, Customer customer, Coupon coupon, BigDecimal taxRate,
+            BigDecimal discountAmount, String discountInfo, OrderStatus status,
+            BigDecimal subtotal, BigDecimal finalTotal, Timestamp orderDate) {
         this.orderId = orderId;
         setCustomer(customer);
         setCoupon(coupon);
@@ -51,87 +50,135 @@ public class Order {
 
     // --- GETTER & SETTER ---
 
-    public int getOrderId() { return orderId; }
-    public void setOrderId(int orderId) { this.orderId = orderId; }
-
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { 
-        if (customer == null) throw new IllegalArgumentException("Customer cannot be null !");
-        this.customer = customer; 
+    public int getOrderId() {
+        return orderId;
     }
 
-    public Coupon getCoupon() { return coupon; }
-    public void setCoupon(Coupon coupon) { this.coupon = coupon; }
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
 
-    public List<OrderDetail> getOrderItems() { return orderDetail; }
-    public void setOrderItems(List<OrderDetail> orderDetail) { this.orderDetail = orderDetail; }
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        // if (customer == null) throw new IllegalArgumentException("Customer cannot be
+        // null !");
+        this.customer = customer;
+    }
+
+    public Coupon getCoupon() {
+        return coupon;
+    }
+
+    public void setCoupon(Coupon coupon) {
+        this.coupon = coupon;
+    }
+
+    public List<OrderDetail> getOrderItems() {
+        return orderDetail;
+    }
+
+    public void setOrderItems(List<OrderDetail> orderDetail) {
+        this.orderDetail = orderDetail;
+    }
 
     // TỐI ƯU OOP: Hàm phụ trợ để thêm từng món hàng vào đơn dễ dàng hơn
     public void addOrderItem(OrderDetail item) {
-        if (item != null) this.orderDetail.add(item);
+        if (item != null)
+            this.orderDetail.add(item);
     }
 
-    public BigDecimal getTaxRate() { return taxRate; }
-    public void setTaxRate(BigDecimal taxRate) { 
-        if (taxRate == null){
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+
+    public void setTaxRate(BigDecimal taxRate) {
+        if (taxRate == null) {
             this.taxRate = new BigDecimal("8.00");
             return;
         }
         if (taxRate.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Tax rate cannot be negative!");
         }
-        this.taxRate = taxRate; 
+        this.taxRate = taxRate;
     }
 
-    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
     public void setDiscountAmount(BigDecimal discountAmount) {
         // Kiểm tra điều kiện CHECK (discount_amount >= 0) từ database
-        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Discount amount cannot be negative!");
+        if (discountAmount.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Discount amount cannot be negative!");
         this.discountAmount = discountAmount;
     }
 
-    public String getDiscountInfo() { return discountInfo; }
-    public void setDiscountInfo(String discountInfo) { this.discountInfo = discountInfo; }
-
-    public OrderStatus getStatus() { 
-        return status; 
-    }
-    public void setStatus(OrderStatus status) { 
-        if (status == null) throw new IllegalArgumentException("Status cannot be null!");
-        this.status = status; 
+    public String getDiscountInfo() {
+        return discountInfo;
     }
 
-    public BigDecimal getSubtotal() { return subtotal; }
+    public void setDiscountInfo(String discountInfo) {
+        this.discountInfo = discountInfo;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        if (status == null)
+            throw new IllegalArgumentException("Status cannot be null!");
+        this.status = status;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
     public void setSubtotal(BigDecimal subtotal) {
         // Kiểm tra điều kiện CHECK (subtotal > 0)
-        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0){
-        throw new IllegalArgumentException("Subtotal must be greater than 0!");
-        } 
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Subtotal must be greater than 0!");
+        }
         this.subtotal = subtotal;
     }
 
-    public BigDecimal getFinalTotal() { return finalTotal; }
+    public BigDecimal getFinalTotal() {
+        return finalTotal;
+    }
+
     public void setFinalTotal(BigDecimal finalTotal) {
-        if (finalTotal == null || finalTotal.compareTo(BigDecimal.ZERO) <= 0){ 
+        if (finalTotal == null || finalTotal.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Final total must be greater than 0 !");
         }
         this.finalTotal = finalTotal;
     }
 
-    public Timestamp getOrderDate() { return orderDate; }
-    public void setOrderDate(Timestamp orderDate) { this.orderDate = orderDate; }
+    public Timestamp getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(Timestamp orderDate) {
+        this.orderDate = orderDate;
+    }
 
     @Override
     public String toString() {
         // Tránh in toàn bộ object Customer ra gây rối mắt, chỉ in tên
         String cusName = (customer != null) ? customer.getCustomerName() : "Unknown";
-        return "Order{id=" + orderId + ", customer=" + cusName + ", total=" + finalTotal + ", items=" + orderDetail.size() + "}";
+        return "Order{id=" + orderId + ", customer=" + cusName + ", total=" + finalTotal + ", items="
+                + orderDetail.size() + "}";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Order order = (Order) o;
         return orderId == order.orderId;
     }

@@ -4,8 +4,8 @@ import com.oop.project.exception.DuplicateException;
 import com.oop.project.exception.ValidationException;
 import com.oop.project.model.Customer;
 import com.oop.project.model.Order;
-import com.oop.project.repository.CustomerRepository;
-import com.oop.project.repository.OrderRepository;
+import com.oop.project.repository.interfaces.CustomerRepository;
+import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.service.interfaces.ICustomerService;
 import com.oop.project.util.Validator;
 

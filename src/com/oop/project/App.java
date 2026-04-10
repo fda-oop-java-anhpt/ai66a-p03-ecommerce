@@ -21,8 +21,7 @@ public class App {
         UITheme.installGlobalDefaults();
 
         SwingUtilities.invokeLater(() -> {
-            AuthServiceImpl authService = new AuthServiceImpl();
-            LoginFrame login = new LoginFrame(authService);
+            LoginFrame login = new LoginFrame();
             login.setVisible(true);
         });
     }

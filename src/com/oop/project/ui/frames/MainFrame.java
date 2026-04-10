@@ -2,6 +2,7 @@ package com.oop.project.ui.frames;
 
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
+import com.oop.project.service.impl.*;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.ui.panel.CouponPanel;
 import com.oop.project.ui.panel.CustomerPanel;
@@ -28,11 +29,11 @@ public class MainFrame extends JFrame {
     private final User        currentUser;
     private final IAuthService authService;
 
-    public ICustomerService  customerService;
-    public IItemService      itemService;
-    public IBillingService   billingService;   
-    public ICouponService    couponService;    
-    public IDashboardService dashboardService; 
+    public ICustomerService  customerService = new CustomerServiceImpl();
+    public IItemService      itemService = new ItemServiceImpl();
+    public IBillingService   billingService = new BillingServiceImpl();
+    public ICouponService    couponService = new CouponServiceImpl();
+    public IDashboardService dashboardService = new DashboardServiceImpl();
 
     private JTabbedPane    tabs;
     private CustomerPanel  customerPanel;

@@ -62,7 +62,6 @@ public class MainFrame extends JFrame {
         this.authService = authService;
 
         // Initialize Repositories
-        UserRepository userRepo = new UserRepositoryImpl();
         AuditLogRepository auditLogRepo = new AuditLogRepositoryImpl();
         CustomerRepository customerRepo = new CustomerRepositoryImpl();
         ItemRepository itemRepo = new ItemRepositoryImpl();
@@ -113,7 +112,7 @@ public class MainFrame extends JFrame {
                 BorderFactory.createMatteBorder(0, 0, 1, 0, UITheme.BORDER_COLOR),
                 BorderFactory.createEmptyBorder(8, 22, 8, 22)));
 
-        JLabel logo = new JLabel("🛒  ShopFlow");
+        JLabel logo = new JLabel("ShopFlow");
         logo.setFont(new Font("Segoe UI", Font.BOLD, 19));
         logo.setForeground(UITheme.ACCENT);
 
@@ -178,7 +177,7 @@ public class MainFrame extends JFrame {
         popup.add(hdr);
         popup.addSeparator();
 
-        JMenuItem profileMi = popupItem("Profile", UITheme.TEXT_PRIMARY);
+        JMenuItem profileMi = popupItem("Profile", UITheme.ACCENT);
         profileMi.addActionListener(e -> new ProfileFrame(this, currentUser).setVisible(true));
         popup.add(profileMi);
 
@@ -188,12 +187,12 @@ public class MainFrame extends JFrame {
         // popup.add(settingsMi);
         // }
 
-        JMenuItem auditMi = popupItem("Audit Log", UITheme.TEXT_PRIMARY);
+        JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
         auditMi.addActionListener(e -> new AuditLogFrame(this).setVisible(true));
         popup.add(auditMi);
         popup.addSeparator();
 
-        JMenuItem logoutMi = popupItem("⏻  Logout", UITheme.DANGER);
+        JMenuItem logoutMi = popupItem("Logout", UITheme.DANGER);
         logoutMi.addActionListener(e -> confirmLogout());
         popup.add(logoutMi);
 
@@ -203,10 +202,11 @@ public class MainFrame extends JFrame {
 
     private JMenuItem popupItem(String text, Color fg) {
         JMenuItem mi = new JMenuItem(text);
-        mi.setFont(UITheme.FONT_BODY);
+        mi.setFont(new Font("Segoe UI", Font.BOLD, 13));
         mi.setBackground(UITheme.BG_CARD);
         mi.setForeground(fg);
-        mi.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 20));
+        mi.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 28));
+        mi.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return mi;
     }
 

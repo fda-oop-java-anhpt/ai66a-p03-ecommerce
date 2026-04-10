@@ -35,7 +35,7 @@ public class CouponPanel extends JPanel {
     private DefaultTableModel model;
     private JTable table;
 
-    private static final String[] COLS = { "Code", "Type", "Value", "Min Order ($)", "Expiry", "Active", "Status" };
+    private static final String[] COLS = { "Code", "Type", "Value", "Min Order (VNĐ)", "Expiry", "Status" };
 
     public CouponPanel(MainFrame mf) {
         this.mf = mf;
@@ -69,10 +69,10 @@ public class CouponPanel extends JPanel {
         model = TableRenderer.model(COLS);
         table = new JTable(model);
         TableRenderer.applyAll(table);
-        TableRenderer.widths(table, 120, 100, 80, 110, 110, 70, 90);
+        TableRenderer.widths(table, 120, 100, 80, 110, 110, 100);
 
         // Status column — ACTIVE green / EXPIRED red
-        table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+        table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(
                     JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
@@ -190,6 +190,13 @@ public class CouponPanel extends JPanel {
         Coupon c = repo.findByCode(code);
         if (c == null)
             return;
+
+        if (!c.isActive() && c.getExpiryDate() != null
+                && c.getExpiryDate().before(new Date(System.currentTimeMillis()))) {
+            UITheme.showError(this, "Cannot activate an expired coupon.");
+            return;
+        }
+
         c.setActive(!c.isActive());
         repo.update(c);
         refresh();
@@ -204,14 +211,14 @@ public class CouponPanel extends JPanel {
             for (Coupon c : list) {
                 boolean expired = c.getExpiryDate() != null && c.getExpiryDate().before(today);
                 String status = (!c.isActive() || expired) ? "EXPIRED" : "ACTIVE";
-                String val = c.getDiscountType() == DiscountType.Percent
+                String valStr = c.getDiscountType() == DiscountType.Percent
                         ? c.getDiscountValue().toPlainString() + "%"
-                        : "$" + c.getDiscountValue().toPlainString();
+                        : String.format("%,.0f VNĐ", c.getDiscountValue().doubleValue());
                 model.addRow(new Object[] {
                         c.getCouponCode(), c.getDiscountType().name(),
-                        val,
+                        valStr,
                         c.getMinOrderValue() != null ? c.getMinOrderValue() : BigDecimal.ZERO,
-                        c.getExpiryDate(), c.isActive() ? "Yes" : "No", status
+                        c.getExpiryDate(), status
                 });
             }
         } catch (Exception ex) {

@@ -196,7 +196,7 @@ public class CustomerPanel extends JPanel {
         }
         StringBuilder sb = new StringBuilder("Order history for: " + name + "\n\n");
         orders.forEach(o -> sb.append(String.format(
-                "#%d  |  %s  |  $%.2f  |  %s\n",
+                "#%d  |  %s  |  %,.0f VNĐ  |  %s\n",
                 o.getOrderId(),
                 o.getOrderDate() != null ? o.getOrderDate().toString() : "—",
                 o.getFinalTotal() != null ? o.getFinalTotal().doubleValue() : 0,

@@ -93,7 +93,7 @@ public class BillingServiceImpl implements IBillingService {
             throw new RuntimeException("Failed to persist order.");
         order.setOrderId(orderId);
 
-        orderDetailRepo.insertBatch(orderId, order.getOrderItems());
+        // orderDetailRepo.insertBatch(orderId, order.getOrderItems());
 
         for (OrderDetail detail : order.getOrderItems()) {
             itemRepo.updateStock(detail.getItem().getItemSku(), -detail.getQuantity());
@@ -136,8 +136,8 @@ public class BillingServiceImpl implements IBillingService {
         boolean updated = orderRepo.update(order);
         if (!updated)
             throw new RuntimeException("Failed to update order.");
-        orderDetailRepo.deleteByOrderId(order.getOrderId());
-        orderDetailRepo.insertBatch(order.getOrderId(), order.getOrderItems());
+        // orderDetailRepo.deleteByOrderId(order.getOrderId());
+        // orderDetailRepo.insertBatch(order.getOrderId(), order.getOrderItems());
 
         logAudit(currentUser, "UPDATE_ORDER", "ORDER", String.valueOf(order.getOrderId()));
         return order;
@@ -150,6 +150,10 @@ public class BillingServiceImpl implements IBillingService {
         Order order = orderRepo.findById(orderId);
         if (order == null)
             throw new ValidationException("Order not found.");
+        // check if order is already cancelled
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            return false;
+        }
         boolean cancelled = orderRepo.updateStatus(orderId, OrderStatus.CANCELLED.name());
         if (cancelled && order.getOrderItems() != null) {
             for (OrderDetail detail : order.getOrderItems()) {
@@ -164,51 +168,65 @@ public class BillingServiceImpl implements IBillingService {
     public String generateInvoice(Order order) {
         if (order == null)
             return "";
+
+        String storeName = "MY STORE";
+        SystemSetting setting = settingRepo.findByKey("STORE_NAME");
+        if (setting != null && setting.getSettingValue() != null && !setting.getSettingValue().trim().isEmpty()) {
+            storeName = setting.getSettingValue().trim();
+        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("════════════════════════════════════════════\n");
-        sb.append("                  INVOICE                   \n");
-        sb.append("════════════════════════════════════════════\n");
-        sb.append(String.format("  Order ID   : #%d\n", order.getOrderId()));
-        sb.append(String.format("  Date       : %s\n",
+        sb.append("================================================================\n");
+        sb.append(centerText(storeName, 64)).append("\n");
+        sb.append("----------------------------------------------------------------\n");
+        sb.append("                            INVOICE                             \n");
+        sb.append("================================================================\n");
+        sb.append(String.format("  Order ID    : #%d\n", order.getOrderId()));
+        sb.append(String.format("  Date        : %s\n",
                 order.getOrderDate() != null ? order.getOrderDate().toString() : "N/A"));
         if (order.getCustomer() != null) {
-            sb.append(String.format("  Customer   : %s\n", order.getCustomer().getCustomerName()));
-            sb.append(String.format("  Phone      : %s\n", order.getCustomer().getPhone()));
+            sb.append(String.format("  Customer    : %s\n", order.getCustomer().getCustomerName()));
+            sb.append(String.format("  Phone       : %s\n", order.getCustomer().getPhone()));
         }
-        sb.append("────────────────────────────────────────────\n");
-        sb.append(String.format("  %-20s %5s %10s %10s\n", "Item", "Qty", "Price", "Total"));
-        sb.append("────────────────────────────────────────────\n");
+        sb.append("----------------------------------------------------------------\n");
+        sb.append(String.format(" %-22s | %4s | %13s | %14s\n", "Item Name", "Qty", "Price", "Total"));
+        sb.append("----------------------------------------------------------------\n");
+
         if (order.getOrderItems() != null) {
             for (OrderDetail detail : order.getOrderItems()) {
                 String itemName = detail.getItem() != null ? detail.getItem().getItemName() : "Unknown";
                 BigDecimal lineTotal = detail.getPriceAtTime().multiply(BigDecimal.valueOf(detail.getQuantity()));
-                sb.append(String.format("  %-20s %5d %10s %10s\n",
-                        truncate(itemName, 20),
+                sb.append(String.format(" %-22s | %4d | %13s | %14s\n",
+                        truncate(itemName, 22),
                         detail.getQuantity(),
-                        detail.getPriceAtTime().setScale(2, RoundingMode.HALF_UP),
-                        lineTotal.setScale(2, RoundingMode.HALF_UP)));
+                        String.format("%,.0f VNĐ", detail.getPriceAtTime().doubleValue()),
+                        String.format("%,.0f VNĐ", lineTotal.doubleValue())));
             }
         }
-        sb.append("────────────────────────────────────────────\n");
-        sb.append(
-                String.format("  Subtotal            : %15s\n", order.getSubtotal().setScale(2, RoundingMode.HALF_UP)));
+        sb.append("================================================================\n");
+        sb.append(String.format("  Subtotal            : %38s\n",
+                String.format("%,.0f VNĐ", order.getSubtotal().doubleValue())));
+
         if (order.getDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-            sb.append(String.format("  Discount (%s) : -%14s\n",
-                    order.getDiscountInfo() != null ? order.getDiscountInfo() : "",
-                    order.getDiscountAmount().setScale(2, RoundingMode.HALF_UP)));
+            sb.append(String.format("  Discount %-10s : %38s\n",
+                    order.getDiscountInfo() != null ? "(" + truncate(order.getDiscountInfo(), 8) + ")" : "",
+                    String.format("-%,.0f VNĐ", order.getDiscountAmount().doubleValue())));
         }
+
         BigDecimal afterDiscount = order.getSubtotal().subtract(order.getDiscountAmount());
         BigDecimal taxAmount = afterDiscount.multiply(order.getTaxRate()).divide(new BigDecimal("100"), 2,
                 RoundingMode.HALF_UP);
-        sb.append(String.format("  Tax (%s%%)          : %15s\n",
-                order.getTaxRate().setScale(2, RoundingMode.HALF_UP),
-                taxAmount.setScale(2, RoundingMode.HALF_UP)));
-        sb.append("════════════════════════════════════════════\n");
-        sb.append(String.format("  FINAL TOTAL         : %15s\n",
-                order.getFinalTotal().setScale(2, RoundingMode.HALF_UP)));
-        sb.append("════════════════════════════════════════════\n");
+
+        sb.append(String.format("  Tax (%-5s)         : %38s\n",
+                order.getTaxRate().stripTrailingZeros().toPlainString() + "%",
+                String.format("+%,.0f VNĐ", taxAmount.doubleValue())));
+
+        sb.append("----------------------------------------------------------------\n");
+        sb.append(String.format("  FINAL TOTAL         : %38s\n",
+                String.format("%,.0f VNĐ", order.getFinalTotal().doubleValue())));
+        sb.append("================================================================\n");
         sb.append(String.format("  Status: %s\n", order.getStatus()));
-        sb.append("\n  Thank you for your purchase!\n");
+        sb.append("\n                  THANK YOU FOR YOUR PURCHASE!\n");
         return sb.toString();
     }
 
@@ -290,5 +308,20 @@ public class BillingServiceImpl implements IBillingService {
         if (str == null)
             return "";
         return str.length() <= maxLen ? str : str.substring(0, maxLen - 2) + "..";
+    }
+
+    private String centerText(String text, int width) {
+        if (text == null)
+            text = "";
+        if (text.length() >= width)
+            return text;
+        int padding = (width - text.length()) / 2;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < padding; i++)
+            sb.append(" ");
+        sb.append(text);
+        for (int i = 0; i < width - text.length() - padding; i++)
+            sb.append(" ");
+        return sb.toString();
     }
 }

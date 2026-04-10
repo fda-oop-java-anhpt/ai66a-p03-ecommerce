@@ -10,19 +10,21 @@ import java.math.BigDecimal;
 
 /**
  * Modal dialog for Add/Edit Item.
- * FR-2.1, FR-2.3 (SKU duplicate checked by service), FR-2.4 (price locked for Staff).
+ * FR-2.1, FR-2.3 (SKU duplicate checked by service), FR-2.4 (price locked for
+ * Staff).
  */
 public class ItemDialog extends JDialog {
 
-    private Item    result  = null;
+    private Item result = null;
     private final boolean isEdit;
     private final boolean isAdmin;
 
-    private JTextField skuField, nameField, categoryField, priceField, stockField;
+    private JTextField skuField, nameField, priceField, stockField;
+    private JComboBox<String> categoryCombo;
 
     public ItemDialog(Window owner, Item toEdit, boolean isAdmin) {
         super(owner, toEdit == null ? "Add Item" : "Edit Item", ModalityType.APPLICATION_MODAL);
-        this.isEdit  = toEdit != null;
+        this.isEdit = toEdit != null;
         this.isAdmin = isAdmin;
         buildUI(toEdit);
     }
@@ -38,11 +40,13 @@ public class ItemDialog extends JDialog {
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 18, 0));
         root.add(title, BorderLayout.NORTH);
 
-        skuField      = UITheme.styledTextField();
-        nameField     = UITheme.styledTextField();
-        categoryField = UITheme.styledTextField();
-        priceField    = UITheme.styledTextField();
-        stockField    = UITheme.styledTextField();
+        skuField = UITheme.styledTextField();
+        nameField = UITheme.styledTextField();
+        categoryCombo = UITheme.styledComboBox(new String[] {
+                "Điện thoại", "Tai nghe", "Màn hình", "Laptop", "Phụ kiện"
+        });
+        priceField = UITheme.styledTextField();
+        stockField = UITheme.styledTextField();
 
         // SKU locked in edit mode (it is the PK)
         if (isEdit) {
@@ -57,19 +61,25 @@ public class ItemDialog extends JDialog {
         }
 
         if (isEdit && item != null) {
-            skuField     .setText(item.getItemSku()  != null ? item.getItemSku()  : "");
-            nameField    .setText(item.getItemName() != null ? item.getItemName() : "");
-            categoryField.setText(item.getCategory() != null ? item.getCategory() : "");
-            priceField   .setText(item.getUnitPrice() != null ? item.getUnitPrice().toPlainString() : "");
-            stockField   .setText(String.valueOf(item.getStockQuantity()));
+            skuField.setText(item.getItemSku() != null ? item.getItemSku() : "");
+            nameField.setText(item.getItemName() != null ? item.getItemName() : "");
+
+            if (item.getCategory() != null) {
+                categoryCombo.setSelectedItem(item.getCategory());
+            } else {
+                categoryCombo.setSelectedIndex(0);
+            }
+
+            priceField.setText(item.getUnitPrice() != null ? item.getUnitPrice().toPlainString() : "");
+            stockField.setText(String.valueOf(item.getStockQuantity()));
         }
 
         JPanel fields = new JPanel(new GridLayout(0, 1, 0, 10));
         fields.setBackground(UITheme.BG_CARD);
         fields.add(UITheme.labeledField("SKU Code *" + (isEdit ? "  (locked)" : ""), skuField));
-        fields.add(UITheme.labeledField("Item Name *",  nameField));
-        fields.add(UITheme.labeledField("Category",     categoryField));
-        fields.add(UITheme.labeledField(isAdmin ? "Unit Price ($) *" : "Unit Price (Admin only)", priceField));
+        fields.add(UITheme.labeledField("Item Name *", nameField));
+        fields.add(UITheme.labeledField("Category", categoryCombo));
+        fields.add(UITheme.labeledField(isAdmin ? "Unit Price (VNĐ) *" : "Unit Price (Admin only)", priceField));
         fields.add(UITheme.labeledField("Stock Quantity", stockField));
 
         if (!isAdmin) {
@@ -80,18 +90,19 @@ public class ItemDialog extends JDialog {
         }
         root.add(fields, BorderLayout.CENTER);
 
-        JButton save   = UITheme.primaryButton(isEdit ? "Update Item" : "Add Item");
+        JButton save = UITheme.primaryButton(isEdit ? "Update Item" : "Add Item");
         JButton cancel = UITheme.ghostButton("Cancel");
-        save  .addActionListener(e -> onSave());
+        save.addActionListener(e -> onSave());
         cancel.addActionListener(e -> dispose());
         getRootPane().setDefaultButton(save);
         getRootPane().registerKeyboardAction(e -> dispose(),
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         JPanel btn = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btn.setBackground(UITheme.BG_CARD);
         btn.setBorder(BorderFactory.createEmptyBorder(18, 0, 0, 0));
-        btn.add(cancel); btn.add(save);
+        btn.add(cancel);
+        btn.add(save);
         root.add(btn, BorderLayout.SOUTH);
 
         pack();
@@ -100,29 +111,38 @@ public class ItemDialog extends JDialog {
     }
 
     private void onSave() {
-        String sku      = skuField     .getText().trim();
-        String name     = nameField    .getText().trim();
-        String category = categoryField.getText().trim();
-        String priceStr = priceField   .getText().trim();
-        String stockStr = stockField   .getText().trim();
+        String sku = skuField.getText().trim();
+        String name = nameField.getText().trim();
+        String category = (String) categoryCombo.getSelectedItem();
+        String priceStr = priceField.getText().trim();
+        String stockStr = stockField.getText().trim();
 
         if (!isEdit && sku.isEmpty()) {
-            UITheme.showError(this, "SKU is required."); skuField.requestFocus(); return;
+            UITheme.showError(this, "SKU is required.");
+            skuField.requestFocus();
+            return;
         }
         if (name.isEmpty()) {
-            UITheme.showError(this, "Item name is required."); nameField.requestFocus(); return;
+            UITheme.showError(this, "Item name is required.");
+            nameField.requestFocus();
+            return;
         }
 
         BigDecimal price = BigDecimal.ZERO;
         if (isAdmin) {
             if (priceStr.isEmpty()) {
-                UITheme.showError(this, "Unit price is required."); priceField.requestFocus(); return;
+                UITheme.showError(this, "Unit price is required.");
+                priceField.requestFocus();
+                return;
             }
             try {
                 price = new BigDecimal(priceStr);
-                if (price.compareTo(BigDecimal.ZERO) <= 0) throw new NumberFormatException();
+                if (price.compareTo(BigDecimal.ZERO) <= 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException ex) {
-                UITheme.showError(this, "Unit price must be a positive number."); priceField.requestFocus(); return;
+                UITheme.showError(this, "Unit price must be a positive number.");
+                priceField.requestFocus();
+                return;
             }
         }
 
@@ -130,9 +150,12 @@ public class ItemDialog extends JDialog {
         if (!stockStr.isEmpty()) {
             try {
                 stock = Integer.parseInt(stockStr);
-                if (stock < 0) throw new NumberFormatException();
+                if (stock < 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException ex) {
-                UITheme.showError(this, "Stock quantity must be a non-negative integer."); stockField.requestFocus(); return;
+                UITheme.showError(this, "Stock quantity must be a non-negative integer.");
+                stockField.requestFocus();
+                return;
             }
         }
 
@@ -140,10 +163,13 @@ public class ItemDialog extends JDialog {
         result.setItemSku(sku);
         result.setItemName(name);
         result.setCategory(category.isEmpty() ? null : category);
-        if (isAdmin) result.setUnitPrice(price);
+        if (isAdmin)
+            result.setUnitPrice(price);
         result.setStockQuantity(stock);
         dispose();
     }
 
-    public Item getResult() { return result; }
+    public Item getResult() {
+        return result;
+    }
 }

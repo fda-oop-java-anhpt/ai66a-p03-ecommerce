@@ -32,7 +32,7 @@ public class ItemPanel extends JPanel {
 
     private int lowStockLimit = 5;
 
-    private static final String[] COLS = { "SKU", "Name", "Category", "Price ($)", "Stock" };
+    private static final String[] COLS = { "SKU", "Name", "Category", "Price (VNĐ)", "Stock" };
 
     public ItemPanel(MainFrame mf) {
         this.mf = mf;

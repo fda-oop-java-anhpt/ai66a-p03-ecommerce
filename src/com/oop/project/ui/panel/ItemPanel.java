@@ -118,7 +118,6 @@ public class ItemPanel extends JPanel {
         p.add(editBtn);
         p.add(deleteBtn);
         p.add(Box.createHorizontalStrut(12));
-        // p.add(stockBtn); p.add(refreshBtn);
 
         if (!mf.isAdmin()) {
             JLabel note = UITheme.label("  ⚠  Price editing restricted to Admin.");

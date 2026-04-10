@@ -1,9 +1,11 @@
 package com.oop.project.ui.panel;
 
 import com.oop.project.model.SystemSetting;
-import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
+import com.oop.project.repository.impl.AuditLogRepositoryImpl;
+import com.oop.project.repository.interfaces.SystemSettingRepository;
+import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 import com.oop.project.model.AuditLog;
-import com.oop.project.repository.SystemSettingRepository;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -25,8 +27,8 @@ import java.util.List;
 public class SettingsPanel extends JPanel {
 
     private final MainFrame               mf;
-    private final SystemSettingRepository repo    = new SystemSettingRepository();
-    private final AuditLogRepository      auditRepo = new AuditLogRepository();
+    private final SystemSettingRepository repo    = new SystemSettingRepositoryImpl();
+    private final AuditLogRepository      auditRepo = new AuditLogRepositoryImpl();
 
     // Known keys & descriptions (used for hints in the form)
     private static final String KEY_TAX        = "TAX_RATE";

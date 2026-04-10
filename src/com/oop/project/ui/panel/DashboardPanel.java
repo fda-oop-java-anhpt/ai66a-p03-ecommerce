@@ -1,8 +1,8 @@
 package com.oop.project.ui.panel;
 
 import com.oop.project.model.Order;
-import com.oop.project.repository.AuditLogRepository;
-import com.oop.project.service.DashboardService;
+import com.oop.project.repository.interfaces.AuditLogRepository;
+import com.oop.project.service.interfaces.IDashboardService;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class DashboardPanel extends JPanel {
 
-    private final DashboardService     dashSvc;
+    private final IDashboardService     dashSvc;
     
     // KPI labels
     private JLabel totalOrdersVal, revenueVal, cancelledVal, pendingVal;

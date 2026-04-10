@@ -1,9 +1,10 @@
 package com.oop.project.ui.panel;
 
 import com.oop.project.exception.DuplicateException;
-import com.oop.project.repository.SystemSettingRepository;
+import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
+import com.oop.project.repository.interfaces.SystemSettingRepository;
 import com.oop.project.model.Item;
-import com.oop.project.service.ItemService;
+import com.oop.project.service.interfaces.IItemService;
 import com.oop.project.ui.dialogs.ItemDialog;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
@@ -23,7 +24,7 @@ import java.util.List;
 public class ItemPanel extends JPanel {
 
     private final MainFrame  mf;
-    private final ItemService svc;
+    private final IItemService svc;
 
     private DefaultTableModel model;
     private JTable            table;
@@ -233,7 +234,7 @@ public class ItemPanel extends JPanel {
 
     private int loadLowStockLimit() {
         try {
-            SystemSettingRepository r = new SystemSettingRepository();
+            SystemSettingRepository r = new SystemSettingRepositoryImpl();
             com.oop.project.model.SystemSetting s = r.findByKey("LOW_STOCK_LIMIT");
             if (s != null) return Integer.parseInt(s.getSettingValue());
         } catch (Exception ignored) {}

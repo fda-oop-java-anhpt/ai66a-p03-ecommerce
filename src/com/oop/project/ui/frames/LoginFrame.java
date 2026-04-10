@@ -2,7 +2,7 @@ package com.oop.project.ui.frames;
 
 import com.oop.project.exception.AuthenticationException;
 import com.oop.project.model.User;
-import com.oop.project.repository.AuditLogRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.service.interfaces.IAuthService;

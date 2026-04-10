@@ -1,11 +1,12 @@
 package com.oop.project.ui.panel;
 
 import com.oop.project.model.*;
-import com.oop.project.repository.OrderRepository;
-import com.oop.project.service.BillingService;
-import com.oop.project.service.CouponService;
-import com.oop.project.service.CustomerService;
-import com.oop.project.service.ItemService;
+import com.oop.project.repository.interfaces.OrderRepository;
+import com.oop.project.repository.impl.OrderRepositoryImpl;
+import com.oop.project.service.interfaces.IBillingService;
+import com.oop.project.service.interfaces.ICouponService;
+import com.oop.project.service.interfaces.ICustomerService;
+import com.oop.project.service.interfaces.IItemService;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -27,11 +28,11 @@ import java.util.List;
 public class OrderPanel extends JPanel {
 
     private final MainFrame       mf;
-    private final BillingService  billSvc;
-    private final CustomerService custSvc;
-    private final ItemService     itemSvc;
-    private final CouponService   couponSvc;
-    private final OrderRepository orderRepo = new OrderRepository(); // for view/delete
+    private final IBillingService  billSvc;
+    private final ICustomerService custSvc;
+    private final IItemService     itemSvc;
+    private final ICouponService   couponSvc;
+    private final OrderRepository orderRepo = new OrderRepositoryImpl(); // for view/delete
 
     // Order list (left side)
     private DefaultTableModel orderModel;

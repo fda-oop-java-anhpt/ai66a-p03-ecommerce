@@ -10,7 +10,7 @@ import com.oop.project.ui.panel.ItemPanel;
 import com.oop.project.ui.panel.OrderPanel;
 import com.oop.project.ui.panel.SettingsPanel;
 import com.oop.project.ui.utils.UITheme;
-import com.oop.project.repository.SystemSettingRepository;
+import com.oop.project.repository.interfaces.SystemSettingRepository;
 import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 
 import javax.swing.*;
@@ -28,11 +28,11 @@ public class MainFrame extends JFrame {
     private final User        currentUser;
     private final IAuthService authService;
 
-    ICustomerService  customerService;
-    IItemService      itemService;
-    IBillingService   billingService;   
-    ICouponService    couponService;    
-    IDashboardService dashboardService; 
+    public ICustomerService  customerService;
+    public IItemService      itemService;
+    public IBillingService   billingService;   
+    public ICouponService    couponService;    
+    public IDashboardService dashboardService; 
 
     private JTabbedPane    tabs;
     private CustomerPanel  customerPanel;
@@ -324,7 +324,7 @@ public class MainFrame extends JFrame {
         else if (i==3) couponPanel   .refresh();
         else if (i==4) dashboardPanel.refresh();
     }
-    private void refreshCurrent() { onTabChange(tabs.getSelectedIndex()); }
+    // private void refreshCurrent() { onTabChange(tabs.getSelectedIndex()); }
 
     private void confirmLogout() {
         if (UITheme.confirm(this, "Log out of ShopFlow?", "Confirm Logout")) {

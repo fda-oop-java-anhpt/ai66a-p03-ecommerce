@@ -2,8 +2,9 @@ package com.oop.project.ui.panel;
 
 import com.oop.project.model.Coupon;
 import com.oop.project.model.DiscountType;
-import com.oop.project.repository.CouponRepository;
-import com.oop.project.service.impl.CouponServiceImpl;
+import com.oop.project.repository.interfaces.CouponRepository;
+import com.oop.project.repository.impl.CouponRepositoryImpl;
+import com.oop.project.service.interfaces.ICouponService;
 import com.oop.project.ui.dialogs.CouponDialog;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
@@ -28,8 +29,8 @@ import java.util.List;
 public class CouponPanel extends JPanel {
 
     private final MainFrame       mf;
-    private final CouponServiceImpl   svc;
-    private final CouponRepository repo = new CouponRepository();
+    private final ICouponService   svc;
+    private final CouponRepository repo = new CouponRepositoryImpl();
 
     private DefaultTableModel model;
     private JTable            table;

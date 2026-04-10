@@ -2,7 +2,8 @@ package com.oop.project.ui.panel;
 
 import com.oop.project.model.Customer;
 import com.oop.project.model.Order;
-import com.oop.project.service.CustomerService;
+import com.oop.project.service.interfaces.ICustomerService;
+import com.oop.project.service.impl.CustomerServiceImpl;
 import com.oop.project.ui.dialogs.CustomerDialog;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
@@ -21,7 +22,7 @@ import java.util.List;
 public class CustomerPanel extends JPanel {
 
     private final MainFrame        mf;
-    private final CustomerService  svc;
+    private final ICustomerService  svc;
 
     private DefaultTableModel model;
     private JTable            table;

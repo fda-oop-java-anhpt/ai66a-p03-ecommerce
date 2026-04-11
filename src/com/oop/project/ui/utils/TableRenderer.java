@@ -36,8 +36,8 @@ public class TableRenderer {
     public static DefaultTableCellRenderer currency() {
         return new DefaultTableCellRenderer(){
             public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,boolean foc,int r,int c){
-                if(v instanceof java.math.BigDecimal) v=String.format("$%.2f",((java.math.BigDecimal)v).doubleValue());
-                else if(v instanceof Number) v=String.format("$%.2f",((Number)v).doubleValue());
+                if(v instanceof java.math.BigDecimal) v=String.format("%,.0f VNĐ", ((java.math.BigDecimal)v).doubleValue());
+                else if(v instanceof Number) v=String.format("%,.0f VNĐ", ((Number)v).doubleValue());
                 JLabel l=(JLabel)super.getTableCellRendererComponent(t,v,sel,foc,r,c);
                 l.setHorizontalAlignment(RIGHT); l.setForeground(sel?Color.WHITE:UITheme.SUCCESS);
                 l.setBackground(sel?t.getSelectionBackground():(r%2==0?UITheme.BG_CARD:UITheme.BG_ROW_ALT));

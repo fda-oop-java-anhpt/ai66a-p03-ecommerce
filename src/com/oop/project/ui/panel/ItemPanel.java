@@ -1,8 +1,8 @@
 package com.oop.project.ui.panel;
 
 import com.oop.project.exception.DuplicateException;
-import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 import com.oop.project.repository.interfaces.SystemSettingRepository;
+import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 import com.oop.project.model.Item;
 import com.oop.project.service.interfaces.IItemService;
 import com.oop.project.ui.dialogs.ItemDialog;
@@ -23,23 +23,23 @@ import java.util.List;
  */
 public class ItemPanel extends JPanel {
 
-    private final MainFrame  mf;
+    private final MainFrame mf;
     private final IItemService svc;
 
     private DefaultTableModel model;
-    private JTable            table;
-    private JTextField        searchField;
+    private JTable table;
+    private JTextField searchField;
 
     private int lowStockLimit = 5;
 
-    private static final String[] COLS = {"SKU", "Name", "Category", "Price ($)", "Stock"};
+    private static final String[] COLS = { "SKU", "Name", "Category", "Price (VNĐ)", "Stock" };
 
     public ItemPanel(MainFrame mf) {
-        this.mf  = mf;
+        this.mf = mf;
         this.svc = mf.itemService;
         setBackground(UITheme.BG_DARK);
         setLayout(new BorderLayout());
-        add(buildTop(),    BorderLayout.NORTH);
+        add(buildTop(), BorderLayout.NORTH);
         add(buildCenter(), BorderLayout.CENTER);
         add(buildBottom(), BorderLayout.SOUTH);
         refresh();
@@ -55,9 +55,9 @@ public class ItemPanel extends JPanel {
         searchField = UITheme.styledTextField();
         searchField.setPreferredSize(new Dimension(220, 34));
         searchField.addActionListener(e -> doSearch());
-        JButton sBtn  = UITheme.primaryButton("Search");
+        JButton sBtn = UITheme.primaryButton("Search");
         JButton allBtn = UITheme.ghostButton("Show All");
-        sBtn  .addActionListener(e -> doSearch());
+        sBtn.addActionListener(e -> doSearch());
         allBtn.addActionListener(e -> refresh());
 
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
@@ -82,7 +82,8 @@ public class ItemPanel extends JPanel {
 
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2) openEditDialog();
+                if (e.getClickCount() == 2)
+                    openEditDialog();
             }
         });
 
@@ -103,19 +104,21 @@ public class ItemPanel extends JPanel {
         p.setBackground(UITheme.BG_DARK);
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR));
 
-        JButton addBtn     = UITheme.primaryButton("+ Add Item");
-        JButton editBtn    = UITheme.ghostButton("Edit");
-        JButton deleteBtn  = UITheme.dangerButton("Delete");
-        JButton stockBtn   = UITheme.primaryButton("Add Stock");
+        JButton addBtn = UITheme.primaryButton("+ Add Item");
+        JButton editBtn = UITheme.ghostButton("Edit");
+        JButton deleteBtn = UITheme.dangerButton("Delete");
+        JButton stockBtn = UITheme.primaryButton("Add Stock");
         // JButton refreshBtn = UITheme.ghostButton("Refresh");
 
-        addBtn    .addActionListener(e -> openAddDialog());
-        editBtn   .addActionListener(e -> openEditDialog());
-        deleteBtn .addActionListener(e -> deleteSelected());
-        stockBtn  .addActionListener(e -> addStock());
+        addBtn.addActionListener(e -> openAddDialog());
+        editBtn.addActionListener(e -> openEditDialog());
+        deleteBtn.addActionListener(e -> deleteSelected());
+        stockBtn.addActionListener(e -> addStock());
         // refreshBtn.addActionListener(e -> refresh());
 
-        p.add(addBtn); p.add(editBtn); p.add(deleteBtn);
+        p.add(addBtn);
+        p.add(editBtn);
+        p.add(deleteBtn);
         p.add(Box.createHorizontalStrut(12));
         // p.add(stockBtn); p.add(refreshBtn);
 
@@ -133,7 +136,8 @@ public class ItemPanel extends JPanel {
         ItemDialog dlg = new ItemDialog(mf, null, mf.isAdmin());
         dlg.setVisible(true);
         Item result = dlg.getResult();
-        if (result == null) return;
+        if (result == null)
+            return;
         try {
             svc.addItem(result, mf.getCurrentUser());
             refresh();
@@ -147,7 +151,10 @@ public class ItemPanel extends JPanel {
 
     private void openEditDialog() {
         int row = table.getSelectedRow();
-        if (row < 0) { UITheme.showError(this, "Select an item first."); return; }
+        if (row < 0) {
+            UITheme.showError(this, "Select an item first.");
+            return;
+        }
         String sku = (String) model.getValueAt(row, 0);
 
         // Build item from table row
@@ -159,13 +166,15 @@ public class ItemPanel extends JPanel {
         if (priceObj instanceof java.math.BigDecimal)
             existing.setUnitPrice((java.math.BigDecimal) priceObj);
         int stock = model.getValueAt(row, 4) instanceof Number
-                ? ((Number) model.getValueAt(row, 4)).intValue() : 0;
+                ? ((Number) model.getValueAt(row, 4)).intValue()
+                : 0;
         existing.setStockQuantity(stock);
 
         ItemDialog dlg = new ItemDialog(mf, existing, mf.isAdmin());
         dlg.setVisible(true);
         Item result = dlg.getResult();
-        if (result == null) return;
+        if (result == null)
+            return;
         try {
             svc.updateItem(result, mf.getCurrentUser());
             refresh();
@@ -179,26 +188,36 @@ public class ItemPanel extends JPanel {
 
     private void deleteSelected() {
         int row = table.getSelectedRow();
-        if (row < 0) { UITheme.showError(this, "Select an item to delete."); return; }
-        String sku  = (String) model.getValueAt(row, 0);
+        if (row < 0) {
+            UITheme.showError(this, "Select an item to delete.");
+            return;
+        }
+        String sku = (String) model.getValueAt(row, 0);
         String name = (String) model.getValueAt(row, 1);
-        if (!UITheme.confirm(this, "Delete \"" + name + "\" (" + sku + ")?", "Confirm Delete")) return;
+        if (!UITheme.confirm(this, "Delete \"" + name + "\" (" + sku + ")?", "Confirm Delete"))
+            return;
         try {
             svc.deleteItem(sku);
             refresh();
             UITheme.showSuccess(this, "Item deleted.");
-        } catch (Exception ex) { UITheme.showError(this, ex.getMessage()); }
+        } catch (Exception ex) {
+            UITheme.showError(this, ex.getMessage());
+        }
     }
 
     private void addStock() {
         int row = table.getSelectedRow();
-        if (row < 0) { UITheme.showError(this, "Select an item first."); return; }
-        String sku  = (String) model.getValueAt(row, 0);
+        if (row < 0) {
+            UITheme.showError(this, "Select an item first.");
+            return;
+        }
+        String sku = (String) model.getValueAt(row, 0);
         String name = (String) model.getValueAt(row, 1);
 
         String input = JOptionPane.showInputDialog(this,
                 "Add stock quantity for \"" + name + "\":", "Add Stock", JOptionPane.PLAIN_MESSAGE);
-        if (input == null) return;
+        if (input == null)
+            return;
         try {
             int qty = Integer.parseInt(input.trim());
             svc.addStock(sku, qty, mf.getCurrentUser());
@@ -236,42 +255,52 @@ public class ItemPanel extends JPanel {
         try {
             SystemSettingRepository r = new SystemSettingRepositoryImpl();
             com.oop.project.model.SystemSetting s = r.findByKey("LOW_STOCK_LIMIT");
-            if (s != null) return Integer.parseInt(s.getSettingValue());
-        } catch (Exception ignored) {}
+            if (s != null)
+                return Integer.parseInt(s.getSettingValue());
+        } catch (Exception ignored) {
+        }
         return 5; // default
     }
 
     private void doSearch() {
         // ItemService has no search — filter table in memory
         String kw = searchField.getText().trim().toLowerCase();
-        if (kw.isEmpty()) { refresh(); return; }
+        if (kw.isEmpty()) {
+            refresh();
+            return;
+        }
         model.setRowCount(0);
         try {
             for (Item i : svc.getAllItems()) {
                 if (i.getItemName().toLowerCase().contains(kw)
                         || i.getItemSku().toLowerCase().contains(kw)
                         || (i.getCategory() != null && i.getCategory().toLowerCase().contains(kw))) {
-                    model.addRow(new Object[]{
-                        i.getItemSku(), i.getItemName(), i.getCategory(),
-                        i.getUnitPrice(), i.getStockQuantity()});
+                    model.addRow(new Object[] {
+                            i.getItemSku(), i.getItemName(), i.getCategory(),
+                            i.getUnitPrice(), i.getStockQuantity() });
                 }
             }
-        } catch (Exception ex) { UITheme.showError(this, ex.getMessage()); }
+        } catch (Exception ex) {
+            UITheme.showError(this, ex.getMessage());
+        }
     }
 
     // ── Data ──────────────────────────────────────────────────────────────────
     public void refresh() {
         lowStockLimit = loadLowStockLimit(); // ← reload từ DB mỗi lần refresh
-        try { populate(svc.getAllItems()); }
-        catch (Exception ex) { UITheme.showError(this, "Failed to load items: " + ex.getMessage()); }
+        try {
+            populate(svc.getAllItems());
+        } catch (Exception ex) {
+            UITheme.showError(this, "Failed to load items: " + ex.getMessage());
+        }
     }
 
     private void populate(List<Item> list) {
         model.setRowCount(0);
         for (Item i : list) {
-            model.addRow(new Object[]{
-                i.getItemSku(), i.getItemName(), i.getCategory(),
-                i.getUnitPrice(), i.getStockQuantity()
+            model.addRow(new Object[] {
+                    i.getItemSku(), i.getItemName(), i.getCategory(),
+                    i.getUnitPrice(), i.getStockQuantity()
             });
         }
     }

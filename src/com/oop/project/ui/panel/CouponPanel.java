@@ -3,8 +3,8 @@ package com.oop.project.ui.panel;
 import com.oop.project.model.Coupon;
 import com.oop.project.model.DiscountType;
 import com.oop.project.repository.interfaces.CouponRepository;
-import com.oop.project.repository.impl.CouponRepositoryImpl;
 import com.oop.project.service.interfaces.ICouponService;
+import com.oop.project.repository.impl.CouponRepositoryImpl;
 import com.oop.project.ui.dialogs.CouponDialog;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
@@ -16,9 +16,6 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -28,22 +25,21 @@ import java.util.List;
  */
 public class CouponPanel extends JPanel {
 
-    private final MainFrame       mf;
-    private final ICouponService   svc;
+    private final MainFrame mf;
+    private final ICouponService svc;
     private final CouponRepository repo = new CouponRepositoryImpl();
 
     private DefaultTableModel model;
-    private JTable            table;
+    private JTable table;
 
-    private static final String[] COLS =
-        {"Code", "Type", "Value", "Min Order ($)", "Expiry", "Active", "Status"};
+    private static final String[] COLS = { "Code", "Type", "Value", "Min Order (VNĐ)", "Expiry", "Status" };
 
     public CouponPanel(MainFrame mf) {
-        this.mf  = mf;
+        this.mf = mf;
         this.svc = mf.couponService;
         setBackground(UITheme.BG_DARK);
         setLayout(new BorderLayout());
-        add(buildTop(),    BorderLayout.NORTH);
+        add(buildTop(), BorderLayout.NORTH);
         add(buildCenter(), BorderLayout.CENTER);
         add(buildBottom(), BorderLayout.SOUTH);
         refresh();
@@ -70,14 +66,15 @@ public class CouponPanel extends JPanel {
         model = TableRenderer.model(COLS);
         table = new JTable(model);
         TableRenderer.applyAll(table);
-        TableRenderer.widths(table, 120, 100, 80, 110, 110, 70, 90);
+        TableRenderer.widths(table, 120, 100, 80, 110, 110, 100);
 
         // Status column — ACTIVE green / EXPIRED red
-        table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+        table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(
                     JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
-                l.setFont(UITheme.FONT_BADGE); l.setHorizontalAlignment(CENTER);
+                l.setFont(UITheme.FONT_BADGE);
+                l.setHorizontalAlignment(CENTER);
                 if (!sel) {
                     boolean active = "ACTIVE".equals(v);
                     l.setForeground(active ? UITheme.STATUS_PAID : UITheme.STATUS_CANCELLED);
@@ -92,7 +89,8 @@ public class CouponPanel extends JPanel {
         if (mf.isAdmin()) {
             table.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent e) {
-                    if (e.getClickCount() == 2) editSelected();
+                    if (e.getClickCount() == 2)
+                        editSelected();
                 }
             });
         }
@@ -121,15 +119,17 @@ public class CouponPanel extends JPanel {
         p.add(refreshBtn);
 
         if (mf.isAdmin()) {
-            JButton addBtn    = UITheme.primaryButton("+ New Coupon");
-            JButton editBtn   = UITheme.ghostButton("Edit");
+            JButton addBtn = UITheme.primaryButton("+ New Coupon");
+            JButton editBtn = UITheme.ghostButton("Edit");
             JButton toggleBtn = UITheme.ghostButton("Toggle Active");
 
-            addBtn   .addActionListener(e -> openAddDialog());
-            editBtn  .addActionListener(e -> editSelected());
+            addBtn.addActionListener(e -> openAddDialog());
+            editBtn.addActionListener(e -> editSelected());
             toggleBtn.addActionListener(e -> toggleActive());
 
-            p.add(addBtn); p.add(editBtn); p.add(toggleBtn);
+            p.add(addBtn);
+            p.add(editBtn);
+            p.add(toggleBtn);
         }
         return p;
     }
@@ -139,38 +139,61 @@ public class CouponPanel extends JPanel {
         CouponDialog dlg = new CouponDialog(mf, null);
         dlg.setVisible(true);
         Coupon result = dlg.getResult();
-        if (result == null) return;
+        if (result == null)
+            return;
         try {
             svc.addCoupon(result);
             refresh();
             UITheme.showSuccess(this, "Coupon \"" + result.getCouponCode() + "\" added.");
-        } catch (Exception ex) { UITheme.showError(this, ex.getMessage()); }
+        } catch (Exception ex) {
+            UITheme.showError(this, ex.getMessage());
+        }
     }
 
     private void editSelected() {
         int row = table.getSelectedRow();
-        if (row < 0) { UITheme.showError(this, "Select a coupon first."); return; }
+        if (row < 0) {
+            UITheme.showError(this, "Select a coupon first.");
+            return;
+        }
         String code = (String) model.getValueAt(row, 0);
         Coupon existing = repo.findByCode(code);
-        if (existing == null) { UITheme.showError(this, "Coupon not found."); return; }
+        if (existing == null) {
+            UITheme.showError(this, "Coupon not found.");
+            return;
+        }
 
         CouponDialog dlg = new CouponDialog(mf, existing);
         dlg.setVisible(true);
         Coupon result = dlg.getResult();
-        if (result == null) return;
+        if (result == null)
+            return;
         try {
             repo.update(result);
             refresh();
             UITheme.showSuccess(this, "Coupon updated.");
-        } catch (Exception ex) { UITheme.showError(this, ex.getMessage()); }
+        } catch (Exception ex) {
+            UITheme.showError(this, ex.getMessage());
+        }
     }
 
     private void toggleActive() {
         int row = table.getSelectedRow();
-        if (row < 0) { UITheme.showError(this, "Select a coupon first."); return; }
+        if (row < 0) {
+            UITheme.showError(this, "Select a coupon first.");
+            return;
+        }
         String code = (String) model.getValueAt(row, 0);
         Coupon c = repo.findByCode(code);
-        if (c == null) return;
+        if (c == null)
+            return;
+
+        if (!c.isActive() && c.getExpiryDate() != null
+                && c.getExpiryDate().before(new Date(System.currentTimeMillis()))) {
+            UITheme.showError(this, "Cannot activate an expired coupon.");
+            return;
+        }
+
         c.setActive(!c.isActive());
         repo.update(c);
         refresh();
@@ -184,15 +207,15 @@ public class CouponPanel extends JPanel {
             Date today = new Date(System.currentTimeMillis());
             for (Coupon c : list) {
                 boolean expired = c.getExpiryDate() != null && c.getExpiryDate().before(today);
-                String  status  = (!c.isActive() || expired) ? "EXPIRED" : "ACTIVE";
-                String  val     = c.getDiscountType() == DiscountType.Percent
+                String status = (!c.isActive() || expired) ? "EXPIRED" : "ACTIVE";
+                String valStr = c.getDiscountType() == DiscountType.Percent
                         ? c.getDiscountValue().toPlainString() + "%"
-                        : "$" + c.getDiscountValue().toPlainString();
-                model.addRow(new Object[]{
-                    c.getCouponCode(), c.getDiscountType().name(),
-                    val,
-                    c.getMinOrderValue() != null ? c.getMinOrderValue() : BigDecimal.ZERO,
-                    c.getExpiryDate(), c.isActive() ? "Yes" : "No", status
+                        : String.format("%,.0f VNĐ", c.getDiscountValue().doubleValue());
+                model.addRow(new Object[] {
+                        c.getCouponCode(), c.getDiscountType().name(),
+                        valStr,
+                        c.getMinOrderValue() != null ? c.getMinOrderValue() : BigDecimal.ZERO,
+                        c.getExpiryDate(), status
                 });
             }
         } catch (Exception ex) {

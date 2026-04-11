@@ -1,11 +1,9 @@
 package com.oop.project.ui.panel;
 
-import com.oop.project.model.SystemSetting;
-import com.oop.project.repository.interfaces.AuditLogRepository;
-import com.oop.project.repository.impl.AuditLogRepositoryImpl;
+import com.oop.project.model.*;
+import com.oop.project.repository.impl.*;
 import com.oop.project.repository.interfaces.SystemSettingRepository;
-import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
-import com.oop.project.model.AuditLog;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -15,46 +13,47 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+// import java.util.ArrayList;
+// import java.util.List;
 
 /**
  * System Settings panel — Admin only (FR-0.4).
  * Allows Admin to view and modify all system_settings rows.
  * TAX_RATE is highlighted and validated specially (must be 0–100).
- * Changes are persisted via SystemSettingRepository and logged via AuditLogRepository.
+ * Changes are persisted via SystemSettingRepository and logged via
+ * AuditLogRepository.
  */
 public class SettingsPanel extends JPanel {
 
-    private final MainFrame               mf;
-    private final SystemSettingRepository repo    = new SystemSettingRepositoryImpl();
-    private final AuditLogRepository      auditRepo = new AuditLogRepositoryImpl();
+    private final MainFrame mf;
+    private final SystemSettingRepository repo = new SystemSettingRepositoryImpl();
+    private final AuditLogRepository auditRepo = new AuditLogRepositoryImpl();
 
     // Known keys & descriptions (used for hints in the form)
-    private static final String KEY_TAX        = "TAX_RATE";
-    private static final String KEY_STORE      = "STORE_NAME";
-    private static final String KEY_LOW_STOCK  = "LOW_STOCK_LIMIT";
+    private static final String KEY_TAX = "TAX_RATE";
+    private static final String KEY_STORE = "STORE_NAME";
+    private static final String KEY_LOW_STOCK = "LOW_STOCK_LIMIT";
 
     // Table
     private DefaultTableModel tableModel;
-    private JTable            table;
+    private JTable table;
 
     // Inline edit form (shown below table)
-    private JLabel     editKeyLbl;
-    private JLabel     editDescLbl;
+    private JLabel editKeyLbl;
+    private JLabel editDescLbl;
     private JTextField editValueField;
-    private JButton    saveBtn, cancelEditBtn;
-    private JPanel     editPanel;
+    private JButton saveBtn, cancelEditBtn;
+    private JPanel editPanel;
 
-    private static final String[] COLS = {"Settings", "Current Value", "Description"};
+    private static final String[] COLS = { "Settings", "Current Value", "Description" };
 
     public SettingsPanel(MainFrame mf) {
         this.mf = mf;
         setBackground(UITheme.BG_DARK);
         setLayout(new BorderLayout());
-        add(buildTop(),    BorderLayout.NORTH);
+        add(buildTop(), BorderLayout.NORTH);
         add(buildCenter(), BorderLayout.CENTER);
-        add(buildEdit(),   BorderLayout.SOUTH);
+        add(buildEdit(), BorderLayout.SOUTH);
         refresh();
     }
 
@@ -122,7 +121,8 @@ public class SettingsPanel extends JPanel {
 
         // Click → populate inline edit form
         table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) populateEditForm();
+            if (!e.getValueIsAdjusting())
+                populateEditForm();
         });
         // Double-click → focus the value field directly
         table.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -151,13 +151,13 @@ public class SettingsPanel extends JPanel {
         editPanel = new JPanel(new BorderLayout(16, 0));
         editPanel.setBackground(UITheme.BG_CARD);
         editPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR),
-            BorderFactory.createEmptyBorder(16, 20, 16, 20)));
+                BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR),
+                BorderFactory.createEmptyBorder(16, 20, 16, 20)));
 
         // Left: key name + description
         JPanel info = new JPanel(new GridLayout(2, 1, 0, 4));
         info.setBackground(UITheme.BG_CARD);
-        editKeyLbl  = new JLabel("Select a setting above to edit");
+        editKeyLbl = new JLabel("Select a setting above to edit");
         editKeyLbl.setFont(UITheme.FONT_HEADING);
         editKeyLbl.setForeground(UITheme.TEXT_PRIMARY);
         editDescLbl = new JLabel(" ");
@@ -175,15 +175,15 @@ public class SettingsPanel extends JPanel {
         editValueField = UITheme.styledTextField();
         editValueField.setEnabled(false);
         editValueField.addActionListener(e -> saveSetting()); // Enter key saves
-        valueBlock.add(valueLbl,       BorderLayout.NORTH);
+        valueBlock.add(valueLbl, BorderLayout.NORTH);
         valueBlock.add(editValueField, BorderLayout.CENTER);
 
         // Right: buttons
-        saveBtn      = UITheme.primaryButton("Save Change");
+        saveBtn = UITheme.primaryButton("Save Change");
         cancelEditBtn = UITheme.ghostButton("Cancel");
-        saveBtn      .setEnabled(false);
+        saveBtn.setEnabled(false);
         cancelEditBtn.setEnabled(false);
-        saveBtn      .addActionListener(e -> saveSetting());
+        saveBtn.addActionListener(e -> saveSetting());
         cancelEditBtn.addActionListener(e -> clearEditForm());
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -194,9 +194,9 @@ public class SettingsPanel extends JPanel {
         JPanel rightSection = new JPanel(new BorderLayout(0, 4));
         rightSection.setBackground(UITheme.BG_CARD);
         rightSection.add(valueBlock, BorderLayout.CENTER);
-        rightSection.add(btnPanel,   BorderLayout.SOUTH);
+        rightSection.add(btnPanel, BorderLayout.SOUTH);
 
-        editPanel.add(info,         BorderLayout.WEST);
+        editPanel.add(info, BorderLayout.WEST);
         editPanel.add(rightSection, BorderLayout.CENTER);
 
         // Tax-rate specific hint (shown dynamically)
@@ -206,20 +206,21 @@ public class SettingsPanel extends JPanel {
     // ── Actions ───────────────────────────────────────────────────────────────
     private void populateEditForm() {
         int row = table.getSelectedRow();
-        if (row < 0) return;
+        if (row < 0)
+            return;
 
-        String key   = (String) tableModel.getValueAt(row, 0);
+        String key = (String) tableModel.getValueAt(row, 0);
         String value = (String) tableModel.getValueAt(row, 1);
-        String desc  = (String) tableModel.getValueAt(row, 2);
+        String desc = (String) tableModel.getValueAt(row, 2);
 
-        editKeyLbl .setText(key);
-        editKeyLbl .setForeground(KEY_TAX.equals(key) ? UITheme.ACCENT : UITheme.TEXT_PRIMARY);
+        editKeyLbl.setText(key);
+        editKeyLbl.setForeground(KEY_TAX.equals(key) ? UITheme.ACCENT : UITheme.TEXT_PRIMARY);
         editDescLbl.setText(desc != null ? desc : " ");
 
         editValueField.setText(value);
         editValueField.setEnabled(true);
 
-        saveBtn      .setEnabled(true);
+        saveBtn.setEnabled(true);
         cancelEditBtn.setEnabled(true);
 
         // Extra hint for TAX_RATE
@@ -233,13 +234,15 @@ public class SettingsPanel extends JPanel {
 
     private void saveSetting() {
         int row = table.getSelectedRow();
-        if (row < 0) return;
+        if (row < 0)
+            return;
 
-        String key      = (String) tableModel.getValueAt(row, 0);
+        String key = (String) tableModel.getValueAt(row, 0);
         String newValue = editValueField.getText().trim();
 
         if (newValue.isEmpty()) {
-            UITheme.showError(this, "Value cannot be empty."); return;
+            UITheme.showError(this, "Value cannot be empty.");
+            return;
         }
 
         // ── Validate TAX_RATE specifically (FR-0.4) ────────────────────────
@@ -247,12 +250,14 @@ public class SettingsPanel extends JPanel {
             try {
                 BigDecimal tax = new BigDecimal(newValue);
                 if (tax.compareTo(BigDecimal.ZERO) < 0 || tax.compareTo(new BigDecimal("100")) > 0) {
-                    UITheme.showError(this, "Tax rate must be between 0 and 100.\nExample: enter 8.00 for 8%."); return;
+                    UITheme.showError(this, "Tax rate must be between 0 and 100.\nExample: enter 8.00 for 8%.");
+                    return;
                 }
                 // Normalise to 2 decimal places for consistency with DB schema NUMERIC(4,2)
                 newValue = tax.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
             } catch (NumberFormatException ex) {
-                UITheme.showError(this, "Tax rate must be a valid number (e.g. 8.00)."); return;
+                UITheme.showError(this, "Tax rate must be a valid number (e.g. 8.00).");
+                return;
             }
         }
 
@@ -260,9 +265,11 @@ public class SettingsPanel extends JPanel {
         if (KEY_LOW_STOCK.equals(key)) {
             try {
                 int limit = Integer.parseInt(newValue);
-                if (limit < 0) throw new NumberFormatException();
+                if (limit < 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException ex) {
-                UITheme.showError(this, "Low stock limit must be a non-negative integer."); return;
+                UITheme.showError(this, "Low stock limit must be a non-negative integer.");
+                return;
             }
         }
 
@@ -270,7 +277,8 @@ public class SettingsPanel extends JPanel {
         if (KEY_TAX.equals(key)) {
             if (!UITheme.confirm(this,
                     "Change tax rate to " + newValue + "%?\n\nThis will affect all future orders.",
-                    "Confirm Tax Rate Change")) return;
+                    "Confirm Tax Rate Change"))
+                return;
         }
 
         boolean ok = repo.update(key, newValue);
@@ -286,9 +294,9 @@ public class SettingsPanel extends JPanel {
             refresh();
             clearEditForm();
             UITheme.showSuccess(this,
-                KEY_TAX.equals(key)
-                    ? "Tax rate updated to " + newValue + "%.  All new orders will use this rate."
-                    : "Setting \"" + key + "\" updated to: " + newValue);
+                    KEY_TAX.equals(key)
+                            ? "Tax rate updated to " + newValue + "%.  All new orders will use this rate."
+                            : "Setting \"" + key + "\" updated to: " + newValue);
         } else {
             UITheme.showError(this, "Failed to save. Key \"" + key + "\" may not exist in the database.");
         }
@@ -296,26 +304,26 @@ public class SettingsPanel extends JPanel {
 
     private void clearEditForm() {
         table.clearSelection();
-        editKeyLbl .setText("Select a setting above to edit");
-        editKeyLbl .setForeground(UITheme.TEXT_PRIMARY);
+        editKeyLbl.setText("Select a setting above to edit");
+        editKeyLbl.setForeground(UITheme.TEXT_PRIMARY);
         editDescLbl.setText(" ");
         editValueField.setText("");
         editValueField.setEnabled(false);
-        saveBtn       .setEnabled(false);
-        cancelEditBtn .setEnabled(false);
+        saveBtn.setEnabled(false);
+        cancelEditBtn.setEnabled(false);
     }
 
     // ── Data ──────────────────────────────────────────────────────────────────
     public void refresh() {
         tableModel.setRowCount(0);
         // Load all known keys
-        for (String key : new String[]{KEY_TAX, KEY_STORE, KEY_LOW_STOCK}) {
+        for (String key : new String[] { KEY_TAX, KEY_STORE, KEY_LOW_STOCK }) {
             SystemSetting s = repo.findByKey(key);
             if (s != null) {
-                tableModel.addRow(new Object[]{
-                    s.getSettingKey(),
-                    s.getSettingValue(),
-                    s.getDescription() != null ? s.getDescription() : ""
+                tableModel.addRow(new Object[] {
+                        s.getSettingKey(),
+                        s.getSettingValue(),
+                        s.getDescription() != null ? s.getDescription() : ""
                 });
             }
         }

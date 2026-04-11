@@ -1,16 +1,21 @@
 package com.oop.project.model;
+
 import java.sql.Timestamp;
-import java.util.Objects;
-public class User{
+
+
+public class User {
     private int userId;
     private String userName;
     private String userPassword;
     private UserRole userRole;
     private Timestamp createdDate;
     private Timestamp lastLogin;
-    public User(){}
 
-    public User(int userId, String userName, String userPassword, UserRole userRole, Timestamp createdDate, Timestamp lastLogin){
+    public User() {
+    }
+
+    public User(int userId, String userName, String userPassword, UserRole userRole, Timestamp createdDate,
+            Timestamp lastLogin) {
         this.userId = userId;
         setUserName(userName);
         setUserPassword(userPassword);
@@ -18,6 +23,7 @@ public class User{
         this.createdDate = createdDate;
         this.lastLogin = lastLogin;
     }
+
     public User(int userId, String userName, UserRole userRole, Timestamp createdDate, Timestamp lastLogin) {
         this.userId = userId;
         setUserName(userName);
@@ -25,39 +31,45 @@ public class User{
         this.createdDate = createdDate;
         this.lastLogin = lastLogin;
     }
-    public int getUserId(){ 
+
+    public int getUserId() {
         return userId;
     }
-    public void setUserId(int userId){
+
+    public void setUserId(int userId) {
         this.userId = userId;
     }
-    public String getUserName(){
+
+    public String getUserName() {
         return userName;
     }
-    public void setUserName(String userName){
-        if (userName != null && !userName.trim().isEmpty() && userName.length()<=200){
+
+    public void setUserName(String userName) {
+        if (userName != null && !userName.trim().isEmpty() && userName.length() <= 200) {
             this.userName = userName;
-        } else{
+        } else {
             throw new IllegalArgumentException("Invalid UserName");
         }
     }
-    public String getUserPassword(){
+
+    public String getUserPassword() {
         return userPassword;
     }
-    public void setUserPassword(String userPassword){
-        if (userPassword == null || userPassword.length() < 6){
+
+    public void setUserPassword(String userPassword) {
+        if (userPassword == null || userPassword.length() < 6) {
             throw new IllegalArgumentException("Password must be at least 6 characters");
         }
         this.userPassword = userPassword;
     }
 
-    public UserRole getUserRole(){
+    public UserRole getUserRole() {
         return userRole;
     }
-    public void setUserRole(UserRole userRole){
+
+    public void setUserRole(UserRole userRole) {
         this.userRole = userRole;
     }
-
 
     public Timestamp getCreatedDate() {
         return createdDate;
@@ -66,18 +78,22 @@ public class User{
     public void setCreatedDate(Timestamp createdDate) {
         this.createdDate = createdDate;
     }
-    public Timestamp getLastLogin(){
+
+    public Timestamp getLastLogin() {
         return lastLogin;
     }
-    public void setLastLogin(Timestamp lastLogin){
+
+    public void setLastLogin(Timestamp lastLogin) {
         this.lastLogin = lastLogin;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;       
-        User user = (User) o;       
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        User user = (User) o;
         return userId == user.userId;
     }
 

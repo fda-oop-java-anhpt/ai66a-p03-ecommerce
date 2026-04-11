@@ -1,4 +1,5 @@
 package com.oop.project.exception;
+
 /**
  * Thrown when authentication fails — invalid username or password.
  */

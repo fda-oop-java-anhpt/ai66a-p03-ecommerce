@@ -1,18 +1,12 @@
 package com.oop.project.repository.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.oop.project.model.Customer;
+import com.oop.project.repository.interfaces.CustomerRepository;
+import com.oop.project.util.DatabaseConnection;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.oop.project.model.Customer;
-import com.oop.project.util.DatabaseConnection;
-import com.oop.project.repository.interfaces.CustomerRepository;
-
-
 
 public class CustomerRepositoryImpl implements CustomerRepository {
 
@@ -24,19 +18,16 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                 rs.getString("phone"),
                 rs.getString("email"),
                 rs.getString("address"),
-                rs.getTimestamp("created_date")
-        );
+                rs.getTimestamp("created_date"));
     }
 
     // ==================== List all customers ====================
-    
-    @Override
     public List<Customer> findAll() {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers ORDER BY customer_id";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }
@@ -47,12 +38,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== Find by ID ====================
-    
-    @Override
     public Customer findById(int id) {
         String sql = "SELECT * FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -65,13 +54,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== FR-1.3: Search by name or phone ====================
-    
-    @Override
     public List<Customer> searchByNameOrPhone(String keyword) {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers WHERE LOWER(customer_name) LIKE LOWER(?) OR phone LIKE ? ORDER BY customer_id";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             String pattern = "%" + keyword + "%";
             ps.setString(1, pattern);
             ps.setString(2, pattern);
@@ -86,11 +73,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== Check Duplicate Phone ====================
-    @Override
     public boolean isPhoneExists(String phone, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE phone = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, phone);
             ps.setInt(2, excludeId);
             ResultSet rs = ps.executeQuery();
@@ -102,11 +88,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== Check Duplicate Email ====================
-    @Override
     public boolean isEmailExists(String email, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE email = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setString(2, email);
             ps.setInt(2, excludeId);
@@ -119,12 +104,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== FR-1.1: Insert customer ====================
-    
-    @Override
     public boolean insert(Customer c) {
         String sql = "INSERT INTO customers (customer_name, phone, email, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCustomerName());
             ps.setString(2, c.getPhone());
             ps.setString(3, c.getEmail());
@@ -137,11 +120,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== FR-1.1, FR-1.2: Update customer ====================
-    @Override
     public boolean update(Customer c) {
         String sql = "UPDATE customers SET customer_name = ?, phone = ?, email = ?, address = ? WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCustomerName());
             ps.setString(2, c.getPhone());
             ps.setString(3, c.getEmail());
@@ -155,11 +137,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     // ==================== Delete customer ====================
-    @Override
     public boolean delete(int id) {
         String sql = "DELETE FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {

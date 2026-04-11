@@ -1,23 +1,15 @@
 package com.oop.project.service.impl;
 
 import com.oop.project.model.Order;
-import com.oop.project.model.OrderStatus;
 import com.oop.project.repository.interfaces.OrderRepository;
-import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.service.interfaces.IDashboardService;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DashboardServiceImpl implements IDashboardService {
 
     private final OrderRepository orderRepo;
-
-    public DashboardServiceImpl() {
-        this.orderRepo = new OrderRepositoryImpl();
-    }
 
     public DashboardServiceImpl(OrderRepository orderRepo) {
         this.orderRepo = orderRepo;
@@ -26,23 +18,28 @@ public class DashboardServiceImpl implements IDashboardService {
     @Override
     public List<Order> getAllOrders(String sortBy, boolean ascending) {
         List<Order> orders = orderRepo.findAll();
-        if (sortBy == null) return orders;
         Comparator<Order> comparator;
-        switch (sortBy.toLowerCase()) {
-            case "orderid":
-                comparator = Comparator.comparingInt(Order::getOrderId);
+        switch (sortBy != null ? sortBy.toLowerCase() : "date") {
+            case "customer":
+                comparator = Comparator.comparing(
+                        o -> o.getCustomer() != null ? o.getCustomer().getCustomerName() : "",
+                        String.CASE_INSENSITIVE_ORDER);
                 break;
-            case "finaltotal":
-                comparator = Comparator.comparing(Order::getFinalTotal, Comparator.nullsLast(BigDecimal::compareTo));
+            case "amount":
+                comparator = Comparator.comparing(Order::getFinalTotal);
                 break;
-            case "orderdate":
-                comparator = Comparator.comparing(Order::getOrderDate, Comparator.nullsLast(Timestamp::compareTo));
+            case "status":
+                comparator = Comparator.comparing(o -> o.getStatus().name());
                 break;
+            case "date":
             default:
-                return orders;
+                comparator = Comparator.comparing(Order::getOrderDate, Comparator.nullsLast(Comparator.naturalOrder()));
+                break;
         }
-        if (!ascending) comparator = comparator.reversed();
-        return orders.stream().sorted(comparator).collect(Collectors.toList());
+        if (!ascending)
+            comparator = comparator.reversed();
+        orders.sort(comparator);
+        return orders;
     }
 
     @Override
@@ -60,19 +57,12 @@ public class DashboardServiceImpl implements IDashboardService {
 
     @Override
     public Map<String, Object> getSummaryStatistics() {
-        Map<String, Object> stats = new HashMap<>();
-        int totalOrders = orderRepo.countAll();
-        int pendingOrders = orderRepo.countByStatus(OrderStatus.PENDING.name());
-        int paidOrders = orderRepo.countByStatus(OrderStatus.PAID.name());
-        int cancelledOrders = orderRepo.countByStatus(OrderStatus.CANCELLED.name());
-        BigDecimal totalRevenue = orderRepo.sumRevenue();
-        if (totalRevenue == null) totalRevenue = BigDecimal.ZERO;
-
-        stats.put("totalOrders", totalOrders);
-        stats.put("pendingOrders", pendingOrders);
-        stats.put("paidOrders", paidOrders);
-        stats.put("cancelledOrders", cancelledOrders);
-        stats.put("totalRevenue", totalRevenue);
+        Map<String, Object> stats = new LinkedHashMap<>();
+        int total = orderRepo.countAll();
+        int cancelled = orderRepo.countByStatus("CANCELLED");
+        stats.put("totalOrders", total - cancelled);
+        stats.put("totalRevenue", orderRepo.sumRevenue());
+        stats.put("cancelledOrders", cancelled);
         return stats;
     }
 }

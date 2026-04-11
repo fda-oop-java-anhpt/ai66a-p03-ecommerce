@@ -2,17 +2,14 @@ package com.oop.project.ui.panel;
 
 import com.oop.project.model.Order;
 import com.oop.project.service.interfaces.IDashboardService;
-import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 

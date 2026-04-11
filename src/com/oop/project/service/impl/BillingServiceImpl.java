@@ -19,7 +19,7 @@ public class BillingServiceImpl implements IBillingService {
     private final SystemSettingRepository settingRepo;
     private final CouponRepository couponRepo;
     private final ItemRepository itemRepo;
-    private final OrderDetailRepository orderDetailRepo;
+    // private final OrderDetailRepository orderDetailRepo;
 
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("8.00");
 
@@ -31,7 +31,7 @@ public class BillingServiceImpl implements IBillingService {
         this.settingRepo = settingRepo;
         this.couponRepo = couponRepo;
         this.itemRepo = itemRepo;
-        this.orderDetailRepo = orderDetailRepo;
+        // this.orderDetailRepo = orderDetailRepo;
     }
 
     @Override

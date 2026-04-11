@@ -56,6 +56,10 @@ public class OrderPanel extends JPanel {
     // Coupon applied to current form
     private Coupon appliedCoupon = null;
 
+    // Action buttons that need to be dynamically toggled
+    private JButton cancelBtn;
+    private JButton updateSBtn;
+
     private static final String[] ORDER_COLS = { "ID", "Customer", "Date", "Status", "Total" };
     private static final String[] LINE_COLS = { "SKU", "Item Name", "Qty", "Unit Price", "Line Total" };
 
@@ -156,9 +160,9 @@ public class OrderPanel extends JPanel {
         JPanel acts = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         acts.setBackground(UITheme.BG_DARK);
         JButton invoiceBtn = UITheme.ghostButton("View Invoice");
-        JButton cancelBtn = UITheme.dangerButton("Cancel Order");
+        cancelBtn = UITheme.dangerButton("Cancel Order");
         JButton deleteBtn = UITheme.dangerButton("Delete");
-        JButton updateSBtn = UITheme.ghostButton("Update Status →");
+        updateSBtn = UITheme.ghostButton("Update Status →");
         invoiceBtn.addActionListener(e -> showInvoice());
         cancelBtn.addActionListener(e -> cancelOrder());
         deleteBtn.addActionListener(e -> deleteOrder());
@@ -234,7 +238,7 @@ public class OrderPanel extends JPanel {
         couponRow.add(applyCouponBtn, BorderLayout.EAST);
 
         // Status selector (for initial status — default PENDING)
-        statusCombo = UITheme.styledComboBox(new String[] { "PENDING", "PAID", "CANCELLED" });
+        statusCombo = UITheme.styledComboBox(new String[] { "PENDING", "PAID" });
 
         // Billing summary
         JPanel summary = buildBillSummary();
@@ -477,11 +481,31 @@ public class OrderPanel extends JPanel {
         selectedOrderId = (int) orderModel.getValueAt(row, 0);
         String status = (String) orderModel.getValueAt(row, 3);
         statusCombo.setSelectedItem(status);
+        
+        // FR-4.3 / business rule: CANCELLED orders are final — cannot be edited
+        boolean isCancelled = "CANCELLED".equals(status);
+        if (updateSBtn != null) updateSBtn.setEnabled(!isCancelled);
+        if (cancelBtn != null) cancelBtn.setEnabled(!isCancelled);
+        if (statusCombo != null) statusCombo.setEnabled(!isCancelled);
+        
+        if (isCancelled) {
+            if (updateSBtn != null) updateSBtn.setToolTipText("Cannot change status: order is already cancelled");
+            if (cancelBtn != null) cancelBtn.setToolTipText("Order is already cancelled");
+        } else {
+            if (updateSBtn != null) updateSBtn.setToolTipText(null);
+            if (cancelBtn != null) cancelBtn.setToolTipText(null);
+        }
     }
 
     private void updateStatus() {
         if (selectedOrderId == null) {
             UITheme.showError(this, "Select an order first.");
+            return;
+        }
+        // Guard: double-check current persisted status to prevent any bypass
+        Order current = orderRepo.findById(selectedOrderId);
+        if (current != null && current.getStatus() == OrderStatus.CANCELLED) {
+            UITheme.showError(this, "Order #" + selectedOrderId + " is already cancelled and cannot be modified.");
             return;
         }
         String newStatus = (String) statusCombo.getSelectedItem();
@@ -502,6 +526,12 @@ public class OrderPanel extends JPanel {
     private void cancelOrder() {
         if (selectedOrderId == null) {
             UITheme.showError(this, "Select an order to cancel.");
+            return;
+        }
+        // Guard: prevent cancelling an already-cancelled order
+        Order current = orderRepo.findById(selectedOrderId);
+        if (current != null && current.getStatus() == OrderStatus.CANCELLED) {
+            UITheme.showError(this, "Order #" + selectedOrderId + " is already cancelled.");
             return;
         }
         if (!UITheme.confirm(this, "Cancel order #" + selectedOrderId + "? Stock will be restored.", "Confirm Cancel"))
@@ -554,6 +584,9 @@ public class OrderPanel extends JPanel {
         couponField.setText("");
         appliedCoupon = null;
         statusCombo.setSelectedIndex(0);
+        statusCombo.setEnabled(true);
+        if (updateSBtn != null) { updateSBtn.setEnabled(true); updateSBtn.setToolTipText(null); }
+        if (cancelBtn != null)  { cancelBtn.setEnabled(true);  cancelBtn.setToolTipText(null); }
         recalc();
         orderTable.clearSelection();
         selectedOrderId = null;

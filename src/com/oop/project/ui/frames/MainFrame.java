@@ -9,7 +9,6 @@ import com.oop.project.repository.interfaces.ItemRepository;
 import com.oop.project.repository.interfaces.OrderDetailRepository;
 import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.repository.interfaces.SystemSettingRepository;
-import com.oop.project.repository.interfaces.UserRepository;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.repository.impl.CouponRepositoryImpl;
 import com.oop.project.repository.impl.CustomerRepositoryImpl;
@@ -17,7 +16,6 @@ import com.oop.project.repository.impl.ItemRepositoryImpl;
 import com.oop.project.repository.impl.OrderDetailRepositoryImpl;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
-import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.service.impl.*;
 import com.oop.project.ui.panel.CouponPanel;
@@ -400,9 +398,9 @@ public class MainFrame extends JFrame {
             dashboardPanel.refresh();
     }
 
-    private void refreshCurrent() {
-        onTabChange(tabs.getSelectedIndex());
-    }
+    // private void refreshCurrent() {
+    // onTabChange(tabs.getSelectedIndex());
+    // }
 
     private void confirmLogout() {
         if (UITheme.confirm(this, "Log out of ShopFlow?", "Confirm Logout")) {

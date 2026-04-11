@@ -43,7 +43,7 @@ public class ItemDialog extends JDialog {
         skuField = UITheme.styledTextField();
         nameField = UITheme.styledTextField();
         categoryCombo = UITheme.styledComboBox(new String[] {
-                "Điện thoại", "Tai nghe", "Màn hình", "Laptop", "Phụ kiện"
+                "Điện thoại", "Tai nghe", "Màn hình", "Laptop", "Phụ kiện", "Smartwatch"
         });
         priceField = UITheme.styledTextField();
         stockField = UITheme.styledTextField();

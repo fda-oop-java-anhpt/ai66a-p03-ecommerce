@@ -4,6 +4,7 @@ import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
 import com.oop.project.repository.interfaces.UserRepository;
 import com.oop.project.util.DatabaseConnection;
+import com.oop.project.util.PasswordUtils;
 
 import java.sql.*;
 import java.util.ArrayList;

@@ -6,6 +6,7 @@ import com.oop.project.model.User;
 import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.repository.interfaces.UserRepository;
 import com.oop.project.service.interfaces.IAuthService;
+import com.oop.project.util.PasswordUtils;
 import com.oop.project.util.Validator;
 
 import java.sql.Timestamp;
@@ -30,8 +31,8 @@ public class AuthServiceImpl implements IAuthService {
         if (user == null) {
             throw new AuthenticationException("Username not found.");
         }
-
-        if (!user.getUserPassword().equals(password)) {
+        // check password
+        if (!PasswordUtils.verifyPassword(password, user.getUserPassword())) {
             throw new AuthenticationException("Incorrect password.");
         }
 

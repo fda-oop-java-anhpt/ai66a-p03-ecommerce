@@ -39,6 +39,22 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
+    // ==================== Find user by ID ====================
+    public User findById(int userId) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     // ==================== List all users ====================
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
@@ -63,6 +79,19 @@ public class UserRepositoryImpl implements UserRepository {
             ps.setString(1, user.getUserName());
             ps.setString(2, PasswordUtils.hashPassword(user.getUserPassword()));
             ps.setString(3, user.getUserRole().name());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ==================== Delete user ====================
+    public boolean delete(int userId) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

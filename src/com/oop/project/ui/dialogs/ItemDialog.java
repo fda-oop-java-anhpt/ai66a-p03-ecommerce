@@ -82,8 +82,15 @@ public class ItemDialog extends JDialog {
         fields.add(UITheme.labeledField(isAdmin ? "Unit Price (VNĐ) *" : "Unit Price (Admin only)", priceField));
         fields.add(UITheme.labeledField("Stock Quantity", stockField));
 
-        if (!isAdmin) {
-            JLabel warn = UITheme.label("⚠  Price editing is restricted to Admin users.");
+        if (isEdit && !isAdmin) {
+            // Staff editing: show what they CAN and CANNOT change
+            JLabel warn = UITheme.label("\u26A0  Staff can only edit: Name, Category, Stock Quantity.");
+            warn.setForeground(UITheme.WARNING);
+            warn.setFont(UITheme.FONT_SMALL);
+            fields.add(warn);
+        } else if (!isAdmin) {
+            // Staff adding new item (admin-only action normally, but just in case)
+            JLabel warn = UITheme.label("\u26A0  Price editing is restricted to Admin users.");
             warn.setForeground(UITheme.WARNING);
             warn.setFont(UITheme.FONT_SMALL);
             fields.add(warn);
@@ -128,8 +135,9 @@ public class ItemDialog extends JDialog {
             return;
         }
 
-        BigDecimal price = BigDecimal.ZERO;
+        BigDecimal price = null;
         if (isAdmin) {
+            // Admin must provide a valid positive price
             if (priceStr.isEmpty()) {
                 UITheme.showError(this, "Unit price is required.");
                 priceField.requestFocus();
@@ -143,6 +151,13 @@ public class ItemDialog extends JDialog {
                 UITheme.showError(this, "Unit price must be a positive number.");
                 priceField.requestFocus();
                 return;
+            }
+        } else {
+            // Staff: price field is disabled but still contains the existing price — preserve it
+            if (!priceStr.isEmpty()) {
+                try {
+                    price = new BigDecimal(priceStr);
+                } catch (NumberFormatException ignored) {}
             }
         }
 
@@ -163,7 +178,7 @@ public class ItemDialog extends JDialog {
         result.setItemSku(sku);
         result.setItemName(name);
         result.setCategory(category.isEmpty() ? null : category);
-        if (isAdmin)
+        if (price != null)
             result.setUnitPrice(price);
         result.setStockQuantity(stock);
         dispose();

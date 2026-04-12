@@ -8,9 +8,13 @@ import java.util.List;
 public interface UserRepository {
     User findByUsername(String username);
 
+    User findById(int userId);
+
     List<User> findAll();
 
     boolean insert(User user);
+
+    boolean delete(int userId);
 
     boolean updateLastLogin(int userId, Timestamp timestamp);
 }

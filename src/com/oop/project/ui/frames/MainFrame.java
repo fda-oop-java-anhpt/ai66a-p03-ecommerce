@@ -76,7 +76,7 @@ public class MainFrame extends JFrame {
 
         // Initialize Services
         this.customerService = new CustomerServiceImpl(customerRepo, orderRepo);
-        this.itemService = new ItemServiceImpl(itemRepo);
+        this.itemService = new ItemServiceImpl(itemRepo, auditLogRepo);
         this.couponService = new CouponServiceImpl(couponRepo);
         this.dashboardService = new DashboardServiceImpl(orderRepo);
         this.billingService = new BillingServiceImpl(orderRepo, auditLogRepo, settingRepo, couponRepo, itemRepo,

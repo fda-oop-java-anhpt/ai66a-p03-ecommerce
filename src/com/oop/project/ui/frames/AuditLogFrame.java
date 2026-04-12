@@ -61,13 +61,13 @@ public class AuditLogFrame extends JFrame {
 
         JPanel titleBlock = new JPanel(new BorderLayout(0, 3));
         titleBlock.setBackground(UITheme.BG_DARK);
-        titleBlock.add(UITheme.title("📋  Audit Log"), BorderLayout.NORTH);
+        titleBlock.add(UITheme.title("Audit Log"), BorderLayout.NORTH);
         JLabel sub = UITheme.label("All order and authentication events (FR-4.4, FR-0.5)");
         sub.setFont(UITheme.FONT_SMALL);
         titleBlock.add(sub, BorderLayout.SOUTH);
 
         // Filter bar
-        JPanel filters = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel filters = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
         filters.setOpaque(false);
 
         filters.add(UITheme.label("Action:"));

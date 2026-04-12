@@ -2,6 +2,10 @@ package com.oop.project.ui.panel;
 
 import com.oop.project.model.Order;
 import com.oop.project.service.interfaces.IDashboardService;
+<<<<<<< HEAD
+=======
+import com.oop.project.repository.interfaces.AuditLogRepository;
+>>>>>>> 994c85e02ee5e2a2bf39109ec89b45e679d37e60
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;

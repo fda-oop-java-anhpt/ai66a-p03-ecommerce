@@ -71,10 +71,13 @@ public class AuditLogFrame extends JFrame {
         filters.setOpaque(false);
 
         filters.add(UITheme.label("Action:"));
-        actionFilter = UITheme.styledComboBox(new String[]{
-            "All", "LOGIN", "LOGOUT",
-            "CREATE_ORDER", "UPDATE_ORDER", "CANCEL_ORDER",
-            "UPDATE_SETTING"
+        actionFilter = UITheme.styledComboBox(new String[] {
+                "All", "LOGIN", "LOGOUT",
+                "CREATE_ORDER", "UPDATE_ORDER", "CANCEL_ORDER",
+                "CREATE_ITEM", "UPDATE_ITEM", "DELETE_ITEM",
+                "CREATE_CUSTOMER", "UPDATE_CUSTOMER", "DELETE_CUSTOMER",
+                "ADD_STAFF", "DELETE_STAFF",
+                "UPDATE_SETTING"
         });
         actionFilter.addActionListener(e -> applyFilter());
         filters.add(actionFilter);
@@ -116,12 +119,12 @@ public class AuditLogFrame extends JFrame {
                 if (!sel) {
                     String s = v == null ? "" : v.toString();
                     Color col = switch (s) {
-                        case "CREATE_ORDER"                -> UITheme.SUCCESS;
-                        case "CANCEL_ORDER", "DELETE_ORDER" -> UITheme.DANGER;
-                        case "UPDATE_ORDER"                -> UITheme.WARNING;
-                        case "LOGIN", "LOGOUT"             -> UITheme.ACCENT;
-                        case "UPDATE_SETTING"              -> new Color(200, 150, 255);
-                        default                            -> UITheme.TEXT_MUTED;
+                        case "CREATE_ORDER", "CREATE_ITEM", "CREATE_CUSTOMER", "ADD_STAFF" -> UITheme.SUCCESS;
+                        case "CANCEL_ORDER", "DELETE_ORDER", "DELETE_ITEM", "DELETE_CUSTOMER", "DELETE_STAFF" -> UITheme.DANGER;
+                        case "UPDATE_ORDER", "UPDATE_ITEM", "UPDATE_CUSTOMER" -> UITheme.WARNING;
+                        case "LOGIN", "LOGOUT" -> UITheme.ACCENT;
+                        case "UPDATE_SETTING" -> new Color(200, 150, 255);
+                        default -> UITheme.TEXT_MUTED;
                     };
                     l.setForeground(col);
                     l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);

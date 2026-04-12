@@ -107,12 +107,20 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     public boolean insert(Customer c) {
         String sql = "INSERT INTO customers (customer_name, phone, email, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, c.getCustomerName());
             ps.setString(2, c.getPhone());
             ps.setString(3, c.getEmail());
             ps.setString(4, c.getAddress());
-            return ps.executeUpdate() > 0;
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        c.setCustomerId(rs.getInt(1));
+                    }
+                }
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

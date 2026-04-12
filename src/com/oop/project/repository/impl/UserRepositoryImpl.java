@@ -75,11 +75,19 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean insert(User user) {
         String sql = "INSERT INTO users (user_name, user_password, user_role) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUserName());
             ps.setString(2, PasswordUtils.hashPassword(user.getUserPassword()));
             ps.setString(3, user.getUserRole().name());
-            return ps.executeUpdate() > 0;
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        user.setUserId(rs.getInt(1));
+                    }
+                }
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

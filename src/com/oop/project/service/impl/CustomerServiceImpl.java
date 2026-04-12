@@ -2,8 +2,11 @@ package com.oop.project.service.impl;
 
 import com.oop.project.exception.DuplicateException;
 import com.oop.project.exception.ValidationException;
+import com.oop.project.model.AuditLog;
 import com.oop.project.model.Customer;
 import com.oop.project.model.Order;
+import com.oop.project.model.User;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.repository.interfaces.CustomerRepository;
 import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.service.interfaces.ICustomerService;
@@ -16,10 +19,28 @@ public class CustomerServiceImpl implements ICustomerService {
 
     private final CustomerRepository customerRepo;
     private final OrderRepository orderRepo;
+    private final AuditLogRepository auditRepo;
 
-    public CustomerServiceImpl(CustomerRepository customerRepo, OrderRepository orderRepo) {
+    public CustomerServiceImpl(CustomerRepository customerRepo, OrderRepository orderRepo,
+            AuditLogRepository auditRepo) {
         this.customerRepo = customerRepo;
         this.orderRepo = orderRepo;
+        this.auditRepo = auditRepo;
+    }
+
+    private void log(User actor, String action, String targetId) {
+        if (actor == null)
+            return;
+        try {
+            AuditLog log = new AuditLog();
+            log.setUser(actor);
+            log.setActions(action);
+            log.setTargetType("CUSTOMER");
+            log.setTargetId(targetId);
+            auditRepo.insert(log);
+        } catch (Exception e) {
+            System.err.println("Audit log failed: " + e.getMessage());
+        }
     }
 
     @Override
@@ -28,7 +49,7 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
-    public boolean addCustomer(Customer c) {
+    public boolean addCustomer(Customer c, User actor) {
         validateCustomer(c);
         if (customerRepo.isPhoneExists(c.getPhone(), -1)) {
             throw new DuplicateException("Số điện thoại '" + c.getPhone() + "' đã tồn tại!");
@@ -39,11 +60,15 @@ public class CustomerServiceImpl implements ICustomerService {
         if (c.getCreatedDate() == null) {
             c.setCreatedDate(new Timestamp(System.currentTimeMillis()));
         }
-        return customerRepo.insert(c);
+        boolean ok = customerRepo.insert(c);
+        if (ok) {
+            log(actor, "CREATE_CUSTOMER", String.valueOf(c.getCustomerId()));
+        }
+        return ok;
     }
 
     @Override
-    public boolean updateCustomer(Customer c) {
+    public boolean updateCustomer(Customer c, User actor) {
         validateCustomer(c);
         if (customerRepo.isPhoneExists(c.getPhone(), c.getCustomerId())) {
             throw new DuplicateException("Số điện thoại '" + c.getPhone() + "' đã tồn tại ở khách hàng khác!");
@@ -51,12 +76,20 @@ public class CustomerServiceImpl implements ICustomerService {
         if (customerRepo.isEmailExists(c.getEmail(), c.getCustomerId())) {
             throw new DuplicateException("Email '" + c.getEmail() + "' đã tồn tại ở khách hàng khác!");
         }
-        return customerRepo.update(c);
+        boolean ok = customerRepo.update(c);
+        if (ok) {
+            log(actor, "UPDATE_CUSTOMER", String.valueOf(c.getCustomerId()));
+        }
+        return ok;
     }
 
     @Override
-    public boolean deleteCustomer(int id) {
-        return customerRepo.delete(id);
+    public boolean deleteCustomer(int id, User actor) {
+        boolean ok = customerRepo.delete(id);
+        if (ok) {
+            log(actor, "DELETE_CUSTOMER", String.valueOf(id));
+        }
+        return ok;
     }
 
     @Override

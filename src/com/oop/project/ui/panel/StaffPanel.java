@@ -161,7 +161,7 @@ public class StaffPanel extends JPanel {
         if (newUser == null)
             return;
         try {
-            svc.addStaff(newUser);
+            svc.addStaff(newUser, mf.getCurrentUser());
             refresh();
             UITheme.showSuccess(this,
                     "Account \"" + newUser.getUserName() + "\" created successfully.");
@@ -198,7 +198,7 @@ public class StaffPanel extends JPanel {
         }
 
         try {
-            svc.deleteUser(targetId, mf.getCurrentUser().getUserId());
+            svc.deleteUser(targetId, mf.getCurrentUser().getUserId(), mf.getCurrentUser());
             refresh();
             UITheme.showSuccess(this, "Account \"" + targetName + "\" deleted.");
         } catch (Exception ex) {

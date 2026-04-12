@@ -123,6 +123,8 @@ public class ItemPanel extends JPanel {
         // p.add(stockBtn); p.add(refreshBtn);
 
         if (!mf.isAdmin()) {
+            addBtn.setEnabled(false);
+            addBtn.setToolTipText("Only Admin can add new items.");
             JLabel note = UITheme.label("  ⚠  Price editing restricted to Admin.");
             note.setForeground(UITheme.WARNING);
             note.setFont(UITheme.FONT_SMALL);
@@ -197,7 +199,7 @@ public class ItemPanel extends JPanel {
         if (!UITheme.confirm(this, "Delete \"" + name + "\" (" + sku + ")?", "Confirm Delete"))
             return;
         try {
-            svc.deleteItem(sku);
+            svc.deleteItem(sku, mf.getCurrentUser());
             refresh();
             UITheme.showSuccess(this, "Item deleted.");
         } catch (Exception ex) {

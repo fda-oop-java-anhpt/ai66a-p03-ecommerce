@@ -2,8 +2,10 @@ package com.oop.project.ui.panel;
 
 import com.oop.project.model.*;
 import com.oop.project.repository.interfaces.OrderRepository;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
+import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.ui.dialogs.CreateOrderDialog;
 import com.oop.project.ui.frames.MainFrame;
 import com.oop.project.ui.utils.TableRenderer;
@@ -28,6 +30,7 @@ public class OrderPanel extends JPanel {
     private final IItemService itemSvc;
     private final ICouponService couponSvc;
     private final OrderRepository orderRepo = new OrderRepositoryImpl();
+    private final AuditLogRepository auditRepo = new AuditLogRepositoryImpl();
 
     // Order list table
     private DefaultTableModel orderModel;
@@ -249,10 +252,18 @@ public class OrderPanel extends JPanel {
 
     private void deleteOrder() {
         if (selectedOrderId == null) { UITheme.showError(this, "Select an order to delete."); return; }
+        
+        Order current = orderRepo.findById(selectedOrderId);
+        if (current != null && current.getStatus() != OrderStatus.CANCELLED) {
+            UITheme.showError(this, "Only CANCELLED orders can be deleted.");
+            return;
+        }
+        
         if (!UITheme.confirm(this, "Permanently delete order #" + selectedOrderId + "?", "Confirm Delete"))
             return;
         try {
             orderRepo.delete(selectedOrderId);
+            auditRepo.insert(new AuditLog(0, mf.getCurrentUser(), "DELETE", "Order", String.valueOf(selectedOrderId), null));
             refresh();
             UITheme.showSuccess(this, "Order deleted.");
         } catch (Exception ex) {

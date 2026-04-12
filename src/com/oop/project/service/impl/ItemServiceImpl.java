@@ -11,29 +11,33 @@ import com.oop.project.repository.interfaces.ItemRepository;
 import com.oop.project.service.interfaces.IItemService;
 import com.oop.project.util.Validator;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ItemServiceImpl implements IItemService {
 
-    private final ItemRepository      itemRepo;
-    private final AuditLogRepository  auditRepo;
+    private final ItemRepository itemRepo;
+    private final AuditLogRepository auditRepo;
 
     public ItemServiceImpl(ItemRepository itemRepo, AuditLogRepository auditRepo) {
-        this.itemRepo  = itemRepo;
+        this.itemRepo = itemRepo;
         this.auditRepo = auditRepo;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-    private void log(User user, String action, String targetId) {
+    private void log(User actor, String action, String targetId) {
+        if (actor == null)
+            return;
         try {
             AuditLog entry = new AuditLog();
-            entry.setUser(user);
+            entry.setUser(actor);
             entry.setActions(action);
             entry.setTargetType("ITEM");
             entry.setTargetId(targetId);
             auditRepo.insert(entry);
         } catch (Exception e) {
             // Audit failure must NOT break the main operation
+            System.err.println("Audit log failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -46,6 +50,9 @@ public class ItemServiceImpl implements IItemService {
 
     @Override
     public boolean addItem(Item item, User currentUser) {
+        if (currentUser == null || currentUser.getUserRole() != UserRole.ADMIN) {
+            throw new SecurityException("Only Admin users can add new items.");
+        }
         if (item == null || Validator.checkEmpty(item.getItemSku())) {
             throw new ValidationException("Item and SKU must not be null.");
         }
@@ -53,7 +60,9 @@ public class ItemServiceImpl implements IItemService {
             throw new DuplicateException("SKU '" + item.getItemSku() + "' already exists.");
         }
         boolean ok = itemRepo.insert(item);
-        if (ok) log(currentUser, "ADD_ITEM: " + item.getItemName(), item.getItemSku());
+        if (ok) {
+            log(currentUser, "CREATE_ITEM", item.getItemSku());
+        }
         return ok;
     }
 
@@ -72,27 +81,20 @@ public class ItemServiceImpl implements IItemService {
                 throw new SecurityException("Only Admin users can modify item prices.");
             }
         }
-        // Detect what changed for a descriptive log message
-        StringBuilder changes = new StringBuilder("UPDATE_ITEM");
-        if (!existing.getItemName().equals(item.getItemName()))
-            changes.append(" | Name: ").append(existing.getItemName()).append("→").append(item.getItemName());
-        if (existing.getStockQuantity() != item.getStockQuantity())
-            changes.append(" | Stock: ").append(existing.getStockQuantity()).append("→").append(item.getStockQuantity());
-        if (existing.getUnitPrice().compareTo(item.getUnitPrice()) != 0)
-            changes.append(" | Price: ").append(existing.getUnitPrice()).append("→").append(item.getUnitPrice());
-        if (existing.getCategory() != null && !existing.getCategory().equals(item.getCategory()))
-            changes.append(" | Category: ").append(existing.getCategory()).append("→").append(item.getCategory());
-
         boolean ok = itemRepo.update(item);
-        if (ok) log(currentUser, changes.toString(), item.getItemSku());
+        if (ok) {
+            log(currentUser, "UPDATE_ITEM", item.getItemSku());
+        }
         return ok;
     }
 
     @Override
-    public boolean deleteItem(String sku) {
-        // deleteItem doesn't receive a User in the current interface signature;
-        // if a user context is needed later, extend the interface.
-        return itemRepo.delete(sku);
+    public boolean deleteItem(String sku, User actor) {
+        boolean ok = itemRepo.delete(sku);
+        if (ok) {
+            log(actor, "DELETE_ITEM", sku);
+        }
+        return ok;
     }
 
     @Override
@@ -110,7 +112,7 @@ public class ItemServiceImpl implements IItemService {
         boolean ok = itemRepo.updateStock(sku, amount);
         if (ok) log(currentUser,
                 "ADD_STOCK: +" + amount + " (was " + existing.getStockQuantity()
-                        + " → now " + (existing.getStockQuantity() + amount) + ")",
+                        + " -> now " + (existing.getStockQuantity() + amount) + ")",
                 sku);
         return ok;
     }

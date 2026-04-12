@@ -124,7 +124,7 @@ public class CustomerPanel extends JPanel {
         if (c == null)
             return;
         try {
-            svc.addCustomer(c);
+            svc.addCustomer(c, mf.getCurrentUser());
             refresh();
             UITheme.showSuccess(this, "Customer added successfully.");
         } catch (Exception ex) {
@@ -154,7 +154,7 @@ public class CustomerPanel extends JPanel {
             if (result == null)
                 return;
             result.setCustomerId(id);
-            svc.updateCustomer(result);
+            svc.updateCustomer(result, mf.getCurrentUser());
             refresh();
             UITheme.showSuccess(this, "Customer updated.");
         } catch (Exception ex) {
@@ -173,7 +173,7 @@ public class CustomerPanel extends JPanel {
         if (!UITheme.confirm(this, "Delete \"" + name + "\"?", "Confirm Delete"))
             return;
         try {
-            svc.deleteCustomer(id);
+            svc.deleteCustomer(id, mf.getCurrentUser());
             refresh();
             UITheme.showSuccess(this, "Customer deleted.");
         } catch (Exception ex) {

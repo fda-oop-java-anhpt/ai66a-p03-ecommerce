@@ -2,9 +2,11 @@ package com.oop.project.service.impl;
 
 import com.oop.project.exception.DuplicateException;
 import com.oop.project.exception.ValidationException;
+import com.oop.project.model.AuditLog;
 import com.oop.project.model.Item;
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
+import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.repository.interfaces.ItemRepository;
 import com.oop.project.service.interfaces.IItemService;
 import com.oop.project.util.Validator;
@@ -14,9 +16,26 @@ import java.util.List;
 public class ItemServiceImpl implements IItemService {
 
     private final ItemRepository itemRepo;
+    private final AuditLogRepository auditRepo;
 
-    public ItemServiceImpl(ItemRepository itemRepo) {
+    public ItemServiceImpl(ItemRepository itemRepo, AuditLogRepository auditRepo) {
         this.itemRepo = itemRepo;
+        this.auditRepo = auditRepo;
+    }
+
+    private void log(User actor, String action, String targetId) {
+        if (actor == null)
+            return;
+        try {
+            AuditLog log = new AuditLog();
+            log.setUser(actor);
+            log.setActions(action);
+            log.setTargetType("ITEM");
+            log.setTargetId(targetId);
+            auditRepo.insert(log);
+        } catch (Exception e) {
+            System.err.println("Audit log failed: " + e.getMessage());
+        }
     }
 
     @Override
@@ -26,13 +45,20 @@ public class ItemServiceImpl implements IItemService {
 
     @Override
     public boolean addItem(Item item, User currentUser) {
+        if (currentUser == null || currentUser.getUserRole() != UserRole.ADMIN) {
+            throw new SecurityException("Only Admin users can add new items.");
+        }
         if (item == null || Validator.checkEmpty(item.getItemSku())) {
             throw new ValidationException("Item and SKU must not be null.");
         }
         if (itemRepo.isSkuExists(item.getItemSku())) {
             throw new DuplicateException("SKU '" + item.getItemSku() + "' already exists.");
         }
-        return itemRepo.insert(item);
+        boolean ok = itemRepo.insert(item);
+        if (ok) {
+            log(currentUser, "CREATE_ITEM", item.getItemSku());
+        }
+        return ok;
     }
 
     @Override
@@ -49,12 +75,20 @@ public class ItemServiceImpl implements IItemService {
                 throw new SecurityException("Only Admin users can modify item prices.");
             }
         }
-        return itemRepo.update(item);
+        boolean ok = itemRepo.update(item);
+        if (ok) {
+            log(currentUser, "UPDATE_ITEM", item.getItemSku());
+        }
+        return ok;
     }
 
     @Override
-    public boolean deleteItem(String sku) {
-        return itemRepo.delete(sku);
+    public boolean deleteItem(String sku, User actor) {
+        boolean ok = itemRepo.delete(sku);
+        if (ok) {
+            log(actor, "DELETE_ITEM", sku);
+        }
+        return ok;
     }
 
     @Override

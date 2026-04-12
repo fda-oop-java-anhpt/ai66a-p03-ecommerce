@@ -21,6 +21,9 @@ public interface IUserService {
      */
     void addStaff(User user);
 
+    /** Add staff with actor for audit logging. */
+    void addStaff(User user, User actor);
+
     /**
      * Delete a user account.
      *
@@ -29,4 +32,7 @@ public interface IUserService {
      * @throws IllegalArgumentException if trying to delete own account
      */
     void deleteUser(int userId, int adminId);
+
+    /** Delete user with actor for audit logging. */
+    void deleteUser(int userId, int adminId, User actor);
 }

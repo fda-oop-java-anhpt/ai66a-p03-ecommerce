@@ -75,13 +75,13 @@ public class MainFrame extends JFrame {
         UserRepository userRepo = new UserRepositoryImpl();
 
         // Initialize Services
-        this.customerService = new CustomerServiceImpl(customerRepo, orderRepo);
-        this.itemService = new ItemServiceImpl(itemRepo);
+        this.customerService = new CustomerServiceImpl(customerRepo, orderRepo, auditLogRepo);
+        this.itemService = new ItemServiceImpl(itemRepo, auditLogRepo);
         this.couponService = new CouponServiceImpl(couponRepo);
         this.dashboardService = new DashboardServiceImpl(orderRepo);
         this.billingService = new BillingServiceImpl(orderRepo, auditLogRepo, settingRepo, couponRepo, itemRepo,
                 orderDetailRepo);
-        this.userService = new UserServiceImpl(userRepo);
+        this.userService = new UserServiceImpl(userRepo, auditLogRepo);
 
         buildUI();
     }

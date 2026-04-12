@@ -8,6 +8,6 @@ public interface IItemService {
     List<Item> getAllItems();
     boolean addItem(Item item, User currentUser);
     boolean updateItem(Item item, User currentUser);
-    boolean deleteItem(String sku);
+    boolean deleteItem(String sku, User actor);
     boolean addStock(String sku, int amount, User currentUser);
 }

@@ -53,11 +53,15 @@ public class ItemDialog extends JDialog {
             skuField.setEditable(false);
             skuField.setForeground(UITheme.TEXT_MUTED);
         }
-        // Price locked for Staff (FR-2.4)
+        // Price & Fields locked for Staff (FR-2.4)
         if (!isAdmin) {
+            nameField.setEditable(false);
+            nameField.setForeground(UITheme.TEXT_MUTED);
+            categoryCombo.setEnabled(false);
+            
             priceField.setEditable(false);
             priceField.setForeground(UITheme.TEXT_MUTED);
-            priceField.setToolTipText("Only Admin can modify prices.");
+            priceField.setToolTipText("Only Admin can modify prices and item details.");
         }
 
         if (isEdit && item != null) {

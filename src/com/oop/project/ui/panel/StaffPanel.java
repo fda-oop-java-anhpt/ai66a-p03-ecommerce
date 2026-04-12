@@ -125,7 +125,7 @@ public class StaffPanel extends JPanel {
         p.setBackground(UITheme.BG_DARK);
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR));
 
-        JButton addBtn = UITheme.primaryButton("+ Add Staff");
+        JButton addBtn = UITheme.primaryButton("+ Add Account");
         JButton deleteBtn = UITheme.dangerButton("Delete Account");
         JButton refreshBtn = UITheme.ghostButton("Refresh");
 

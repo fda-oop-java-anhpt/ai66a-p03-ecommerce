@@ -105,7 +105,7 @@ public class ItemPanel extends JPanel {
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR));
 
         JButton addBtn = UITheme.primaryButton("+ Add Item");
-        JButton editBtn = UITheme.ghostButton("Edit");
+        JButton editBtn = UITheme.primaryButton("Edit");
         JButton deleteBtn = UITheme.dangerButton("Delete");
         JButton stockBtn = UITheme.primaryButton("Add Stock");
         // JButton refreshBtn = UITheme.ghostButton("Refresh");

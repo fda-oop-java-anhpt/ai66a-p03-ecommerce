@@ -133,10 +133,10 @@ public class OrderPanel extends JPanel {
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
         left.setOpaque(false);
 
-        JButton newOrderBtn = UITheme.successButton("+ Create New Order");
+        JButton newOrderBtn = UITheme.primaryButton("+ Create New Order");
         newOrderBtn.addActionListener(e -> openCreateOrderDialog());
 
-        JButton invoiceBtn = UITheme.ghostButton("View Invoice");
+        JButton invoiceBtn = UITheme.primaryButton("View Invoice");
         invoiceBtn.addActionListener(e -> showInvoice());
 
         cancelBtn  = UITheme.dangerButton("Cancel Order");

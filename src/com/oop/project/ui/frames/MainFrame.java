@@ -9,6 +9,7 @@ import com.oop.project.repository.interfaces.ItemRepository;
 import com.oop.project.repository.interfaces.OrderDetailRepository;
 import com.oop.project.repository.interfaces.OrderRepository;
 import com.oop.project.repository.interfaces.SystemSettingRepository;
+import com.oop.project.repository.interfaces.UserRepository;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.repository.impl.CouponRepositoryImpl;
 import com.oop.project.repository.impl.CustomerRepositoryImpl;
@@ -16,6 +17,7 @@ import com.oop.project.repository.impl.ItemRepositoryImpl;
 import com.oop.project.repository.impl.OrderDetailRepositoryImpl;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
+import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.service.impl.*;
 import com.oop.project.ui.panel.CouponPanel;
@@ -24,6 +26,7 @@ import com.oop.project.ui.panel.DashboardPanel;
 import com.oop.project.ui.panel.ItemPanel;
 import com.oop.project.ui.panel.OrderPanel;
 import com.oop.project.ui.panel.SettingsPanel;
+import com.oop.project.ui.panel.StaffPanel;
 import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
@@ -46,6 +49,7 @@ public class MainFrame extends JFrame {
     public final IBillingService billingService;
     public final ICouponService couponService;
     public final IDashboardService dashboardService;
+    public final IUserService userService;
 
     private JTabbedPane tabs;
     private CustomerPanel customerPanel;
@@ -54,6 +58,7 @@ public class MainFrame extends JFrame {
     private CouponPanel couponPanel;
     private DashboardPanel dashboardPanel;
     private SettingsPanel settingsPanel; // Admin only
+    private StaffPanel staffPanel;       // Admin only
 
     public MainFrame(User user, IAuthService authService) {
         this.currentUser = user;
@@ -67,6 +72,7 @@ public class MainFrame extends JFrame {
         OrderDetailRepository orderDetailRepo = new OrderDetailRepositoryImpl();
         CouponRepository couponRepo = new CouponRepositoryImpl();
         SystemSettingRepository settingRepo = new SystemSettingRepositoryImpl();
+        UserRepository userRepo = new UserRepositoryImpl();
 
         // Initialize Services
         this.customerService = new CustomerServiceImpl(customerRepo, orderRepo);
@@ -75,6 +81,7 @@ public class MainFrame extends JFrame {
         this.dashboardService = new DashboardServiceImpl(orderRepo);
         this.billingService = new BillingServiceImpl(orderRepo, auditLogRepo, settingRepo, couponRepo, itemRepo,
                 orderDetailRepo);
+        this.userService = new UserServiceImpl(userRepo);
 
         buildUI();
     }
@@ -185,9 +192,11 @@ public class MainFrame extends JFrame {
         // popup.add(settingsMi);
         // }
 
-        JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
-        auditMi.addActionListener(e -> new AuditLogFrame(this).setVisible(true));
-        popup.add(auditMi);
+        if (isAdmin()) {
+            JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
+            auditMi.addActionListener(e -> new AuditLogFrame(this).setVisible(true));
+            popup.add(auditMi);
+        }
         popup.addSeparator();
 
         JMenuItem logoutMi = popupItem("Logout", UITheme.DANGER);
@@ -299,6 +308,8 @@ public class MainFrame extends JFrame {
         if (isAdmin()) {
             settingsPanel = new SettingsPanel(this);
             tabs.addTab("Settings", settingsPanel);
+            staffPanel = new StaffPanel(this, userService);
+            tabs.addTab("Staff", staffPanel);
         }
         tabs.addTab("Dashboard", dashboardPanel);
 
@@ -394,8 +405,12 @@ public class MainFrame extends JFrame {
             orderPanel.refresh();
         else if (i == 3)
             couponPanel.refresh();
-        else if (i == 4)
-            dashboardPanel.refresh();
+        else if (isAdmin() && i == 4)
+            settingsPanel.revalidate(); // settings
+        else if (isAdmin() && i == 5)
+            staffPanel.refresh();
+        else
+            dashboardPanel.refresh(); // last tab = dashboard
     }
 
     // private void refreshCurrent() {

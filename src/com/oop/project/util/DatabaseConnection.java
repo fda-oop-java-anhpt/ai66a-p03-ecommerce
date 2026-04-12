@@ -10,9 +10,9 @@ import java.io.IOException;
 
 public class DatabaseConnection {
     // 1. Các thông số kết nối
-    private static String URL = "jdbc:postgresql://localhost:5432/ecommerce_db";
+    private static String URL = "jdbc:postgresql://localhost:5432/ECOMMERCE_DB";
     private static String USER = "postgres";
-    private static String PASSWORD = "password";
+    private static String PASSWORD = "Ahihi1234";
 
     private static Connection connection = null;
 

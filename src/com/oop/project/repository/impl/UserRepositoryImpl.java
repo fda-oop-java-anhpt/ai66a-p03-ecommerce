@@ -77,7 +77,7 @@ public class UserRepositoryImpl implements UserRepository {
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUserName());
-            ps.setString(2, user.getUserPassword());
+            ps.setString(2, PasswordUtils.hashPassword(user.getUserPassword()));
             ps.setString(3, user.getUserRole().name());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {

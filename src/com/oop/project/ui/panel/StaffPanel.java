@@ -47,13 +47,13 @@ public class StaffPanel extends JPanel {
         p.setBackground(UITheme.BG_DARK);
         p.setBorder(BorderFactory.createEmptyBorder(16, 20, 12, 20));
 
-        // Left: icon + title
+        // Left: icon + title + admin badge
         JPanel titleWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         titleWrap.setOpaque(false);
         JLabel iconLabel = new JLabel("👤");
         iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 22));
         JLabel titleLabel = UITheme.title("Staff Management");
-        JLabel adminBadge = new JLabel("  ADMIN ONLY");
+        JLabel adminBadge = new JLabel(" ADMIN ONLY");
         adminBadge.setFont(UITheme.FONT_BADGE);
         adminBadge.setForeground(UITheme.WARNING);
         adminBadge.setBorder(BorderFactory.createCompoundBorder(

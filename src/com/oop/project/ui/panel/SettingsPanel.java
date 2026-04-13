@@ -63,14 +63,24 @@ public class SettingsPanel extends JPanel {
         p.setBackground(UITheme.BG_DARK);
         p.setBorder(BorderFactory.createEmptyBorder(16, 20, 12, 20));
 
-        JPanel titleBlock = new JPanel(new BorderLayout(0, 4));
-        titleBlock.setBackground(UITheme.BG_DARK);
-        titleBlock.add(UITheme.title("System Settings"), BorderLayout.WEST);
-        JLabel sub = UITheme.label("Admin-only — changes take effect immediately on the next order.");
-        sub.setFont(UITheme.FONT_SMALL);
-        sub.setForeground(UITheme.WARNING);
-        titleBlock.add(sub, BorderLayout.SOUTH);
-        p.add(titleBlock, BorderLayout.WEST);
+        // Left: Title + Admin Badge
+        JPanel titleWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        titleWrap.setOpaque(false);
+        JLabel titleLabel = UITheme.title("System Settings");
+        // JLabel sub = UITheme.label("Admin-only — changes take effect immediately on the next order.");
+        // sub.setFont(UITheme.FONT_SMALL);
+        // sub.setForeground(UITheme.WARNING);
+        // titleWrap.add(sub, BorderLayout.SOUTH);
+        JLabel adminBadge = new JLabel("ADMIN ONLY");
+        adminBadge.setFont(UITheme.FONT_BADGE);
+        adminBadge.setForeground(UITheme.WARNING);
+        adminBadge.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.WARNING, 1),
+                BorderFactory.createEmptyBorder(2, 8, 2, 8)));
+        // titleWrap.add(iconLabel);
+        titleWrap.add(titleLabel);
+        titleWrap.add(adminBadge);
+        p.add(titleWrap, BorderLayout.WEST);
 
         JButton refreshBtn = UITheme.ghostButton("Refresh");
         refreshBtn.addActionListener(e -> refresh());

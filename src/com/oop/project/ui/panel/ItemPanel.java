@@ -232,7 +232,7 @@ public class ItemPanel extends JPanel {
         }
     }
 
-    // Fix 6: Stock cell renderer — red if qty <= LOW_STOCK_LIMIT
+    // Stock cell renderer — red if qty <= LOW_STOCK_LIMIT
     private javax.swing.table.TableCellRenderer stockRenderer() {
         return new javax.swing.table.DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(
@@ -241,7 +241,7 @@ public class ItemPanel extends JPanel {
                 l.setBorder(new javax.swing.border.EmptyBorder(0, 12, 0, 12));
                 if (!sel) {
                     int qty = v instanceof Number ? ((Number) v).intValue() : 0;
-                    int LOW = lowStockLimit; // ← gọi ở đây thay vì bên ngoài
+                    int LOW = lowStockLimit;
                     boolean low = qty <= LOW;
                     l.setForeground(low ? UITheme.DANGER : UITheme.TEXT_PRIMARY);
                     l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);

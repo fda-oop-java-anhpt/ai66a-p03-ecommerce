@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 /**
  * System Settings panel — Admin only (FR-0.4).
  * Allows Admin to view and modify all system_settings rows.
- * TAX_RATE is highlighted and validated specially (must be 0–100).
+ * TAX_RATE is validated specially (must be 0–100).
  * Changes are persisted via SystemSettingRepository and logged via
  * AuditLogRepository.
  */
@@ -92,37 +92,6 @@ public class SettingsPanel extends JPanel {
         table = new JTable(tableModel);
         TableRenderer.applyAll(table);
         TableRenderer.widths(table, 180, 200, 400);
-
-        // Highlight TAX_RATE row with accent colour
-        table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent(
-                    JTable t, Object v, boolean sel, boolean foc, int r, int c) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
-                l.setBorder(new EmptyBorder(0, 12, 0, 12));
-                l.setFont(UITheme.FONT_BADGE);
-                if (!sel) {
-                    boolean isTax = KEY_TAX.equals(v);
-                    l.setForeground(isTax ? UITheme.ACCENT : UITheme.TEXT_PRIMARY);
-                    l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);
-                }
-                return l;
-            }
-        });
-        table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent(
-                    JTable t, Object v, boolean sel, boolean foc, int r, int c) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
-                l.setBorder(new EmptyBorder(0, 12, 0, 12));
-                if (!sel) {
-                    // Check if this row is the TAX_RATE row
-                    Object key = tableModel.getValueAt(r, 0);
-                    l.setForeground(KEY_TAX.equals(key) ? UITheme.SUCCESS : UITheme.TEXT_PRIMARY);
-                    l.setFont(KEY_TAX.equals(key) ? UITheme.FONT_HEADING : UITheme.FONT_BODY);
-                    l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);
-                }
-                return l;
-            }
-        });
 
         // Click → populate inline edit form
         table.getSelectionModel().addListSelectionListener(e -> {
@@ -219,7 +188,7 @@ public class SettingsPanel extends JPanel {
         String desc = (String) tableModel.getValueAt(row, 2);
 
         editKeyLbl.setText(key);
-        editKeyLbl.setForeground(KEY_TAX.equals(key) ? UITheme.ACCENT : UITheme.TEXT_PRIMARY);
+        editKeyLbl.setForeground(UITheme.TEXT_PRIMARY);
         editDescLbl.setText(desc != null ? desc : " ");
 
         editValueField.setText(value);
@@ -230,7 +199,7 @@ public class SettingsPanel extends JPanel {
 
         // Extra hint for TAX_RATE
         if (KEY_TAX.equals(key)) {
-            editDescLbl.setText("Tax rate applied to all orders (%). Must be 0–100.  e.g. 8.00 = 8%");
+            editDescLbl.setText("Tax rate applied to all orders (%).\nMust be 0–100.  e.g. 8.00 = 8%");
             editDescLbl.setForeground(UITheme.WARNING);
         } else {
             editDescLbl.setForeground(UITheme.TEXT_MUTED);

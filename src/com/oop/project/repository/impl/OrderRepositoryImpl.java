@@ -12,8 +12,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     private final OrderDetailRepositoryImpl orderDetailRepo = new OrderDetailRepositoryImpl();
 
-    // ==================== HELPER: Map ResultSet → Order (with Customer & Coupon)
-    // ====================
+    // =========== HELPER: Map ResultSet → Order (with Customer & Coupon) ====================
     private Order mapRow(ResultSet rs) throws SQLException {
         Customer customer = null;
         int customerId = rs.getInt("customer_id");
@@ -128,8 +127,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         return list;
     }
 
-    // ==================== FR-5.2: Filter by status and/or date range
-    // ====================
+    // ======== FR-5.2: Filter by status and/or date range ====================
     public List<Order> filterByStatusOrDateRange(String status, Timestamp from, Timestamp to) {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT + "WHERE 1=1 ");
@@ -169,12 +167,10 @@ public class OrderRepositoryImpl implements OrderRepository {
         return list;
     }
 
-    // ==================== FR-3.1: Insert order (returns generated order_id)
-    // ====================
+    // ======== FR-3.1: Insert order (returns generated order_id) ====================
     public int insert(Order order) {
         String sql = "INSERT INTO orders (customer_id, coupon_code, tax_rate, discount_amount, discount_info, status, subtotal, final_total) "
-                +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, order.getCustomer().getCustomerId());
@@ -209,7 +205,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         return -1;
     }
 
-    // ==================== FR-3.1: Update order header ====================
+    // ========= FR-3.1: Update order header ====================
     public boolean update(Order order) {
         String sql = "UPDATE orders SET customer_id = ?, coupon_code = ?, tax_rate = ?, " +
                 "discount_amount = ?, discount_info = ?, status = ?, subtotal = ?, final_total = ? " +

@@ -1,4 +1,4 @@
-package com.oop.project.ui.frames;
+package com.oop.project.ui.dialogs;
 
 import com.oop.project.model.User;
 import com.oop.project.ui.utils.UITheme;
@@ -8,20 +8,19 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 /**
- * Profile Frame — shows current user's info (read-only).
+ * Profile Dialog — shows current user's info (read-only).
  * Password is masked with asterisks.
  */
-public class ProfileFrame extends JFrame {
+public class ProfileDialog extends JDialog {
 
-    public ProfileFrame(Window owner, User user) {
-        super("My Profile");
+    public ProfileDialog(Window owner, User user) {
+        super(owner, "My Profile", Dialog.ModalityType.APPLICATION_MODAL);
         buildUI(owner, user);
     }
 
     private void buildUI(Window owner, User user) {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
-        setLocationRelativeTo(owner);
 
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(UITheme.BG_CARD);
@@ -38,8 +37,7 @@ public class ProfileFrame extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                boolean admin = user.getUserRole() != null
-                        && user.getUserRole().name().equals("ADMIN");
+                boolean admin = user.getUserRole() != null && user.getUserRole().name().equals("ADMIN");
                 g2.setColor(admin ? UITheme.ACCENT : UITheme.SUCCESS);
                 g2.fillOval(0, 0, getWidth(), getHeight());
                 g2.dispose();

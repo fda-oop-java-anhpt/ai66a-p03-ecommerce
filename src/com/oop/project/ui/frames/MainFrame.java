@@ -20,6 +20,8 @@ import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 import com.oop.project.repository.impl.UserRepositoryImpl;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.service.impl.*;
+import com.oop.project.ui.dialogs.AuditLogDialog;
+import com.oop.project.ui.dialogs.ProfileDialog;
 import com.oop.project.ui.panel.CouponPanel;
 import com.oop.project.ui.panel.CustomerPanel;
 import com.oop.project.ui.panel.DashboardPanel;
@@ -37,7 +39,7 @@ import java.awt.event.*;
 /**
  * Main application window — FR-6.3.
  * Avatar button in header → popup: Profile | Settings (Admin) | Logout
- * Settings → SettingsFrame (FR-0.4), Profile → ProfileFrame
+ * Settings → SettingsFrame (FR-0.4), Profile → ProfileDialog
  */
 public class MainFrame extends JFrame {
 
@@ -180,12 +182,12 @@ public class MainFrame extends JFrame {
         popup.addSeparator();
 
         JMenuItem profileMi = popupItem("Profile", UITheme.ACCENT);
-        profileMi.addActionListener(e -> new ProfileFrame(this, currentUser).setVisible(true));
+        profileMi.addActionListener(e -> new ProfileDialog(this, currentUser).setVisible(true));
         popup.add(profileMi);
 
         if (isAdmin()) { // chi admin duoc xem audit log
             JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
-            auditMi.addActionListener(e -> new AuditLogFrame(this).setVisible(true));
+            auditMi.addActionListener(e -> new AuditLogDialog(this).setVisible(true));
             popup.add(auditMi);
         }
         popup.addSeparator();

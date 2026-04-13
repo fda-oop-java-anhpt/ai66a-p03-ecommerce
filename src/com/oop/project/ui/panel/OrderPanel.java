@@ -7,7 +7,7 @@ import com.oop.project.service.interfaces.*;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.ui.frames.MainFrame;
-import com.oop.project.ui.frames.OrderFrame;
+import com.oop.project.ui.dialogs.OrderDialog;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
 
@@ -175,7 +175,7 @@ public class OrderPanel extends JPanel {
 
     // ── Open Create Order dialog ──────────────────────────────────────────────
     private void openCreateOrderDialog() {
-        OrderFrame dlg = new OrderFrame(
+        OrderDialog dlg = new OrderDialog(
                 mf, billSvc, custSvc, itemSvc, couponSvc, mf.getCurrentUser(),
                 created -> {
                     refresh();

@@ -1,4 +1,4 @@
-package com.oop.project.ui.frames;
+package com.oop.project.ui.dialogs;
 
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.ui.utils.TableRenderer;
@@ -12,11 +12,11 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 /**
- * Audit Log — standalone JFrame, FR-4.4 + FR-0.5.
+ * Audit Log — standalone JDialog, FR-4.4 + FR-0.5.
  * Opened from the avatar dropdown menu.
  * Shows all order and authentication events with colour-coded actions.
  */
-public class AuditLogFrame extends JFrame {
+public class AuditLogDialog extends JDialog {
 
     private final AuditLogRepositoryImpl auditRepo = new AuditLogRepositoryImpl();
 
@@ -28,8 +28,8 @@ public class AuditLogFrame extends JFrame {
     private static final String[] COLS =
         {"Timestamp", "User", "Action", "Target Type", "Target ID"};
 
-    public AuditLogFrame(Window owner) {
-        super("Audit Log");
+    public AuditLogDialog(Window owner) {
+        super(owner, "Audit Log", Dialog.ModalityType.APPLICATION_MODAL);
         buildUI(owner);
         refresh();
     }

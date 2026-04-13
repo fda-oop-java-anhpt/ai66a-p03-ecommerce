@@ -1,4 +1,4 @@
-package com.oop.project.ui.frames;
+package com.oop.project.ui.dialogs;
 
 import com.oop.project.model.*;
 import com.oop.project.repository.interfaces.SystemSettingRepository;
@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Main frame for creating a new order.
+ * Main dialog for creating a new order.
  * Layout: GridBagLayout for even alignment; pack() is called AFTER data loads.
  * Default initial status: PENDING.
  * Category combo filters item list.
  */
-public class OrderFrame extends JFrame {
+public class OrderDialog extends JDialog {
 
     private final IBillingService billSvc;
     private final ICustomerService custSvc;
@@ -68,15 +68,15 @@ public class OrderFrame extends JFrame {
     private static final String[] LINE_COLS = { "SKU", "Item Name", "Qty", "Unit Price", "Line Total" };
 
     // ─────────────────────────────────────────────────────────────────────────
-    public OrderFrame(Window owner,
+    public OrderDialog(Window owner,
             IBillingService billSvc,
             ICustomerService custSvc,
             IItemService itemSvc,
             ICouponService couponSvc,
             User currentUser,
             OrderCreatedListener listener) {
-        super("Create New Order");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        super(owner, "Create New Order", ModalityType.APPLICATION_MODAL);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.billSvc = billSvc;
         this.custSvc = custSvc;
         this.itemSvc = itemSvc;

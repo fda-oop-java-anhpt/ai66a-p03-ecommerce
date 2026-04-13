@@ -6,8 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DateFormatter {
-    private static final SimpleDateFormat fullFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    private static final SimpleDateFormat shortFormat = new SimpleDateFormat("dd/MM/yyyy");
+    private static final SimpleDateFormat fullFormat = new SimpleDateFormat("dd/mm/yyyy hh:mm:ss");
+    private static final SimpleDateFormat shortFormat = new SimpleDateFormat("dd/mm/yyyy");
 
     public static String formatDateTime(Timestamp timestamp) {
         if (timestamp == null) return "N/A";

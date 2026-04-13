@@ -9,7 +9,6 @@ import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.math.BigDecimal;

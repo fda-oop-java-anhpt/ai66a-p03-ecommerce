@@ -139,9 +139,6 @@ public class MainFrame extends JFrame {
 
     /** Circular avatar button with first letter of username. Popup on click. */
     private JButton buildAvatarButton() {
-        // String letter = currentUser.getUserName() == null ||
-        // currentUser.getUserName().isEmpty()
-        // ? "?" : String.valueOf(currentUser.getUserName().charAt(0)).toUpperCase();
         String letter = String.valueOf(currentUser.getUserName().charAt(0)).toUpperCase();
         Color col = isAdmin() ? UITheme.ACCENT : UITheme.SUCCESS;
 
@@ -187,12 +184,6 @@ public class MainFrame extends JFrame {
         profileMi.addActionListener(e -> new ProfileFrame(this, currentUser).setVisible(true));
         popup.add(profileMi);
 
-        // if (isAdmin()) {
-        // JMenuItem settingsMi = popupItem("⚙ Settings", UITheme.WARNING);
-        // settingsMi.addActionListener(e -> new SettingsFrame(this).setVisible(true));
-        // popup.add(settingsMi);
-        // }
-
         if (isAdmin()) {
             JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
             auditMi.addActionListener(e -> new AuditLogFrame(this).setVisible(true));
@@ -232,7 +223,6 @@ public class MainFrame extends JFrame {
             @Override
             protected void installDefaults() {
                 super.installDefaults();
-                // tabAreaBackground = UITheme.BG_DARK;
                 shadow = UITheme.BORDER_COLOR;
                 darkShadow = UITheme.BORDER_COLOR;
                 focus = UITheme.ACCENT;
@@ -294,13 +284,6 @@ public class MainFrame extends JFrame {
         orderPanel = new OrderPanel(this);
         couponPanel = new CouponPanel(this);
         dashboardPanel = new DashboardPanel(this);
-        // Settings tab — Admin only (FR-0.4)
-        if (isAdmin()) {
-            // settingsTabIndex = tabs.getTabCount(); // index 5
-            // tabs.addTab(" ⚙ Settings ", settingsPanel);
-            // // Give the settings tab a yellow tint to make it stand out
-            // tabs.setForegroundAt(settingsTabIndex, UITheme.WARNING);
-        }
 
         tabs.addTab("Customers", customerPanel);
         tabs.addTab("Items", itemPanel);
@@ -342,61 +325,6 @@ public class MainFrame extends JFrame {
         return bar;
     }
 
-    // ── Menu ──────────────────────────────────────────────────────────────────
-    // private JMenuBar buildMenuBar() {
-    // JMenuBar mb = new JMenuBar();
-    // mb.setBackground(UITheme.BG_DARK);
-    // mb.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,
-    // UITheme.BORDER_COLOR));
-
-    // JMenu file = menu("File");
-    // JMenuItem ri = mi("Refresh"); ri.addActionListener(e -> refreshCurrent());
-    // JMenuItem li = mi("Logout"); li.addActionListener(e -> confirmLogout());
-    // JMenuItem ei = mi("Exit"); ei.addActionListener(e -> System.exit(0));
-    // file.add(ri); file.addSeparator(); file.add(li); file.add(ei);
-
-    // JMenu view = menu("View");
-    // String[] names = {"Customers","Items","Orders","Coupons","Dashboard"};
-    // for (int i=0; i<names.length; i++) {
-    // final int idx=i; JMenuItem m=mi("Go to "+names[i]);
-    // m.addActionListener(e->tabs.setSelectedIndex(idx)); view.add(m);
-    // }
-
-    // JMenu account = menu("Account");
-    // JMenuItem pm = mi("Profile");
-    // pm.addActionListener(e -> new ProfileFrame(this,
-    // currentUser).setVisible(true));
-    // account.add(pm);
-    // // if (isAdmin()) {
-    // // JMenuItem sm = mi("Settings (Admin)");
-    // // sm.addActionListener(e -> new SettingsFrame(this).setVisible(true));
-    // // account.add(sm);
-    // // }
-    // account.addSeparator();
-    // JMenuItem lm = mi("Logout");
-    // lm.addActionListener(e -> confirmLogout()); account.add(lm);
-
-    // JMenu help = menu("Help");
-    // JMenuItem ab = mi("About");
-    // ab.addActionListener(e -> UITheme.showScrollable(this,
-    // "ShopFlow E-Commerce Billing System\nVersion 1.0\n\nBuilt with Java Swing +
-    // PostgreSQL.\n\n"
-    // + "Default credentials:\n Admin — admin_1 / admin@123\n Staff — nv_hoang /
-    // staff@123",
-    // "About ShopFlow"));
-    // help.add(ab);
-
-    // mb.add(file); mb.add(view); mb.add(account); mb.add(help);
-    // return mb;
-    // }
-
-    // private JMenu menu(String t) { JMenu m = new JMenu(t);
-    // m.setFont(UITheme.FONT_BODY); m.setForeground(UITheme.TEXT_PRIMARY); return
-    // m; }
-    // private JMenuItem mi (String t) { JMenuItem m = new JMenuItem(t);
-    // m.setFont(UITheme.FONT_BODY); m.setBackground(UITheme.BG_CARD);
-    // m.setForeground(UITheme.TEXT_PRIMARY); return m; }
-
     private void onTabChange(int i) {
         if (i == 0)
             customerPanel.refresh();
@@ -414,12 +342,8 @@ public class MainFrame extends JFrame {
             dashboardPanel.refresh(); // last tab = dashboard
     }
 
-    // private void refreshCurrent() {
-    // onTabChange(tabs.getSelectedIndex());
-    // }
-
     private void confirmLogout() {
-        if (UITheme.confirm(this, "Log out of ShopFlow?", "Confirm Logout")) {
+        if (UITheme.confirm(this, "Are you sure you want to logout?", "Confirm Logout")) {
             authService.logout(currentUser);
             dispose();
             SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));

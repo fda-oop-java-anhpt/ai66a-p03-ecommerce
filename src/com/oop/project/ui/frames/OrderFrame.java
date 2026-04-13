@@ -1,4 +1,4 @@
-package com.oop.project.ui.dialogs;
+package com.oop.project.ui.frames;
 
 import com.oop.project.model.*;
 import com.oop.project.repository.interfaces.SystemSettingRepository;
@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Modal dialog for creating a new order — FR-3.
+ * Main frame for creating a new order.
  * Layout: GridBagLayout for even alignment; pack() is called AFTER data loads.
  * Default initial status: PENDING.
  * Category combo filters item list.
  */
-public class CreateOrderDialog extends JDialog {
+public class OrderFrame extends JFrame {
 
     private final IBillingService billSvc;
     private final ICustomerService custSvc;
@@ -35,6 +35,11 @@ public class CreateOrderDialog extends JDialog {
     private final ICouponService couponSvc;
     private final SystemSettingRepository settingRepo = new SystemSettingRepositoryImpl();
     private final User currentUser;
+
+    public interface OrderCreatedListener {
+        void onOrderCreated(Order order);
+    }
+    private final OrderCreatedListener listener;
 
     // Result
     private Order createdOrder = null;
@@ -63,18 +68,21 @@ public class CreateOrderDialog extends JDialog {
     private static final String[] LINE_COLS = { "SKU", "Item Name", "Qty", "Unit Price", "Line Total" };
 
     // ─────────────────────────────────────────────────────────────────────────
-    public CreateOrderDialog(Window owner,
+    public OrderFrame(Window owner,
             IBillingService billSvc,
             ICustomerService custSvc,
             IItemService itemSvc,
             ICouponService couponSvc,
-            User currentUser) {
-        super(owner, "Create New Order", ModalityType.APPLICATION_MODAL);
+            User currentUser,
+            OrderCreatedListener listener) {
+        super("Create New Order");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.billSvc = billSvc;
         this.custSvc = custSvc;
         this.itemSvc = itemSvc;
         this.couponSvc = couponSvc;
         this.currentUser = currentUser;
+        this.listener = listener;
 
         buildUI(); // build skeleton (no pack yet)
         loadCombos(); // fill combos with data
@@ -412,6 +420,9 @@ public class CreateOrderDialog extends JDialog {
 
         try {
             createdOrder = billSvc.createOrder(order, currentUser);
+            if (listener != null) {
+                listener.onOrderCreated(createdOrder);
+            }
             dispose();
         } catch (Exception ex) {
             UITheme.showError(this, ex.getMessage());
@@ -524,7 +535,6 @@ public class CreateOrderDialog extends JDialog {
         return l;
     }
 
-    /** @return the saved Order on success, or null if cancelled / closed. */
     public Order getCreatedOrder() {
         return createdOrder;
     }
@@ -550,11 +560,7 @@ public class CreateOrderDialog extends JDialog {
         }
 
         public String toString() {
-            String price = item.getUnitPrice() != null
-                    ? String.format("%,.0f VNĐ", item.getUnitPrice().doubleValue())
-                    : "0 VNĐ";
-            return item.getItemSku() + "  –  " + item.getItemName()
-                    + "  (" + price + ")  | Tồn: " + item.getStockQuantity();
+            return item.getItemSku() + "  –  " + item.getItemName() + " | Stock: " + item.getStockQuantity();
         }
     }
 }

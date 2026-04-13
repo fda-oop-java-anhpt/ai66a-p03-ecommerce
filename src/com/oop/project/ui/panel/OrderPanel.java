@@ -6,8 +6,8 @@ import com.oop.project.repository.interfaces.AuditLogRepository;
 import com.oop.project.service.interfaces.*;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
-import com.oop.project.ui.dialogs.CreateOrderDialog;
 import com.oop.project.ui.frames.MainFrame;
+import com.oop.project.ui.frames.OrderFrame;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
 
@@ -175,14 +175,13 @@ public class OrderPanel extends JPanel {
 
     // ── Open Create Order dialog ──────────────────────────────────────────────
     private void openCreateOrderDialog() {
-        CreateOrderDialog dlg = new CreateOrderDialog(
-                mf, billSvc, custSvc, itemSvc, couponSvc, mf.getCurrentUser());
+        OrderFrame dlg = new OrderFrame(
+                mf, billSvc, custSvc, itemSvc, couponSvc, mf.getCurrentUser(),
+                created -> {
+                    refresh();
+                    UITheme.showSuccess(this, "Order #" + created.getOrderId() + " created successfully.");
+                });
         dlg.setVisible(true);
-        Order created = dlg.getCreatedOrder();
-        if (created != null) {
-            refresh();
-            UITheme.showSuccess(this, "Order #" + created.getOrderId() + " created successfully.");
-        }
     }
 
     // ── Row selection ─────────────────────────────────────────────────────────

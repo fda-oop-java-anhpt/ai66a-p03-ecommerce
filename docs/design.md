@@ -2,15 +2,21 @@
 
 ## 1. Danh sách các lớp và vai trò (Class List & Responsibilities)
 
-Liệt kê các class chính trong hệ thống và mô tả ngắn gọn vai trò của từng class.
-
 | Class | Package | Vai trò |
 |------|--------|--------|
-| `User`, `Customer`, `Item`, `Order` ... | `model` | Chứa các cấu trúc dữ liệu đại diện cho thực thể hệ thống. |
-| `UserRepositoryImpl`, `ItemRepositoryImpl` ... | `repository.impl` | Lớp Data Access Object (DAO) giao tiếp trực tiếp với Database để thao tác dữ liệu cơ sở. |
-| `UserServiceImpl`, `AuthServiceImpl` ... | `service.impl` | Lớp logic nghiệp vụ (Business Service) xử lí logic chính của ứng dụng trước khi được lưu DB. |
-| `MainFrame`, `LoginFrame`, `OrderDialog` ... | `ui.*` | Lớp hiển thị giao diện dùng Java Swing để tương tác với người dùng. |
-| `DatabaseConnection` | `util` | Lớp tiện ích cấu hình kết nối ứng dụng với Database qua JDBC. |
+| `User` | `model` | Đại diện cho thực thể người dùng, bao gồm thông tin đăng nhập và phân quyền (admin/staff). |
+| `Customer` | `model` | Chứa thông tin hồ sơ của khách (tên, liên lạc, địa chỉ, ngày tạo). |
+| `Item` | `model` | Trạng thái của một sản phẩm lưu kho (số lượng, giá tiền, mô tả). |
+| `Order` | `model` | Chứa thông tin tổng quan của một hóa đơn (khách hàng, tổng giá trị, trạng thái). |
+| `OrderDetail` | `model` | Biểu diễn chi tiết một sản phẩm trong đơn hàng (mối liên hệ giữa Order và Item). |
+| `UserRepositoryImpl` | `repository.impl` | Lớp JDBC truy xuất CSDL trực tiếp để tạo/cập nhật/truy vấn `User`. |
+| `OrderRepositoryImpl`| `repository.impl` | Lớp JDBC chịu trách nhiệm lưu trữ và cập nhật trạng thái của Order xuống hệ cơ sở dữ liệu. |
+| `AuthServiceImpl` | `service.impl` | Nơi chứa logic nghiệp vụ xử lý quy trình đăng nhập, xác thực quyền truy cập. |
+| `BillingServiceImpl` | `service.impl` | Chứa logic nghiệp vụ tính toán tổng hóa đơn, áp dụng thuế (tax) và lưu trữ đơn. |
+| `MainFrame` | `ui.frames` | Cửa sổ làm việc chính (Swing) của ứng dụng, chứa các navigation Tabs (Orders, Items, Customers...). |
+| `LoginFrame` | `ui.frames` | Cửa sổ giao diện đăng nhập đầu tiên khi ứng dụng khởi chạy. |
+| `OrderDialog` | `ui.dialogs` | Hộp thoại đa phương thức (modal) cung cấp input cho thao tác tạo mới hoặc sửa `Order`. |
+| `DatabaseConnection` | `util` | Lớp nạp cấu hình `.env` để duy trì kết nối chung (Connection pool) tới PostgreSQL. |
 
 ---
 

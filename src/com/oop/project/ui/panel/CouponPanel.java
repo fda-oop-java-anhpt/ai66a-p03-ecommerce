@@ -53,7 +53,7 @@ public class CouponPanel extends JPanel {
         p.add(UITheme.title("Coupons"), BorderLayout.WEST);
 
         if (!mf.isAdmin()) {
-            JLabel note = UITheme.label("⚠  View only — Admin required to manage coupons.");
+            JLabel note = UITheme.label("VIEW ONLY: Admin required to manage coupons.");
             note.setForeground(UITheme.WARNING);
             note.setFont(UITheme.FONT_SMALL);
             p.add(note, BorderLayout.EAST);

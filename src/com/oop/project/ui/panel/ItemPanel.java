@@ -243,7 +243,7 @@ public class ItemPanel extends JPanel {
                     int qty = v instanceof Number ? ((Number) v).intValue() : 0;
                     int LOW = lowStockLimit; // ← gọi ở đây thay vì bên ngoài
                     boolean low = qty <= LOW;
-                    l.setForeground(low ? UITheme.DANGER : UITheme.SUCCESS);
+                    l.setForeground(low ? UITheme.DANGER : UITheme.TEXT_PRIMARY);
                     l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);
                     l.setFont(low ? UITheme.FONT_BADGE : UITheme.FONT_BODY);
                     l.setToolTipText(low ? "⚠ Low stock! Threshold: " + LOW : null);

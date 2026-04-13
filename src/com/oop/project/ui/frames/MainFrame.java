@@ -33,7 +33,6 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.*;
-import java.math.BigDecimal; 
 
 /**
  * Main application window — FR-6.3.
@@ -184,7 +183,7 @@ public class MainFrame extends JFrame {
         profileMi.addActionListener(e -> new ProfileFrame(this, currentUser).setVisible(true));
         popup.add(profileMi);
 
-        if (isAdmin()) {
+        if (isAdmin()) { // chi admin duoc xem audit log
             JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
             auditMi.addActionListener(e -> new AuditLogFrame(this).setVisible(true));
             popup.add(auditMi);

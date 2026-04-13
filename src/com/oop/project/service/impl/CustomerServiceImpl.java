@@ -52,10 +52,10 @@ public class CustomerServiceImpl implements ICustomerService {
     public boolean addCustomer(Customer c, User actor) {
         validateCustomer(c);
         if (customerRepo.isPhoneExists(c.getPhone(), -1)) {
-            throw new DuplicateException("Số điện thoại '" + c.getPhone() + "' đã tồn tại!");
+            throw new DuplicateException("Phone number '" + c.getPhone() + "' existed!");
         }
         if (customerRepo.isEmailExists(c.getEmail(), -1)) {
-            throw new DuplicateException("Email '" + c.getEmail() + "' đã tồn tại!");
+            throw new DuplicateException("Email '" + c.getEmail() + "' existed!");
         }
         if (c.getCreatedDate() == null) {
             c.setCreatedDate(new Timestamp(System.currentTimeMillis()));

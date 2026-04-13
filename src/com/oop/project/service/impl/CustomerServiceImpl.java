@@ -52,10 +52,10 @@ public class CustomerServiceImpl implements ICustomerService {
     public boolean addCustomer(Customer c, User actor) {
         validateCustomer(c);
         if (customerRepo.isPhoneExists(c.getPhone(), -1)) {
-            throw new DuplicateException("Phone number '" + c.getPhone() + "' existed!");
+            throw new DuplicateException("Phone number '" + c.getPhone() + "' already existed!");
         }
         if (customerRepo.isEmailExists(c.getEmail(), -1)) {
-            throw new DuplicateException("Email '" + c.getEmail() + "' existed!");
+            throw new DuplicateException("Email '" + c.getEmail() + "' already existed!");
         }
         if (c.getCreatedDate() == null) {
             c.setCreatedDate(new Timestamp(System.currentTimeMillis()));
@@ -71,10 +71,10 @@ public class CustomerServiceImpl implements ICustomerService {
     public boolean updateCustomer(Customer c, User actor) {
         validateCustomer(c);
         if (customerRepo.isPhoneExists(c.getPhone(), c.getCustomerId())) {
-            throw new DuplicateException("Số điện thoại '" + c.getPhone() + "' đã tồn tại ở khách hàng khác!");
+            throw new DuplicateException("Phone number '" + c.getPhone() + "' already existed!");
         }
         if (customerRepo.isEmailExists(c.getEmail(), c.getCustomerId())) {
-            throw new DuplicateException("Email '" + c.getEmail() + "' đã tồn tại ở khách hàng khác!");
+            throw new DuplicateException("Email '" + c.getEmail() + "' already existed!");
         }
         boolean ok = customerRepo.update(c);
         if (ok) {

@@ -67,7 +67,7 @@ public class AuditLogFrame extends JFrame {
         titleBlock.add(sub, BorderLayout.SOUTH);
 
         // Filter bar
-        JPanel filters = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        JPanel filters = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
         filters.setOpaque(false);
 
         filters.add(UITheme.label("Action:"));

@@ -69,8 +69,18 @@ public class UserServiceImpl implements IUserService {
         if (userId == adminId) {
             throw new IllegalArgumentException("You cannot delete your own account.");
         }
+        User target = userRepo.findById(userId);
+        if (target == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
+        if (target.getLastLogin() != null) {
+            throw new IllegalArgumentException(
+                "Cannot delete account \"" + target.getUserName() + "\": this user has logged in before.");
+        }
+        // Remove audit logs first to avoid FK constraint violation
+        auditRepo.deleteByUserId(userId);
         if (!userRepo.delete(userId)) {
-            throw new RuntimeException("Failed to delete user (user may not exist).");
+            throw new RuntimeException("Failed to delete user from database.");
         }
     }
 

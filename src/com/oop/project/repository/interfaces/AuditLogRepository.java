@@ -8,4 +8,6 @@ public interface AuditLogRepository {
     boolean insert(AuditLog log);
 
     List<AuditLog> findAll();
+
+    boolean deleteByUserId(int userId);
 }

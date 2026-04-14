@@ -66,4 +66,18 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
         }
         return list;
     }
+
+    // ==================== Delete all logs for a given user ====================
+    public boolean deleteByUserId(int userId) {
+        String sql = "DELETE FROM audit_logs WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate(); // 0 rows is still OK (user had no logs)
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -179,9 +179,16 @@ public class StaffPanel extends JPanel {
         int targetId = (int) model.getValueAt(row, 0);
         String targetName = (String) model.getValueAt(row, 1);
         String targetRole = (String) model.getValueAt(row, 2);
+        String lastLogin = (String) model.getValueAt(row, 4);
 
         if (targetId == mf.getCurrentUser().getUserId()) {
             UITheme.showError(this, "You cannot delete your own account.");
+            return;
+        }
+        if (lastLogin != null && !lastLogin.equals("—")) {
+            UITheme.showError(this,
+                "Cannot delete \"" + targetName + "\": this account has logged in before.\n" +
+                "Only accounts that have never logged in can be deleted.");
             return;
         }
         if ("ADMIN".equals(targetRole)) {

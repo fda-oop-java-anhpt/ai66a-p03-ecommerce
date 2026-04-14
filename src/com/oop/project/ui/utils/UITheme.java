@@ -15,6 +15,7 @@ public class UITheme {
     public static final Color SUCCESS = new Color(72, 199, 142);
     public static final Color WARNING = new Color(255, 193, 69);
     public static final Color DANGER = new Color(252, 100, 100);
+    public static final Color UPDATE = new Color(200, 150, 255);
     public static final Color TEXT_PRIMARY = new Color(200, 200, 200);
     public static final Color TEXT_MUTED = new Color(113, 128, 150);
     public static final Color BORDER_COLOR = new Color(45, 55, 80);

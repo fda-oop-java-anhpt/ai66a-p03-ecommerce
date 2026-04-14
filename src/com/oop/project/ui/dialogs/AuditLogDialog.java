@@ -62,7 +62,7 @@ public class AuditLogDialog extends JDialog {
         JPanel titleBlock = new JPanel(new BorderLayout(0, 3));
         titleBlock.setBackground(UITheme.BG_DARK);
         titleBlock.add(UITheme.title("Audit Log"), BorderLayout.NORTH);
-        JLabel sub = UITheme.label("All order and authentication events (FR-4.4, FR-0.5)");
+        JLabel sub = UITheme.label("All order and authentication events");
         sub.setFont(UITheme.FONT_SMALL);
         titleBlock.add(sub, BorderLayout.SOUTH);
 
@@ -121,9 +121,8 @@ public class AuditLogDialog extends JDialog {
                     Color col = switch (s) {
                         case "CREATE_ORDER", "CREATE_ITEM", "CREATE_CUSTOMER", "ADD_STAFF" -> UITheme.SUCCESS;
                         case "CANCEL_ORDER", "DELETE_ORDER", "DELETE_ITEM", "DELETE_CUSTOMER", "DELETE_STAFF" -> UITheme.DANGER;
-                        case "UPDATE_ORDER", "UPDATE_ITEM", "UPDATE_CUSTOMER" -> UITheme.WARNING;
                         case "LOGIN", "LOGOUT" -> UITheme.ACCENT;
-                        case "UPDATE_SETTING" -> new Color(200, 150, 255);
+                        case "UPDATE_SETTING", "UPDATE_ORDER", "UPDATE_ITEM", "UPDATE_CUSTOMER" -> UITheme.UPDATE;
                         default -> UITheme.TEXT_MUTED;
                     };
                     l.setForeground(col);

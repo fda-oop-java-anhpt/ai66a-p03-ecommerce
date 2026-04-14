@@ -450,13 +450,22 @@ public class OrderDialog extends JDialog {
             } else {
                 discount = appliedCoupon.getDiscountValue();
             }
-            discount = discount.min(subtotal);
         }
-        BigDecimal afterDiscount = subtotal.subtract(discount).max(BigDecimal.ZERO);
+        
         BigDecimal taxRate = getTaxRate();
-        BigDecimal tax = afterDiscount.multiply(taxRate)
-                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-        BigDecimal total = afterDiscount.add(tax);
+        BigDecimal tax;
+        BigDecimal total;
+        
+        if (discount.compareTo(subtotal) >= 0 && subtotal.compareTo(BigDecimal.ZERO) > 0) {
+            discount = subtotal.subtract(BigDecimal.ONE);
+            taxRate = BigDecimal.ZERO;
+            tax = BigDecimal.ZERO;
+            total = BigDecimal.ONE;
+        } else {
+            BigDecimal afterDiscount = subtotal.subtract(discount).max(BigDecimal.ZERO);
+            tax = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            total = afterDiscount.add(tax);
+        }
 
         subtotalLbl.setText(String.format("%,.0f VNĐ", subtotal));
         discountLbl.setText(String.format("-%,.0f VNĐ", discount));

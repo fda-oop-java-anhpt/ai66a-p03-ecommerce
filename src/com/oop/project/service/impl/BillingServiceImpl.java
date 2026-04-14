@@ -75,14 +75,20 @@ public class BillingServiceImpl implements IBillingService {
         order.setDiscountAmount(discountAmount);
 
         BigDecimal taxRate = getTaxRate();
-        order.setTaxRate(taxRate);
-
-        BigDecimal afterDiscount = subtotal.subtract(discountAmount);
-        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0)
-            afterDiscount = BigDecimal.ZERO;
-        BigDecimal taxAmount = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-        BigDecimal finalTotal = afterDiscount.add(taxAmount);
-        order.setFinalTotal(finalTotal);
+        if (discountAmount.compareTo(subtotal) >= 0 && subtotal.compareTo(BigDecimal.ZERO) > 0) {
+            discountAmount = subtotal.subtract(BigDecimal.ONE);
+            order.setDiscountAmount(discountAmount);
+            order.setTaxRate(BigDecimal.ZERO);
+            order.setFinalTotal(BigDecimal.ONE);
+        } else {
+            order.setTaxRate(taxRate);
+            BigDecimal afterDiscount = subtotal.subtract(discountAmount);
+            if (afterDiscount.compareTo(BigDecimal.ZERO) < 0)
+                afterDiscount = BigDecimal.ZERO;
+            BigDecimal taxAmount = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            BigDecimal finalTotal = afterDiscount.add(taxAmount);
+            order.setFinalTotal(finalTotal);
+        }
 
         order.setStatus(OrderStatus.PENDING);
         if (order.getOrderDate() == null)
@@ -124,14 +130,20 @@ public class BillingServiceImpl implements IBillingService {
         order.setDiscountAmount(discountAmount);
 
         BigDecimal taxRate = getTaxRate();
-        order.setTaxRate(taxRate);
-
-        BigDecimal afterDiscount = subtotal.subtract(discountAmount);
-        if (afterDiscount.compareTo(BigDecimal.ZERO) < 0)
-            afterDiscount = BigDecimal.ZERO;
-        BigDecimal taxAmount = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-        BigDecimal finalTotal = afterDiscount.add(taxAmount);
-        order.setFinalTotal(finalTotal);
+        if (discountAmount.compareTo(subtotal) >= 0 && subtotal.compareTo(BigDecimal.ZERO) > 0) {
+            discountAmount = subtotal.subtract(BigDecimal.ONE);
+            order.setDiscountAmount(discountAmount);
+            order.setTaxRate(BigDecimal.ZERO);
+            order.setFinalTotal(BigDecimal.ONE);
+        } else {
+            order.setTaxRate(taxRate);
+            BigDecimal afterDiscount = subtotal.subtract(discountAmount);
+            if (afterDiscount.compareTo(BigDecimal.ZERO) < 0)
+                afterDiscount = BigDecimal.ZERO;
+            BigDecimal taxAmount = afterDiscount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            BigDecimal finalTotal = afterDiscount.add(taxAmount);
+            order.setFinalTotal(finalTotal);
+        }
 
         boolean updated = orderRepo.update(order);
         if (!updated)

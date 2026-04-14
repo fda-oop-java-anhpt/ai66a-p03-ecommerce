@@ -18,4 +18,6 @@ public interface ItemRepository {
     boolean delete(String sku);
 
     boolean updateStock(String sku, int quantityChange);
+
+    boolean hasBeenOrdered(String sku);
 }

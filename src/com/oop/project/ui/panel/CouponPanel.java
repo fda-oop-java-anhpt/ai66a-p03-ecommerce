@@ -148,10 +148,6 @@ public class CouponPanel extends JPanel {
             p.add(editBtn);
             p.add(toggleBtn);
         }
-
-        JButton refreshBtn = UITheme.ghostButton("Refresh");
-        refreshBtn.addActionListener(e -> refresh());
-        p.add(refreshBtn);
         return p;
     }
 

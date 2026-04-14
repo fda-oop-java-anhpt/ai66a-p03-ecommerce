@@ -126,4 +126,18 @@ public class ItemRepositoryImpl implements ItemRepository {
         }
         return false;
     }
+
+    // ==================== Check if item has been ordered ====================
+    public boolean hasBeenOrdered(String sku) {
+        String sql = "SELECT 1 FROM order_details WHERE item_sku = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, sku);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -89,7 +89,13 @@ public class ItemServiceImpl implements IItemService {
 
     @Override
     public boolean deleteItem(String sku, User actor) {
+        if (itemRepo.hasBeenOrdered(sku)) {
+            throw new ValidationException("Cannot delete item: it has already been ordered.");
+        }
         boolean ok = itemRepo.delete(sku);
+        if (!ok) {
+            throw new ValidationException("Failed to delete item from database.");
+        }
         if (ok) {
             log(actor, "DELETE_ITEM", sku);
         }

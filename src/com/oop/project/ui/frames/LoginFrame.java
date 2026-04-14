@@ -146,7 +146,7 @@ public class LoginFrame extends JFrame {
                             : "Login error: " + cause.getMessage());
                     passwordField.setText("");
                     loginBtn.setEnabled(true);
-                    loginBtn.setText("Sign In  →");
+                    loginBtn.setText("Sign In");
                 }
             }
         };

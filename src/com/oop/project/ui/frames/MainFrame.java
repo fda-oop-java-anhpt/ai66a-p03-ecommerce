@@ -1,15 +1,32 @@
 package com.oop.project.ui.frames;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
+
 import com.oop.project.model.User;
 import com.oop.project.model.UserRole;
-import com.oop.project.repository.interfaces.AuditLogRepository;
-import com.oop.project.repository.interfaces.CouponRepository;
-import com.oop.project.repository.interfaces.CustomerRepository;
-import com.oop.project.repository.interfaces.ItemRepository;
-import com.oop.project.repository.interfaces.OrderDetailRepository;
-import com.oop.project.repository.interfaces.OrderRepository;
-import com.oop.project.repository.interfaces.SystemSettingRepository;
-import com.oop.project.repository.interfaces.UserRepository;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.repository.impl.CouponRepositoryImpl;
 import com.oop.project.repository.impl.CustomerRepositoryImpl;
@@ -18,8 +35,27 @@ import com.oop.project.repository.impl.OrderDetailRepositoryImpl;
 import com.oop.project.repository.impl.OrderRepositoryImpl;
 import com.oop.project.repository.impl.SystemSettingRepositoryImpl;
 import com.oop.project.repository.impl.UserRepositoryImpl;
-import com.oop.project.service.interfaces.*;
-import com.oop.project.service.impl.*;
+import com.oop.project.repository.interfaces.AuditLogRepository;
+import com.oop.project.repository.interfaces.CouponRepository;
+import com.oop.project.repository.interfaces.CustomerRepository;
+import com.oop.project.repository.interfaces.ItemRepository;
+import com.oop.project.repository.interfaces.OrderDetailRepository;
+import com.oop.project.repository.interfaces.OrderRepository;
+import com.oop.project.repository.interfaces.SystemSettingRepository;
+import com.oop.project.repository.interfaces.UserRepository;
+import com.oop.project.service.impl.BillingServiceImpl;
+import com.oop.project.service.impl.CouponServiceImpl;
+import com.oop.project.service.impl.CustomerServiceImpl;
+import com.oop.project.service.impl.DashboardServiceImpl;
+import com.oop.project.service.impl.ItemServiceImpl;
+import com.oop.project.service.impl.UserServiceImpl;
+import com.oop.project.service.interfaces.IAuthService;
+import com.oop.project.service.interfaces.IBillingService;
+import com.oop.project.service.interfaces.ICouponService;
+import com.oop.project.service.interfaces.ICustomerService;
+import com.oop.project.service.interfaces.IDashboardService;
+import com.oop.project.service.interfaces.IItemService;
+import com.oop.project.service.interfaces.IUserService;
 import com.oop.project.ui.dialogs.AuditLogDialog;
 import com.oop.project.ui.dialogs.ProfileDialog;
 import com.oop.project.ui.panel.CouponPanel;
@@ -30,11 +66,6 @@ import com.oop.project.ui.panel.OrderPanel;
 import com.oop.project.ui.panel.SettingsPanel;
 import com.oop.project.ui.panel.StaffPanel;
 import com.oop.project.ui.utils.UITheme;
-
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import java.awt.*;
-import java.awt.event.*;
 
 /**
  * Main application window — FR-6.3.
@@ -208,7 +239,7 @@ public class MainFrame extends JFrame {
         return mi;
     }
 
-    // ── Tabs — fix 5: custom dark UI so tab text is readable ─────────────────
+    // ─────── Tabs ───────────────────────────────────────────────────
     private JTabbedPane buildTabs() {
         tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -216,7 +247,8 @@ public class MainFrame extends JFrame {
         tabs.setForeground(UITheme.TEXT_MUTED);
         tabs.setFont(UITheme.FONT_BODY);
 
-        // Override tab UI so selected tab = BG_CARD background + ACCENT text,
+        // Override tab UI so custom dark UI so tab text is readable  
+        // selected tab = BG_CARD background + ACCENT text,
         // unselected = BG_DARK background + TEXT_MUTED text
         tabs.setUI(new BasicTabbedPaneUI() {
             @Override

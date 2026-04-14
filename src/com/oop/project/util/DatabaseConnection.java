@@ -68,7 +68,7 @@ public class DatabaseConnection {
         }
     }
 
-    // 4. HÀM MAIN ĐỂ CHẠY THỬ (Checkpoint Tuần 2)
+    // 4. HÀM MAIN ĐỂ CHẠY THỬ 
     public static void main(String[] args) {
         System.out.println("Đang kiểm tra kết nối...");
         Connection conn = getConnection(); // Gọi hàm này không còn bị lỗi "undefined" nữa

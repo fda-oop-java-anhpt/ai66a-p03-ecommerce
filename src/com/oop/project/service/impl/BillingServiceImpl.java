@@ -19,7 +19,6 @@ public class BillingServiceImpl implements IBillingService {
     private final SystemSettingRepository settingRepo;
     private final CouponRepository couponRepo;
     private final ItemRepository itemRepo;
-    // private final OrderDetailRepository orderDetailRepo;
 
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("8.00");
 
@@ -99,7 +98,6 @@ public class BillingServiceImpl implements IBillingService {
             throw new RuntimeException("Failed to persist order.");
         order.setOrderId(orderId);
 
-        // orderDetailRepo.insertBatch(orderId, order.getOrderItems());
 
         for (OrderDetail detail : order.getOrderItems()) {
             itemRepo.updateStock(detail.getItem().getItemSku(), -detail.getQuantity());
@@ -148,9 +146,6 @@ public class BillingServiceImpl implements IBillingService {
         boolean updated = orderRepo.update(order);
         if (!updated)
             throw new RuntimeException("Failed to update order.");
-        // orderDetailRepo.deleteByOrderId(order.getOrderId());
-        // orderDetailRepo.insertBatch(order.getOrderId(), order.getOrderItems());
-
         logAudit(currentUser, "UPDATE_ORDER", "ORDER", String.valueOf(order.getOrderId()));
         return order;
     }
@@ -162,7 +157,6 @@ public class BillingServiceImpl implements IBillingService {
         Order order = orderRepo.findById(orderId);
         if (order == null)
             throw new ValidationException("Order not found.");
-        // check if order is already cancelled
         if (order.getStatus() == OrderStatus.CANCELLED) {
             return false;
         }

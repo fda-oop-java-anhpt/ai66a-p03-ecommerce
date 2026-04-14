@@ -1,5 +1,7 @@
 package com.oop.project.ui.dialogs;
 
+import com.oop.project.model.User;
+import com.oop.project.model.UserRole;
 import com.oop.project.repository.impl.AuditLogRepositoryImpl;
 import com.oop.project.ui.utils.TableRenderer;
 import com.oop.project.ui.utils.UITheme;
@@ -23,13 +25,14 @@ public class AuditLogDialog extends JDialog {
     private DefaultTableModel model;
     private JTable            table;
     private JComboBox<String> actionFilter;
-    private JTextField        searchField;
+    private User              currentUser;
 
     private static final String[] COLS =
         {"Timestamp", "User", "Action", "Target Type", "Target ID"};
 
-    public AuditLogDialog(Window owner) {
+    public AuditLogDialog(Window owner, User currentUser) {
         super(owner, "Audit Log", Dialog.ModalityType.APPLICATION_MODAL);
+        this.currentUser = currentUser;
         buildUI(owner);
         refresh();
     }
@@ -82,21 +85,14 @@ public class AuditLogDialog extends JDialog {
         actionFilter.addActionListener(e -> applyFilter());
         filters.add(actionFilter);
 
-        filters.add(UITheme.label("Search user:"));
-        searchField = UITheme.styledTextField();
-        searchField.setPreferredSize(new Dimension(160, 32));
-        searchField.addActionListener(e -> applyFilter());
-        filters.add(searchField);
-
-        JButton searchBtn  = UITheme.primaryButton("Search");
+        JButton searchBtn  = UITheme.primaryButton("Apply");
         JButton clearBtn   = UITheme.ghostButton("Clear");
-        // JButton refreshBtn = UITheme.ghostButton("⟳");
+        
         searchBtn .addActionListener(e -> applyFilter());
-        clearBtn  .addActionListener(e -> { searchField.setText(""); actionFilter.setSelectedIndex(0); refresh(); });
-        // refreshBtn.addActionListener(e -> refresh());
+        clearBtn  .addActionListener(e -> { actionFilter.setSelectedIndex(0); applyFilter(); });
+        
         filters.add(searchBtn);
         filters.add(clearBtn);
-        // filters.add(refreshBtn);
 
         p.add(titleBlock, BorderLayout.WEST);
         p.add(filters,    BorderLayout.EAST);
@@ -152,35 +148,23 @@ public class AuditLogDialog extends JDialog {
 
     // ── Data ──────────────────────────────────────────────────────────────────
     public void refresh() {
-        try {
-            model.setRowCount(0);
-            auditRepo.findAll().forEach(log -> model.addRow(new Object[]{
-                log.getCreatedDate(),
-                log.getUser() != null ? log.getUser().getUserName() : "—",
-                log.getActions(),
-                log.getTargetType(),
-                log.getTargetId()
-            }));
-        } catch (Exception ex) {
-            UITheme.showError(this, "Failed to load audit log: " + ex.getMessage());
-        }
+        actionFilter.setSelectedIndex(0);
+        applyFilter();
     }
 
     private void applyFilter() {
         String action  = (String) actionFilter.getSelectedItem();
-        String userKw  = searchField.getText().trim().toLowerCase();
 
         try {
             model.setRowCount(0);
             auditRepo.findAll().stream()
                 .filter(log -> {
-                    boolean matchAction = "All".equals(action)
-                            || action.equals(log.getActions());
-                    boolean matchUser = userKw.isEmpty()
-                            || (log.getUser() != null
-                                && log.getUser().getUserName().toLowerCase().contains(userKw));
-                    return matchAction && matchUser;
+                    if (currentUser.getUserRole() != UserRole.ADMIN) {
+                        return log.getUser() != null && log.getUser().getUserId() == currentUser.getUserId();
+                    }
+                    return true;
                 })
+                .filter(log -> "All".equals(action) || action.equals(log.getActions()))
                 .forEach(log -> model.addRow(new Object[]{
                     log.getCreatedDate(),
                     log.getUser() != null ? log.getUser().getUserName() : "—",

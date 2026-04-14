@@ -129,7 +129,7 @@ public class UITheme {
         cb.setFont(FONT_BODY);
         cb.setBackground(BG_INPUT);
         cb.setForeground(TEXT_MUTED);
-        // Fix 7: make dropdown list items dark-themed so text is readable
+        // make dropdown list items dark-themed so text is readable
         cb.setRenderer(new javax.swing.DefaultListCellRenderer() {
             public java.awt.Component getListCellRendererComponent(
                     JList<?> list, Object value, int index, boolean sel, boolean focus) {

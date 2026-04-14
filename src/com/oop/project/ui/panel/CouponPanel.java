@@ -31,6 +31,7 @@ public class CouponPanel extends JPanel {
 
     private DefaultTableModel model;
     private JTable table;
+    private JTextField searchField;
 
     private static final String[] COLS = { "Code", "Type", "Value", "Min Order (VNĐ)", "Expiry", "Status" };
 
@@ -52,12 +53,32 @@ public class CouponPanel extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(16, 20, 12, 20));
         p.add(UITheme.title("Coupons"), BorderLayout.WEST);
 
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        rightPanel.setOpaque(false);
+
+        rightPanel.add(UITheme.label("Search Code:"));
+        searchField = UITheme.styledTextField();
+        searchField.setPreferredSize(new Dimension(160, 32));
+        searchField.addActionListener(e -> refresh());
+        rightPanel.add(searchField);
+
+        JButton searchBtn = UITheme.primaryButton("Search");
+        searchBtn.addActionListener(e -> refresh());
+        rightPanel.add(searchBtn);
+
+        JButton clearBtn = UITheme.ghostButton("Clear");
+        clearBtn.addActionListener(e -> { searchField.setText(""); refresh(); });
+        rightPanel.add(clearBtn);
+
         if (!mf.isAdmin()) {
-            JLabel note = UITheme.label("VIEW ONLY: Admin required to manage coupons.");
+            JLabel note = UITheme.label("VIEW ONLY");
             note.setForeground(UITheme.WARNING);
             note.setFont(UITheme.FONT_SMALL);
-            p.add(note, BorderLayout.EAST);
+            rightPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+            rightPanel.add(note);
         }
+        p.add(rightPanel, BorderLayout.EAST);
+
         return p;
     }
 
@@ -114,14 +135,10 @@ public class CouponPanel extends JPanel {
         p.setBackground(UITheme.BG_DARK);
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER_COLOR));
 
-        JButton refreshBtn = UITheme.ghostButton("Refresh");
-        refreshBtn.addActionListener(e -> refresh());
-        p.add(refreshBtn);
-
         if (mf.isAdmin()) {
             JButton addBtn = UITheme.primaryButton("+ New Coupon");
-            JButton editBtn = UITheme.ghostButton("Edit");
-            JButton toggleBtn = UITheme.ghostButton("Toggle Active");
+            JButton editBtn = UITheme.primaryButton("Edit");
+            JButton toggleBtn = UITheme.successButton("Toggle Active");
 
             addBtn.addActionListener(e -> openAddDialog());
             editBtn.addActionListener(e -> editSelected());
@@ -131,6 +148,10 @@ public class CouponPanel extends JPanel {
             p.add(editBtn);
             p.add(toggleBtn);
         }
+
+        JButton refreshBtn = UITheme.ghostButton("Refresh");
+        refreshBtn.addActionListener(e -> refresh());
+        p.add(refreshBtn);
         return p;
     }
 
@@ -205,7 +226,11 @@ public class CouponPanel extends JPanel {
             List<Coupon> list = repo.findAll();
             model.setRowCount(0);
             Date today = new Date(System.currentTimeMillis());
+            String kw = (searchField != null) ? searchField.getText().trim().toLowerCase() : "";
             for (Coupon c : list) {
+                if (!kw.isEmpty() && !c.getCouponCode().toLowerCase().contains(kw)) {
+                    continue;
+                }
                 boolean expired = c.getExpiryDate() != null && c.getExpiryDate().before(today);
                 String status = (!c.isActive() || expired) ? "EXPIRED" : "ACTIVE";
                 String valStr = c.getDiscountType() == DiscountType.Percent

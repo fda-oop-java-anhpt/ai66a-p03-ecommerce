@@ -185,11 +185,9 @@ public class MainFrame extends JFrame {
         profileMi.addActionListener(e -> new ProfileDialog(this, currentUser).setVisible(true));
         popup.add(profileMi);
 
-        if (isAdmin()) { // chi admin duoc xem audit log
-            JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
-            auditMi.addActionListener(e -> new AuditLogDialog(this).setVisible(true));
-            popup.add(auditMi);
-        }
+        JMenuItem auditMi = popupItem("Audit Log", UITheme.SUCCESS);
+        auditMi.addActionListener(e -> new AuditLogDialog(this, currentUser).setVisible(true));
+        popup.add(auditMi);
         popup.addSeparator();
 
         JMenuItem logoutMi = popupItem("Logout", UITheme.DANGER);

@@ -88,7 +88,7 @@ public class ItemDialog extends JDialog {
 
         if (isEdit && !isAdmin) {
             // Staff editing: show what they CAN and CANNOT change
-            JLabel warn = UITheme.label("\u26A0  Staff can only edit: Name, Category, Stock Quantity.");
+            JLabel warn = UITheme.label("\u26A0  Staff can only edit Stock Quantity.");
             warn.setForeground(UITheme.WARNING);
             warn.setFont(UITheme.FONT_SMALL);
             fields.add(warn);

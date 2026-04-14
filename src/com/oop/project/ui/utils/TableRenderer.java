@@ -13,7 +13,7 @@ public class TableRenderer {
     }
     public static DefaultTableCellRenderer rows() {
         return new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent (JTable t, Object v, boolean sel, boolean foc, int r, int c){
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 JLabel l = (JLabel)super.getTableCellRendererComponent(t, v, sel, foc, r, c);
                 if (!sel) {
                     l.setBackground(r%2==0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);

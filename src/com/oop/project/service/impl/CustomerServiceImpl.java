@@ -87,10 +87,8 @@ public class CustomerServiceImpl implements ICustomerService {
     public boolean deleteCustomer(int id, User actor) {
         List<Order> orders = orderRepo.findByCustomerId(id);
         if (orders != null && !orders.isEmpty()) {
-            Customer c = customerRepo.findById(id);
-            String name = (c != null) ? c.getCustomerName() : String.valueOf(id);
             throw new ValidationException(
-                "Cannot delete customer \"" + name + "\": they have " + orders.size() + " order(s) on record.");
+                "Cannot delete customer that have order(s) on record.");
         }
         boolean ok = customerRepo.delete(id);
         if (ok) {

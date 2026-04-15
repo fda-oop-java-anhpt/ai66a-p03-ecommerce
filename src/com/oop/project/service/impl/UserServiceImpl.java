@@ -75,7 +75,7 @@ public class UserServiceImpl implements IUserService {
         }
         if (target.getLastLogin() != null) {
             throw new IllegalArgumentException(
-                "Cannot delete account \"" + target.getUserName() + "\": this user has logged in before.");
+                "Cannot delete account \"" + target.getUserName() + "\": this user has been activated before.");
         }
         // Remove audit logs first to avoid FK constraint violation
         auditRepo.deleteByUserId(userId);

@@ -175,8 +175,8 @@ public class CouponDialog extends JDialog {
         Date expiry;
         try {
             LocalDate ld = LocalDate.parse(expStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            if (ld.isBefore(LocalDate.now())) {
-                UITheme.showError(this, "Expiry date must be in the future.");
+            if (!ld.isAfter(LocalDate.now())) {
+                UITheme.showError(this, "Expiry date must be at least tomorrow (" + LocalDate.now().plusDays(1).format(FMT) + ").");
                 expiryField.requestFocus();
                 return;
             }

@@ -55,6 +55,7 @@ public class DashboardServiceImpl implements IDashboardService {
         return orderRepo.searchByCustomerNameOrId(keyword.trim());
     }
 
+    // tinh toan tong cac don hang k bi cancel, neu bi cancel thi
     @Override
     public Map<String, Object> getSummaryStatistics() {
         Map<String, Object> stats = new LinkedHashMap<>();

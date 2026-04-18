@@ -296,7 +296,7 @@ public class OrderDialog extends JDialog {
         // Customers
         custCombo.removeAllItems();
         try {
-            for (Customer c : custSvc.getAllCustomers())
+            for (Customer c : custSvc.getAllActiveCustomers())
                 custCombo.addItem(new CustomerItem(c));
         } catch (Exception ignored) {
         }
@@ -304,7 +304,7 @@ public class OrderDialog extends JDialog {
         // Items + build category list
         allItems = new ArrayList<>();
         try {
-            allItems = itemSvc.getAllItems();
+            allItems = itemSvc.getAllActiveItems();
         } catch (Exception ignored) {
         }
 

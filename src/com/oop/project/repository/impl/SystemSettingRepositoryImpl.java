@@ -8,7 +8,7 @@ import java.sql.*;
 
 public class SystemSettingRepositoryImpl implements SystemSettingRepository {
 
-    // ==================== Find setting by key ====================
+    // Find setting by key
     public SystemSetting findByKey(String key) {
         String sql = "SELECT * FROM system_settings WHERE setting_key = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -28,7 +28,7 @@ public class SystemSettingRepositoryImpl implements SystemSettingRepository {
         return null;
     }
 
-    // ==================== Update setting value ====================
+    // Update setting value
     public boolean update(String key, String value) {
         String sql = "UPDATE system_settings SET setting_value = ? WHERE setting_key = ?";
         try (Connection conn = DatabaseConnection.getConnection();

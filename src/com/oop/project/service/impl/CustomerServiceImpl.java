@@ -49,6 +49,11 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
+    public List<Customer> getAllActiveCustomers() {
+        return customerRepo.findAllActive();
+    }
+
+    @Override
     public boolean addCustomer(Customer c, User actor) {
         validateCustomer(c);
         if (customerRepo.isPhoneExists(c.getPhone(), -1)) {
@@ -85,14 +90,19 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public boolean deleteCustomer(int id, User actor) {
-        List<Order> orders = orderRepo.findByCustomerId(id);
-        if (orders != null && !orders.isEmpty()) {
-            throw new ValidationException(
-                "Cannot delete customer that have order(s) on record.");
-        }
         boolean ok = customerRepo.delete(id);
         if (ok) {
-            log(actor, "DELETE_CUSTOMER", String.valueOf(id));
+            log(actor, "DEACTIVATE_CUSTOMER", String.valueOf(id));
+        }
+        return ok;
+    }
+
+    @Override
+    public boolean setCustomerStatus(int id, boolean isActive, User actor) {
+        boolean ok = customerRepo.updateStatus(id, isActive);
+        if (ok) {
+            String act = isActive ? "ACTIVATE_CUSTOMER" : "DEACTIVATE_CUSTOMER";
+            log(actor, act, String.valueOf(id));
         }
         return ok;
     }

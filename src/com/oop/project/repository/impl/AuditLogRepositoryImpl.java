@@ -12,7 +12,7 @@ import java.util.List;
 
 public class AuditLogRepositoryImpl implements AuditLogRepository {
 
-    // ==================== HELPER: Map ResultSet → AuditLog ====================
+    // HELPER: Map ResultSet → AuditLog
     private AuditLog mapRow(ResultSet rs) throws SQLException {
         User user = new User(
                 rs.getInt("user_id"),
@@ -35,7 +35,7 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
             "FROM audit_logs al " +
             "JOIN users u ON al.user_id = u.user_id ";
 
-    // ==================== FR-0.5, FR-4.4: Insert audit log ====================
+    // FR-0.5, FR-4.4: Insert audit log
     public boolean insert(AuditLog log) {
         String sql = "INSERT INTO audit_logs (user_id, actions, target_type, target_id) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -51,7 +51,7 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
         return false;
     }
 
-    // ==================== List all audit logs ====================
+    // List all audit logs
     public List<AuditLog> findAll() {
         List<AuditLog> list = new ArrayList<>();
         String sql = BASE_SELECT + "ORDER BY al.created_date DESC";
@@ -67,7 +67,7 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
         return list;
     }
 
-    // ==================== Delete all logs for a given user ====================
+    // Delete all logs for a given user
     public boolean deleteByUserId(int userId) {
         String sql = "DELETE FROM audit_logs WHERE user_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

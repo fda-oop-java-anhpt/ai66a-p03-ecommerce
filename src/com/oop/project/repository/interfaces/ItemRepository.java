@@ -20,4 +20,8 @@ public interface ItemRepository {
     boolean updateStock(String sku, int quantityChange);
 
     boolean hasBeenOrdered(String sku);
+
+    List<Item> findAllActive();
+
+    boolean updateStatus(String sku, boolean isActive);
 }

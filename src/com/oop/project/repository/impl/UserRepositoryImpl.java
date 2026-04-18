@@ -12,7 +12,7 @@ import java.util.List;
 
 public class UserRepositoryImpl implements UserRepository {
 
-    // ==================== HELPER: Map ResultSet → User ====================
+    // HELPER: Map ResultSet → User
     private User mapRow(ResultSet rs) throws SQLException {
         return new User(
                 rs.getInt("user_id"),
@@ -23,7 +23,7 @@ public class UserRepositoryImpl implements UserRepository {
                 rs.getTimestamp("last_login"));
     }
 
-    // ==================== FR-0.1, FR-0.2: Login lookup ====================
+    // FR-0.1, FR-0.2: Login lookup
     public User findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE user_name = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -39,7 +39,7 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
-    // ==================== Find user by ID ====================
+    // Find user by ID
     public User findById(int userId) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -55,7 +55,7 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
-    // ==================== List all users ====================
+    // List all users
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users ORDER BY user_id";
@@ -71,7 +71,7 @@ public class UserRepositoryImpl implements UserRepository {
         return users;
     }
 
-    // ==================== Insert new user ====================
+    // Insert new user
     public boolean insert(User user) {
         String sql = "INSERT INTO users (user_name, user_password, user_role) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -94,7 +94,7 @@ public class UserRepositoryImpl implements UserRepository {
         return false;
     }
 
-    // ==================== Delete user ====================
+    // Delete user
     public boolean delete(int userId) {
         String sql = "DELETE FROM users WHERE user_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -107,7 +107,7 @@ public class UserRepositoryImpl implements UserRepository {
         return false;
     }
 
-    // ==================== FR-0.5: Update last login timestamp ====================
+    // FR-0.5: Update last login timestamp
     public boolean updateLastLogin(int userId, Timestamp timestamp) {
         String sql = "UPDATE users SET last_login = ? WHERE user_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

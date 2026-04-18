@@ -12,6 +12,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.List;
+import com.oop.project.model.AuditLog;
+import com.oop.project.ui.utils.UIPaginator;
 
 /**
  * Audit Log — standalone JDialog, FR-4.4 + FR-0.5.
@@ -23,12 +26,12 @@ public class AuditLogDialog extends JDialog {
     private final AuditLogRepositoryImpl auditRepo = new AuditLogRepositoryImpl();
 
     private DefaultTableModel model;
-    private JTable            table;
+    private JTable table;
     private JComboBox<String> actionFilter;
-    private User              currentUser;
+    private User currentUser;
+    private UIPaginator<AuditLog> paginator;
 
-    private static final String[] COLS =
-        {"Timestamp", "User", "Action", "Target Type", "Target ID"};
+    private static final String[] COLS = { "Timestamp", "User", "Action", "Target Type", "Target ID" };
 
     public AuditLogDialog(Window owner, User currentUser) {
         super(owner, "Audit Log", Dialog.ModalityType.APPLICATION_MODAL);
@@ -47,16 +50,16 @@ public class AuditLogDialog extends JDialog {
         root.setBackground(UITheme.BG_DARK);
         setContentPane(root);
 
-        root.add(buildTop(),    BorderLayout.NORTH);
-        root.add(buildTable(),  BorderLayout.CENTER);
+        root.add(buildTop(), BorderLayout.NORTH);
+        root.add(buildTable(), BorderLayout.CENTER);
 
         // ESC closes
         getRootPane().registerKeyboardAction(e -> dispose(),
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW);
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
-    // ── Top: title + filter bar ───────────────────────────────────────────────
+    // Top: title + filter bar
     private JPanel buildTop() {
         JPanel p = new JPanel(new BorderLayout(0, 0));
         p.setBackground(UITheme.BG_DARK);
@@ -77,29 +80,32 @@ public class AuditLogDialog extends JDialog {
         actionFilter = UITheme.styledComboBox(new String[] {
                 "All", "LOGIN", "LOGOUT",
                 "CREATE_ORDER", "UPDATE_ORDER", "CANCEL_ORDER",
-                "CREATE_ITEM", "UPDATE_ITEM", "DELETE_ITEM",
-                "CREATE_CUSTOMER", "UPDATE_CUSTOMER", "DELETE_CUSTOMER",
+                "CREATE_ITEM", "UPDATE_ITEM", "ACTIVATE_ITEM", "DEACTIVATE_ITEM",
+                "CREATE_CUSTOMER", "UPDATE_CUSTOMER", "ACTIVATE_CUSTOMER", "DEACTIVATE_CUSTOMER",
                 "ADD_STAFF", "DELETE_STAFF",
                 "UPDATE_SETTING"
         });
         actionFilter.addActionListener(e -> applyFilter());
         filters.add(actionFilter);
 
-        JButton searchBtn  = UITheme.primaryButton("Apply");
-        JButton clearBtn   = UITheme.ghostButton("Clear");
-        
-        searchBtn .addActionListener(e -> applyFilter());
-        clearBtn  .addActionListener(e -> { actionFilter.setSelectedIndex(0); applyFilter(); });
-        
+        JButton searchBtn = UITheme.primaryButton("Apply");
+        JButton clearBtn = UITheme.ghostButton("Clear");
+
+        searchBtn.addActionListener(e -> applyFilter());
+        clearBtn.addActionListener(e -> {
+            actionFilter.setSelectedIndex(0);
+            applyFilter();
+        });
+
         filters.add(searchBtn);
         filters.add(clearBtn);
 
         p.add(titleBlock, BorderLayout.WEST);
-        p.add(filters,    BorderLayout.EAST);
+        p.add(filters, BorderLayout.EAST);
         return p;
     }
 
-    // ── Table ─────────────────────────────────────────────────────────────────
+    // Table
     private JPanel buildTable() {
         model = TableRenderer.model(COLS);
         table = new JTable(model);
@@ -115,8 +121,11 @@ public class AuditLogDialog extends JDialog {
                 if (!sel) {
                     String s = v == null ? "" : v.toString();
                     Color col = switch (s) {
-                        case "CREATE_ORDER", "CREATE_ITEM", "CREATE_CUSTOMER", "ADD_STAFF" -> UITheme.SUCCESS;
-                        case "CANCEL_ORDER", "DELETE_ORDER", "DELETE_ITEM", "DELETE_CUSTOMER", "DELETE_STAFF" -> UITheme.DANGER;
+                        case "CREATE_ORDER", "CREATE_ITEM", "ACTIVATE_ITEM", "CREATE_CUSTOMER", "ACTIVATE_CUSTOMER",
+                                "ADD_STAFF" ->
+                            UITheme.SUCCESS;
+                        case "CANCEL_ORDER", "DELETE_ORDER", "DEACTIVATE_ITEM", "DEACTIVATE_CUSTOMER", "DELETE_STAFF" ->
+                            UITheme.DANGER;
                         case "LOGIN", "LOGOUT" -> UITheme.ACCENT;
                         case "UPDATE_SETTING", "UPDATE_ORDER", "UPDATE_ITEM", "UPDATE_CUSTOMER" -> UITheme.UPDATE;
                         default -> UITheme.TEXT_MUTED;
@@ -134,46 +143,61 @@ public class AuditLogDialog extends JDialog {
         p.setBorder(BorderFactory.createEmptyBorder(0, 20, 16, 20));
 
         // Row count label at bottom
-        JLabel countLbl = UITheme.label("0 records");
+        JLabel countLbl = UITheme.label("");
         countLbl.setFont(UITheme.FONT_SMALL);
         countLbl.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
 
+        paginator = new UIPaginator<>(this::populateTable);
+
+        JPanel bottomP = new JPanel(new BorderLayout());
+        bottomP.setOpaque(false);
+        bottomP.add(paginator, BorderLayout.CENTER);
+        bottomP.add(countLbl, BorderLayout.EAST);
+
         // Update count when model changes
-        model.addTableModelListener(e -> countLbl.setText(model.getRowCount() + " records"));
+        model.addTableModelListener(e -> countLbl.setText(model.getRowCount() + " rows"));
 
         p.add(UITheme.scrollPane(table), BorderLayout.CENTER);
-        p.add(countLbl, BorderLayout.SOUTH);
+        p.add(bottomP, BorderLayout.SOUTH);
         return p;
     }
 
-    // ── Data ──────────────────────────────────────────────────────────────────
+    // Data
     public void refresh() {
         actionFilter.setSelectedIndex(0);
         applyFilter();
     }
 
     private void applyFilter() {
-        String action  = (String) actionFilter.getSelectedItem();
+        String action = (String) actionFilter.getSelectedItem();
 
         try {
-            model.setRowCount(0);
-            auditRepo.findAll().stream()
-                .filter(log -> {
-                    if (currentUser.getUserRole() != UserRole.ADMIN) {
-                        return log.getUser() != null && log.getUser().getUserId() == currentUser.getUserId();
-                    }
-                    return true;
-                })
-                .filter(log -> "All".equals(action) || action.equals(log.getActions()))
-                .forEach(log -> model.addRow(new Object[]{
+            List<AuditLog> filtered = auditRepo.findAll().stream()
+                    .filter(log -> {
+                        if (currentUser.getUserRole() != UserRole.ADMIN) {
+                            return log.getUser() != null && log.getUser().getUserId() == currentUser.getUserId();
+                        }
+                        return true;
+                    })
+                    .filter(log -> "All".equals(action) || action.equals(log.getActions()))
+                    .toList();
+
+            paginator.setData(filtered);
+        } catch (Exception ex) {
+            UITheme.showError(this, ex.getMessage());
+        }
+    }
+
+    private void populateTable(List<AuditLog> list) {
+        model.setRowCount(0);
+        for (AuditLog log : list) {
+            model.addRow(new Object[] {
                     log.getCreatedDate(),
                     log.getUser() != null ? log.getUser().getUserName() : "—",
                     log.getActions(),
                     log.getTargetType(),
                     log.getTargetId()
-                }));
-        } catch (Exception ex) {
-            UITheme.showError(this, ex.getMessage());
+            });
         }
     }
 }

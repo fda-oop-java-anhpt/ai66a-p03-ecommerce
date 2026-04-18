@@ -11,8 +11,7 @@ import java.util.List;
 
 public class OrderDetailRepositoryImpl implements OrderDetailRepository {
 
-    // ==================== Find all details for an order (JOIN items)
-    // ====================
+    // Find all details for an order (JOIN items)
     public List<OrderDetail> findByOrderId(int orderId) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = "SELECT od.*, i.item_name, i.category, i.unit_price, i.stock_quantity " +
@@ -45,7 +44,7 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
         return list;
     }
 
-    // ==================== Bulk insert order details ====================
+    // Bulk insert order details
     public boolean insertBatch(int orderId, List<OrderDetail> details) {
         String sql = "INSERT INTO order_details (order_id, item_sku, quantity, price_at_time) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -69,7 +68,7 @@ public class OrderDetailRepositoryImpl implements OrderDetailRepository {
         return false;
     }
 
-    // ==================== Delete all details for an order ====================
+    // Delete all details for an order
     public boolean deleteByOrderId(int orderId) {
         String sql = "DELETE FROM order_details WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

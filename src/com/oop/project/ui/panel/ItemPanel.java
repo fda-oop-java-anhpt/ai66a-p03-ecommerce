@@ -14,6 +14,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import com.oop.project.ui.utils.UIPaginator;
 
 /**
  * Item Catalog tab — FR-2.
@@ -29,10 +30,11 @@ public class ItemPanel extends JPanel {
     private DefaultTableModel model;
     private JTable table;
     private JTextField searchField;
+    private UIPaginator<Item> paginator;
 
     private int lowStockLimit = 5;
 
-    private static final String[] COLS = { "SKU", "Name", "Category", "Price (VNĐ)", "Stock" };
+    private static final String[] COLS = { "SKU", "Name", "Category", "Price (VNĐ)", "Stock", "Status" };
 
     public ItemPanel(MainFrame mf) {
         this.mf = mf;
@@ -78,7 +80,8 @@ public class ItemPanel extends JPanel {
         table.getColumnModel().getColumn(3).setCellRenderer(TableRenderer.currency());
         // Fix 6: Red stock renderer for items at or below LOW_STOCK_LIMIT
         table.getColumnModel().getColumn(4).setCellRenderer(stockRenderer());
-        TableRenderer.widths(table, 120, 240, 140, 110, 80);
+        table.getColumnModel().getColumn(5).setCellRenderer(TableRenderer.activeStatus());
+        TableRenderer.widths(table, 100, 200, 120, 110, 70, 80);
 
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -93,8 +96,12 @@ public class ItemPanel extends JPanel {
         JLabel hint = UITheme.label("Double-click a row to edit  |  Price editing: Admin only");
         hint.setFont(UITheme.FONT_SMALL);
         hint.setBorder(BorderFactory.createEmptyBorder(2, 0, 6, 0));
+        
+        paginator = new UIPaginator<>(this::populate);
+
         wrap.add(hint, BorderLayout.NORTH);
         wrap.add(UITheme.scrollPane(table), BorderLayout.CENTER);
+        wrap.add(paginator, BorderLayout.SOUTH);
         return wrap;
     }
 
@@ -106,19 +113,19 @@ public class ItemPanel extends JPanel {
 
         JButton addBtn = UITheme.primaryButton("+ Add Item");
         JButton editBtn = UITheme.primaryButton("Edit");
-        JButton deleteBtn = UITheme.dangerButton("Delete");
+        JButton toggleBtn = UITheme.dangerButton("Toggle Status");
         JButton stockBtn = UITheme.primaryButton("Add Stock");
         // JButton refreshBtn = UITheme.ghostButton("Refresh");
 
         addBtn.addActionListener(e -> openAddDialog());
         editBtn.addActionListener(e -> openEditDialog());
-        deleteBtn.addActionListener(e -> deleteSelected());
+        toggleBtn.addActionListener(e -> toggleSelectedStatus());
         stockBtn.addActionListener(e -> addStock());
         // refreshBtn.addActionListener(e -> refresh());
 
         p.add(addBtn);
         p.add(editBtn);
-        p.add(deleteBtn);
+        p.add(toggleBtn);
         p.add(Box.createHorizontalStrut(12));
         // p.add(stockBtn); p.add(refreshBtn);
 
@@ -188,20 +195,24 @@ public class ItemPanel extends JPanel {
         }
     }
 
-    private void deleteSelected() {
+    private void toggleSelectedStatus() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            UITheme.showError(this, "Select an item to delete.");
+            UITheme.showError(this, "Select an item to toggle status.");
             return;
         }
         String sku = (String) model.getValueAt(row, 0);
         String name = (String) model.getValueAt(row, 1);
-        if (!UITheme.confirm(this, "Delete \"" + name + "\" (" + sku + ")?", "Confirm Delete"))
+        String statusStr = (String) model.getValueAt(row, 5);
+        boolean currentlyActive = "Active".equalsIgnoreCase(statusStr);
+        String newAction = currentlyActive ? "Deactivate" : "Activate";
+
+        if (!UITheme.confirm(this, newAction + " \"" + name + "\" (" + sku + ")?", "Confirm " + newAction))
             return;
         try {
-            svc.deleteItem(sku, mf.getCurrentUser());
+            svc.setItemStatus(sku, !currentlyActive, mf.getCurrentUser());
             refresh();
-            UITheme.showSuccess(this, "Item deleted.");
+            UITheme.showSuccess(this, "Item " + newAction.toLowerCase() + "d successfully.");
         } catch (Exception ex) {
             UITheme.showError(this, ex.getMessage());
         }
@@ -265,23 +276,18 @@ public class ItemPanel extends JPanel {
     }
 
     private void doSearch() {
-        // ItemService has no search — filter table in memory
         String kw = searchField.getText().trim().toLowerCase();
         if (kw.isEmpty()) {
             refresh();
             return;
         }
-        model.setRowCount(0);
         try {
-            for (Item i : svc.getAllItems()) {
-                if (i.getItemName().toLowerCase().contains(kw)
-                        || i.getItemSku().toLowerCase().contains(kw)
-                        || (i.getCategory() != null && i.getCategory().toLowerCase().contains(kw))) {
-                    model.addRow(new Object[] {
-                            i.getItemSku(), i.getItemName(), i.getCategory(),
-                            i.getUnitPrice(), i.getStockQuantity() });
-                }
-            }
+            List<Item> filtered = svc.getAllItems().stream().filter(i -> 
+                i.getItemName().toLowerCase().contains(kw)
+                || i.getItemSku().toLowerCase().contains(kw)
+                || (i.getCategory() != null && i.getCategory().toLowerCase().contains(kw))
+            ).toList();
+            paginator.setData(filtered);
         } catch (Exception ex) {
             UITheme.showError(this, ex.getMessage());
         }
@@ -291,7 +297,7 @@ public class ItemPanel extends JPanel {
     public void refresh() {
         lowStockLimit = loadLowStockLimit(); // ← reload từ DB mỗi lần refresh
         try {
-            populate(svc.getAllItems());
+            paginator.setData(svc.getAllItems());
         } catch (Exception ex) {
             UITheme.showError(this, "Failed to load items: " + ex.getMessage());
         }
@@ -300,9 +306,10 @@ public class ItemPanel extends JPanel {
     private void populate(List<Item> list) {
         model.setRowCount(0);
         for (Item i : list) {
+            String status = i.isActive() ? "Active" : "Inactive";
             model.addRow(new Object[] {
                     i.getItemSku(), i.getItemName(), i.getCategory(),
-                    i.getUnitPrice(), i.getStockQuantity()
+                    i.getUnitPrice(), i.getStockQuantity(), status
             });
         }
     }

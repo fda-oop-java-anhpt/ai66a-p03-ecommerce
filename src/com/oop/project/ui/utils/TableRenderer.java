@@ -63,6 +63,28 @@ public class TableRenderer {
             }
         };
     }
+    public static DefaultTableCellRenderer activeStatus() {
+        return new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
+                l.setFont(UITheme.FONT_BODY);
+                l.setHorizontalAlignment(CENTER);
+                if (!sel) {
+                    String s = v == null ? "" : v.toString();
+                    if ("Active".equalsIgnoreCase(s)) {
+                        l.setForeground(UITheme.SUCCESS);
+                    } else if ("Inactive".equalsIgnoreCase(s)) {
+                        l.setForeground(UITheme.DANGER);
+                    } else {
+                        l.setForeground(UITheme.TEXT_PRIMARY);
+                    }
+                    l.setBackground(r % 2 == 0 ? UITheme.BG_CARD : UITheme.BG_ROW_ALT);
+                }
+                l.setBorder(new EmptyBorder(0, 12, 0, 12));
+                return l;
+            }
+        };
+    }
     public static void applyAll(JTable t) {
         UITheme.styleTable(t); 
         DefaultTableCellRenderer r = rows();

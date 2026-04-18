@@ -55,8 +55,7 @@ public class CouponRepositoryImpl implements CouponRepository {
         return null;
     }
 
-    // ==================== FR-4.2: Find active, non-expired coupons
-    // ====================
+    // FR-4.2: Find active, non-expired coupons
     public List<Coupon> findActiveCoupons() {
         List<Coupon> list = new ArrayList<>();
         String sql = "SELECT * FROM coupons WHERE is_active = TRUE AND expiry_date >= CURRENT_DATE ORDER BY coupon_code";
@@ -72,7 +71,7 @@ public class CouponRepositoryImpl implements CouponRepository {
         return list;
     }
 
-    // ==================== FR-4.1: Insert coupon ====================
+    // FR-4.1: Insert coupon
     public boolean insert(Coupon c) {
         String sql = "INSERT INTO coupons (coupon_code, discount_value, discount_type, min_order_value, expiry_date, is_active) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -90,7 +89,7 @@ public class CouponRepositoryImpl implements CouponRepository {
         return false;
     }
 
-    // ==================== Update coupon ====================
+    // Update coupon
     public boolean update(Coupon c) {
         String sql = "UPDATE coupons SET discount_value = ?, discount_type = ?, min_order_value = ?, expiry_date = ?, is_active = ? WHERE coupon_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();

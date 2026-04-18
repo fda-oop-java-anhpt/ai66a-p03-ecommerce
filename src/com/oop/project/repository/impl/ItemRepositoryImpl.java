@@ -10,20 +10,26 @@ import java.util.List;
 
 public class ItemRepositoryImpl implements ItemRepository {
 
-    // ==================== HELPER: Map ResultSet → Item ====================
+    // HELPER: Map ResultSet → Item
     private Item mapRow(ResultSet rs) throws SQLException {
-        return new Item(
+        Item item = new Item(
                 rs.getString("item_sku"),
                 rs.getString("item_name"),
                 rs.getString("category"),
                 rs.getBigDecimal("unit_price"),
                 rs.getInt("stock_quantity"));
+        try {
+            item.setActive(rs.getBoolean("is_active"));
+        } catch (SQLException e) {
+            // override error
+        }
+        return item;
     }
 
-    // ==================== List all items ====================
+    // List all items
     public List<Item> findAll() {
         List<Item> list = new ArrayList<>();
-        String sql = "SELECT * FROM items ORDER BY item_sku";
+        String sql = "SELECT * FROM items ORDER BY is_active DESC, item_sku";
         try (Connection conn = DatabaseConnection.getConnection();
                 Statement st = conn.createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
@@ -36,7 +42,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return list;
     }
 
-    // ==================== Find by SKU ====================
+    // Find by SKU
     public Item findBySku(String sku) {
         String sql = "SELECT * FROM items WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -52,7 +58,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return null;
     }
 
-    // ==================== FR-2.3: Check duplicate SKU ====================
+    // FR-2.3: Check duplicate SKU
     public boolean isSkuExists(String sku) {
         String sql = "SELECT 1 FROM items WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -66,7 +72,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return false;
     }
 
-    // ==================== FR-2.1: Insert item ====================
+    // FR-2.1: Insert item
     public boolean insert(Item item) {
         String sql = "INSERT INTO items (item_sku, item_name, category, unit_price, stock_quantity) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -83,7 +89,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return false;
     }
 
-    // ==================== FR-2.1, FR-2.4: Update item ====================
+    // FR-2.1, FR-2.4: Update item
     public boolean update(Item item) {
         String sql = "UPDATE items SET item_name = ?, category = ?, unit_price = ?, stock_quantity = ? WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -100,7 +106,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return false;
     }
 
-    // ==================== FR-2.1: Delete item ====================
+    // FR-2.1: Delete item
     public boolean delete(String sku) {
         String sql = "DELETE FROM items WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -113,7 +119,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return false;
     }
 
-    // ==================== Update stock quantity ====================
+    // Update stock quantity
     public boolean updateStock(String sku, int quantityChange) {
         String sql = "UPDATE items SET stock_quantity = stock_quantity + ? WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -127,7 +133,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         return false;
     }
 
-    // ==================== Check if item has been ordered ====================
+    // Check if item has been ordered
     public boolean hasBeenOrdered(String sku) {
         String sql = "SELECT 1 FROM order_details WHERE item_sku = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -135,6 +141,36 @@ public class ItemRepositoryImpl implements ItemRepository {
             ps.setString(1, sku);
             ResultSet rs = ps.executeQuery();
             return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // List all active items
+    public List<Item> findAllActive() {
+        List<Item> list = new ArrayList<>();
+        String sql = "SELECT * FROM items WHERE is_active = TRUE ORDER BY item_sku";
+        try (Connection conn = DatabaseConnection.getConnection();
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Update status
+    public boolean updateStatus(String sku, boolean isActive) {
+        String sql = "UPDATE items SET is_active = ? WHERE item_sku = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, isActive);
+            ps.setString(2, sku);
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }

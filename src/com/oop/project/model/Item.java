@@ -9,6 +9,7 @@ public class Item {
     private String category;
     private BigDecimal unitPrice; // Dùng BigDecimal cho tiền tệ để chính xác tuyệt đối
     private int stockQuantity;
+    private boolean isActive = true;
 
     public Item(String itemSku, String itemName, String category, BigDecimal unitPrice, int stockQuantity) {
         setItemSku(itemSku);
@@ -75,6 +76,14 @@ public class Item {
             throw new IllegalArgumentException("Stock quantity must be greater than 0");
         }
         this.stockQuantity = stockQuantity;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     @Override

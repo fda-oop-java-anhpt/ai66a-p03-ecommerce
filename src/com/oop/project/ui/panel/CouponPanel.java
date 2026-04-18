@@ -16,7 +16,9 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
+import com.oop.project.ui.utils.UIPaginator;
 
 /**
  * Coupon Management tab — FR-4.1, FR-4.2.
@@ -32,6 +34,7 @@ public class CouponPanel extends JPanel {
     private DefaultTableModel model;
     private JTable table;
     private JTextField searchField;
+    private UIPaginator<Coupon> paginator;
 
     private static final String[] COLS = { "Code", "Type", "Value", "Min Order (VNĐ)", "Expiry", "Status" };
 
@@ -125,7 +128,11 @@ public class CouponPanel extends JPanel {
             hint.setBorder(BorderFactory.createEmptyBorder(2, 0, 6, 0));
             wrap.add(hint, BorderLayout.NORTH);
         }
+        
+        paginator = new UIPaginator<>(this::populateTable);
+        
         wrap.add(UITheme.scrollPane(table), BorderLayout.CENTER);
+        wrap.add(paginator, BorderLayout.SOUTH);
         return wrap;
     }
 
@@ -220,27 +227,37 @@ public class CouponPanel extends JPanel {
     public void refresh() {
         try {
             List<Coupon> list = repo.findAll();
-            model.setRowCount(0);
-            Date today = new Date(System.currentTimeMillis());
             String kw = (searchField != null) ? searchField.getText().trim().toLowerCase() : "";
+            
+            List<Coupon> filtered = new ArrayList<>();
             for (Coupon c : list) {
                 if (!kw.isEmpty() && !c.getCouponCode().toLowerCase().contains(kw)) {
                     continue;
                 }
-                boolean expired = c.getExpiryDate() != null && c.getExpiryDate().before(today);
-                String status = (!c.isActive() || expired) ? "EXPIRED" : "ACTIVE";
-                String valStr = c.getDiscountType() == DiscountType.Percent
-                        ? c.getDiscountValue().toPlainString() + "%"
-                        : String.format("%,.0f VNĐ", c.getDiscountValue().doubleValue());
-                model.addRow(new Object[] {
-                        c.getCouponCode(), c.getDiscountType().name(),
-                        valStr,
-                        c.getMinOrderValue() != null ? c.getMinOrderValue() : BigDecimal.ZERO,
-                        c.getExpiryDate(), status
-                });
+                filtered.add(c);
             }
+            paginator.setData(filtered);
+            
         } catch (Exception ex) {
             UITheme.showError(this, "Failed to load coupons: " + ex.getMessage());
+        }
+    }
+
+    private void populateTable(List<Coupon> list) {
+        model.setRowCount(0);
+        Date today = new Date(System.currentTimeMillis());
+        for (Coupon c : list) {
+            boolean expired = c.getExpiryDate() != null && c.getExpiryDate().before(today);
+            String status = (!c.isActive() || expired) ? "EXPIRED" : "ACTIVE";
+            String valStr = c.getDiscountType() == DiscountType.Percent
+                    ? c.getDiscountValue().toPlainString() + "%"
+                    : String.format("%,.0f VNĐ", c.getDiscountValue().doubleValue());
+            model.addRow(new Object[] {
+                    c.getCouponCode(), c.getDiscountType().name(),
+                    valStr,
+                    c.getMinOrderValue() != null ? c.getMinOrderValue() : BigDecimal.ZERO,
+                    c.getExpiryDate(), status
+            });
         }
     }
 }

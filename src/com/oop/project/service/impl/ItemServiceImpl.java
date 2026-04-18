@@ -48,6 +48,11 @@ public class ItemServiceImpl implements IItemService {
     }
 
     @Override
+    public List<Item> getAllActiveItems() {
+        return itemRepo.findAllActive();
+    }
+
+    @Override
     public boolean addItem(Item item, User currentUser) {
         if (currentUser == null || currentUser.getUserRole() != UserRole.ADMIN) {
             throw new SecurityException("Only Admin users can add new items.");
@@ -98,6 +103,16 @@ public class ItemServiceImpl implements IItemService {
         }
         if (ok) {
             log(actor, "DELETE_ITEM", sku);
+        }
+        return ok;
+    }
+
+    @Override
+    public boolean setItemStatus(String sku, boolean isActive, User actor) {
+        boolean ok = itemRepo.updateStatus(sku, isActive);
+        if (ok) {
+            String act = isActive ? "ACTIVATE_ITEM" : "DEACTIVATE_ITEM";
+            log(actor, act, sku);
         }
         return ok;
     }

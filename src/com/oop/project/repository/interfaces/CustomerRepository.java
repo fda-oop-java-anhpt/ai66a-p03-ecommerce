@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface CustomerRepository {
     List<Customer> findAll();
+    
+    List<Customer> findAllActive();
 
     Customer findById(int id);
 
@@ -20,4 +22,6 @@ public interface CustomerRepository {
     boolean update(Customer c);
 
     boolean delete(int id);
+
+    boolean updateStatus(int id, boolean isActive);
 }

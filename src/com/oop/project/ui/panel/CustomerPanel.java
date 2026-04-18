@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import com.oop.project.ui.utils.UIPaginator;
 
 /**
  * Customer Management tab — FR-1.
@@ -26,8 +27,9 @@ public class CustomerPanel extends JPanel {
     private DefaultTableModel model;
     private JTable table;
     private JTextField searchField;
+    private UIPaginator<Customer> paginator;
 
-    private static final String[] COLS = { "ID", "Name", "Phone", "Email", "Address", "Created" };
+    private static final String[] COLS = { "ID", "Name", "Phone", "Email", "Address", "Created", "Status" };
 
     public CustomerPanel(MainFrame mf) {
         this.mf = mf;
@@ -70,7 +72,8 @@ public class CustomerPanel extends JPanel {
         model = TableRenderer.model(COLS);
         table = new JTable(model);
         TableRenderer.applyAll(table);
-        TableRenderer.widths(table, 50, 180, 120, 200, 160, 130);
+        table.getColumnModel().getColumn(6).setCellRenderer(TableRenderer.activeStatus());
+        TableRenderer.widths(table, 50, 160, 110, 180, 150, 120, 80);
 
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -85,8 +88,12 @@ public class CustomerPanel extends JPanel {
         JLabel hint = UITheme.label("Double-click a row to edit");
         hint.setFont(UITheme.FONT_SMALL);
         hint.setBorder(BorderFactory.createEmptyBorder(2, 0, 6, 0));
+        
+        paginator = new UIPaginator<>(this::populate);
+
         wrap.add(hint, BorderLayout.NORTH);
         wrap.add(UITheme.scrollPane(table), BorderLayout.CENTER);
+        wrap.add(paginator, BorderLayout.SOUTH);
         return wrap;
     }
 
@@ -98,19 +105,19 @@ public class CustomerPanel extends JPanel {
 
         JButton addBtn = UITheme.primaryButton("+ Add Customer");
         JButton editBtn = UITheme.primaryButton("Edit");
-        JButton deleteBtn = UITheme.dangerButton("Delete");
+        JButton toggleBtn = UITheme.dangerButton("Toggle Status");
         JButton ordersBtn = UITheme.primaryButton("View Orders");
         // JButton refreshBtn = UITheme.ghostButton("Refresh");
 
         addBtn.addActionListener(e -> openAddDialog());
         editBtn.addActionListener(e -> openEditDialog());
-        deleteBtn.addActionListener(e -> deleteSelected());
+        toggleBtn.addActionListener(e -> toggleSelectedStatus());
         ordersBtn.addActionListener(e -> viewOrders());
         // refreshBtn.addActionListener(e -> refresh());
 
         p.add(addBtn);
         p.add(editBtn);
-        p.add(deleteBtn);
+        p.add(toggleBtn);
         p.add(Box.createHorizontalStrut(12));
         // p.add(ordersBtn); p.add(refreshBtn);
         return p;
@@ -162,20 +169,24 @@ public class CustomerPanel extends JPanel {
         }
     }
 
-    private void deleteSelected() {
+    private void toggleSelectedStatus() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            UITheme.showError(this, "Select a customer to delete.");
+            UITheme.showError(this, "Select a customer to toggle status.");
             return;
         }
         int id = (int) model.getValueAt(row, 0);
         String name = (String) model.getValueAt(row, 1);
-        if (!UITheme.confirm(this, "Delete \"" + name + "\"?", "Confirm Delete"))
+        String statusStr = (String) model.getValueAt(row, 6);
+        boolean currentlyActive = "Active".equalsIgnoreCase(statusStr);
+        String newAction = currentlyActive ? "Deactivate" : "Activate";
+
+        if (!UITheme.confirm(this, newAction + " \"" + name + "\"?", "Confirm " + newAction))
             return;
         try {
-            svc.deleteCustomer(id, mf.getCurrentUser());
+            svc.setCustomerStatus(id, !currentlyActive, mf.getCurrentUser());
             refresh();
-            UITheme.showSuccess(this, "Customer deleted.");
+            UITheme.showSuccess(this, "Customer " + newAction.toLowerCase() + "d successfully.");
         } catch (Exception ex) {
             UITheme.showError(this, ex.getMessage());
         }
@@ -206,13 +217,13 @@ public class CustomerPanel extends JPanel {
 
     private void doSearch() {
         String kw = searchField.getText().trim();
-        populate(svc.search(kw));
+        paginator.setData(svc.search(kw));
     }
 
     // ── Table data ────────────────────────────────────────────────────────────
     public void refresh() {
         try {
-            populate(svc.getAllCustomers());
+            paginator.setData(svc.getAllCustomers());
         } catch (Exception ex) {
             UITheme.showError(this, "Failed to load customers: " + ex.getMessage());
         }
@@ -221,9 +232,10 @@ public class CustomerPanel extends JPanel {
     private void populate(List<Customer> list) {
         model.setRowCount(0);
         for (Customer c : list) {
+            String status = c.isActive() ? "Active" : "Inactive";
             model.addRow(new Object[] {
                     c.getCustomerId(), c.getCustomerName(), c.getPhone(),
-                    c.getEmail(), c.getAddress(), c.getCreatedDate()
+                    c.getEmail(), c.getAddress(), c.getCreatedDate(), status
             });
         }
     }

@@ -9,6 +9,7 @@ public class Customer {
     private String email;
     private String address;
     private Timestamp createdDate;
+    private boolean isActive = true;
 
     public Customer(int customerId, String customerName, String phone, String email, String address, Timestamp createdDate) {
         this.customerId = customerId;
@@ -65,6 +66,12 @@ public class Customer {
     }
     public void setCreatedDate(Timestamp createdDate){ 
         this.createdDate = createdDate; 
+    }
+    public boolean isActive() {
+        return isActive;
+    }
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
     }
     @Override 
     public String toString(){

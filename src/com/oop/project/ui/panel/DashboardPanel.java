@@ -12,6 +12,7 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import com.oop.project.ui.utils.UIPaginator;
 
 /**
  * Dashboard tab — FR-5.
@@ -31,6 +32,7 @@ public class DashboardPanel extends JPanel {
     // Orders table
     private DefaultTableModel orderModel;
     private JTable orderTable;
+    private UIPaginator<Order> paginator;
 
     // Filter controls
     private JComboBox<String> statusFilter, sortByCombo, sortDirCombo;
@@ -191,8 +193,11 @@ public class DashboardPanel extends JPanel {
         header.add(hint, BorderLayout.EAST);
         header.setBorder(BorderFactory.createEmptyBorder(4, 0, 6, 0));
 
+        paginator = new UIPaginator<>(this::populateOrderTable);
+
         p.add(header, BorderLayout.NORTH);
         p.add(UITheme.scrollPane(orderTable), BorderLayout.CENTER);
+        p.add(paginator, BorderLayout.SOUTH);
         return p;
     }
 
@@ -220,7 +225,7 @@ public class DashboardPanel extends JPanel {
                 // FR-5.1: sorted list
                 list = dashSvc.getAllOrders(sortBy, asc);
             }
-            populateOrderTable(list);
+            paginator.setData(list);
         } catch (Exception ex) {
             UITheme.showError(this, "Filter error: " + ex.getMessage());
         }

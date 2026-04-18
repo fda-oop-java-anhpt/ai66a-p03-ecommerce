@@ -10,21 +10,27 @@ import java.util.List;
 
 public class CustomerRepositoryImpl implements CustomerRepository {
 
-    // ==================== HELPER: Map ResultSet → Customer ====================
+    // HELPER: Map ResultSet → Customer
     private Customer mapRow(ResultSet rs) throws SQLException {
-        return new Customer(
+        Customer c = new Customer(
                 rs.getInt("customer_id"),
                 rs.getString("customer_name"),
                 rs.getString("phone"),
                 rs.getString("email"),
                 rs.getString("address"),
                 rs.getTimestamp("created_date"));
+        try {
+            c.setActive(rs.getBoolean("is_active"));
+        } catch (SQLException e) {
+            // ignore if column doesn't exist yet
+        }
+        return c;
     }
 
-    // ==================== List all customers ====================
+    // List all customers
     public List<Customer> findAll() {
         List<Customer> list = new ArrayList<>();
-        String sql = "SELECT * FROM customers ORDER BY customer_id";
+        String sql = "SELECT * FROM customers ORDER BY is_active DESC, customer_id";
         try (Connection conn = DatabaseConnection.getConnection();
                 Statement st = conn.createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
@@ -37,7 +43,23 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return list;
     }
 
-    // ==================== Find by ID ====================
+    // List all active customers
+    public List<Customer> findAllActive() {
+        List<Customer> list = new ArrayList<>();
+        String sql = "SELECT * FROM customers WHERE is_active = TRUE ORDER BY customer_id";
+        try (Connection conn = DatabaseConnection.getConnection();
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Find by ID
     public Customer findById(int id) {
         String sql = "SELECT * FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -53,10 +75,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return null;
     }
 
-    // ==================== FR-1.3: Search by name or phone ====================
+    // FR-1.3: Search by name or phone
     public List<Customer> searchByNameOrPhone(String keyword) {
         List<Customer> list = new ArrayList<>();
-        String sql = "SELECT * FROM customers WHERE LOWER(customer_name) LIKE LOWER(?) OR phone LIKE ? ORDER BY customer_id";
+        String sql = "SELECT * FROM customers WHERE LOWER(customer_name) LIKE LOWER(?) OR phone LIKE ? ORDER BY is_active DESC, customer_id";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             String pattern = "%" + keyword + "%";
@@ -72,7 +94,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return list;
     }
 
-    // ==================== Check Duplicate Phone ====================
+    // Check Duplicate Phone
     public boolean isPhoneExists(String phone, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE phone = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -87,7 +109,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return false;
     }
 
-    // ==================== Check Duplicate Email ====================
+    // Check Duplicate Email
     public boolean isEmailExists(String email, int excludeId) {
         String sql = "SELECT 1 FROM customers WHERE email = ? AND customer_id != ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -103,7 +125,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return false;
     }
 
-    // ==================== FR-1.1: Insert customer ====================
+    // FR-1.1: Insert customer
     public boolean insert(Customer c) {
         String sql = "INSERT INTO customers (customer_name, phone, email, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -127,7 +149,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return false;
     }
 
-    // ==================== FR-1.1, FR-1.2: Update customer ====================
+    // FR-1.1, FR-1.2: Update customer
     public boolean update(Customer c) {
         String sql = "UPDATE customers SET customer_name = ?, phone = ?, email = ?, address = ? WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -144,12 +166,26 @@ public class CustomerRepositoryImpl implements CustomerRepository {
         return false;
     }
 
-    // ==================== Delete customer ====================
+    // Delete customer
     public boolean delete(int id) {
-        String sql = "DELETE FROM customers WHERE customer_id = ?";
+        String sql = "UPDATE customers SET is_active = FALSE WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Update status
+    public boolean updateStatus(int id, boolean isActive) {
+        String sql = "UPDATE customers SET is_active = ? WHERE customer_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, isActive);
+            ps.setInt(2, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

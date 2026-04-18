@@ -28,7 +28,8 @@ CREATE TABLE customers(
 	phone VARCHAR(15) UNIQUE NOT NULL,
 	email VARCHAR(100),
 	address TEXT,
-	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	is_active BOOLEAN DEFAULT TRUE
 
 );
 
@@ -37,9 +38,9 @@ CREATE TABLE items(
 	item_name VARCHAR(100) NOT NULL,
 	category VARCHAR(50) NOT NULL,
 	unit_price NUMERIC(12,2) NOT NULL CHECK (unit_price > 0),
-	stock_quantity INT CHECK (stock_quantity >=0)
+	stock_quantity INT CHECK (stock_quantity >=0),
+	is_active BOOLEAN DEFAULT TRUE
 	
-
 );
 
 CREATE TABLE coupons(

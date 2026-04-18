@@ -15,6 +15,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import com.oop.project.ui.utils.UIPaginator;
 
 /**
  * Orders tab — FR-3, FR-4.
@@ -36,6 +37,7 @@ public class OrderPanel extends JPanel {
     private DefaultTableModel orderModel;
     private JTable orderTable;
     private Integer selectedOrderId = null;
+    private UIPaginator<Order> paginator;
 
     // Action buttons that react to row selection
     private JButton cancelBtn;
@@ -121,8 +123,12 @@ public class OrderPanel extends JPanel {
         JLabel hint = UITheme.label("Double-click an order to view invoice");
         hint.setFont(UITheme.FONT_SMALL);
         hint.setBorder(BorderFactory.createEmptyBorder(2, 0, 6, 0));
+        
+        paginator = new UIPaginator<>(this::populateOrderTable);
+
         wrap.add(hint, BorderLayout.NORTH);
         wrap.add(UITheme.scrollPane(orderTable), BorderLayout.CENTER);
+        wrap.add(paginator, BorderLayout.SOUTH);
         return wrap;
     }
 
@@ -285,7 +291,7 @@ public class OrderPanel extends JPanel {
     // ── Data ──────────────────────────────────────────────────────────────────
     public void refresh() {
         try {
-            populateOrderTable(orderRepo.findAll());
+            paginator.setData(orderRepo.findAll());
         } catch (Exception ex) {
             UITheme.showError(this, "Failed to load orders: " + ex.getMessage());
         }
@@ -302,7 +308,7 @@ public class OrderPanel extends JPanel {
             } else {
                 list = orderRepo.findAll();
             }
-            populateOrderTable(list);
+            paginator.setData(list);
         } catch (Exception ex) {
             UITheme.showError(this, ex.getMessage());
         }

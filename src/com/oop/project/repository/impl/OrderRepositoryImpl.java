@@ -12,7 +12,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     private final OrderDetailRepositoryImpl orderDetailRepo = new OrderDetailRepositoryImpl();
 
-    // =========== HELPER: Map ResultSet → Order (with Customer & Coupon) ====================
+    // HELPER: Map ResultSet → Order (with Customer & Coupon)
     private Order mapRow(ResultSet rs) throws SQLException {
         Customer customer = null;
         int customerId = rs.getInt("customer_id");
@@ -52,7 +52,7 @@ public class OrderRepositoryImpl implements OrderRepository {
             "FROM orders o " +
             "LEFT JOIN customers c ON o.customer_id = c.customer_id ";
 
-    // ==================== FR-5.1: List all orders ====================
+    // List all orders
     public List<Order> findAll() {
         List<Order> list = new ArrayList<>();
         String sql = BASE_SELECT + "ORDER BY o.order_date DESC";
@@ -68,7 +68,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         return list;
     }
 
-    // ==================== Find by order ID (with details) ====================
+    // Find by order ID (with details)
     public Order findById(int id) {
         String sql = BASE_SELECT + "WHERE o.order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -86,7 +86,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         return null;
     }
 
-    // ==================== FR-1.4: Find orders by customer ID ====================
+    // Find orders by customer ID
     public List<Order> findByCustomerId(int customerId) {
         List<Order> list = new ArrayList<>();
         String sql = BASE_SELECT + "WHERE o.customer_id = ? ORDER BY o.order_date DESC";
@@ -105,8 +105,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         return list;
     }
 
-    // ==================== FR-5.3: Search by customer name or order ID
-    // ====================
+    // Search by customer name or order ID
     public List<Order> searchByCustomerNameOrId(String keyword) {
         List<Order> list = new ArrayList<>();
         String sql = BASE_SELECT +
@@ -127,7 +126,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         return list;
     }
 
-    // ======== FR-5.2: Filter by status and/or date range ====================
+    // Filter by status and/or date range
     public List<Order> filterByStatusOrDateRange(String status, Timestamp from, Timestamp to) {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT + "WHERE 1=1 ");
@@ -167,7 +166,8 @@ public class OrderRepositoryImpl implements OrderRepository {
         return list;
     }
 
-    // ======== FR-3.1: Insert order (returns generated order_id) ====================
+    // ======== FR-3.1: Insert order (returns generated order_id)
+    // ====================
     public int insert(Order order) {
         String sql = "INSERT INTO orders (customer_id, coupon_code, tax_rate, discount_amount, discount_info, status, subtotal, final_total) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

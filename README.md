@@ -138,13 +138,13 @@ Nội dung cần ghi:
 
 Trước khi nộp, nhóm phải tự kiểm tra:
 
-- [ ] Repository được tạo từ template chính thức.
-- [ ] Tên repository đúng định dạng.
-- [ ] Đã thêm giảng viên với quyền Admin.
-- [ ] Đã thêm đầy đủ các thành viên trong nhóm.
+- [x] Repository được tạo từ template chính thức.
+- [x] Tên repository đúng định dạng.
+- [x] Đã thêm giảng viên với quyền Admin.
+- [x] Đã thêm đầy đủ các thành viên trong nhóm.
 - [ ] `docs/project-info.md` đã điền đầy đủ.
-- [ ] `docs/requirements.md` không để trống.
-- [ ] Có commit đều của các thành viên.
+- [x] `docs/requirements.md` không để trống.
+- [x] Có commit đều của các thành viên.
 
 ---
 

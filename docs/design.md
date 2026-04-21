@@ -147,7 +147,7 @@ Mô tả các bảng / file chính và dữ liệu được lưu trữ.
 
 ---
 
-## 7. Nhận xét về thiết kế (Optional)
+## 7. Nhận xét về thiết kế
 
 - **Ưu điểm của thiết kế hiện tại:** Các package model, service, repo và interface giao thức được chia cấu trúc sạch đẹp, dễ dọc code ngay từ ngày làm quen đầu tiên.
 - **Hạn chế:** Còn tồn đọng code JDBC thủ công ở tầng Repo; nếu code phình to nhiều chức năng thì việc viết chuỗi truy vấn String để CRUD và set các Prepare Statement (ps.setString...) trở nên dài dòng và lặp lại code Boilerplate.

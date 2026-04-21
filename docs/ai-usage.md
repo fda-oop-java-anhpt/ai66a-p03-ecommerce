@@ -1,11 +1,4 @@
 ## AI Usage
-- AI tools used (if any): Claude, Gemini
-- Prompt mẫu: 
-- Code nào do AI gợi ý?
-- Code nào tự chỉnh sửa?
-- 
-
-## AI Usage
 
 ### 1. AI Tools Used
 Trong suốt quá trình phát triển dự án, nhóm đã tận dụng hai nền tảng AI chính, mỗi nền tảng mang lại những thế mạnh riêng biệt:

@@ -8,8 +8,11 @@
 ## AI Usage
 
 ### 1. AI Tools Used
-- **Claude** (Anthropic): Hỗ trợ chính trong việc review code, gợi ý cấu trúc design pattern và tối ưu hóa logic nghiệp vụ
-- **Gemini** (Google): Tham khảo cú pháp Java Swing, gợi ý cách xử lý exception và validate dữ liệu đầu vào
+Trong suốt quá trình phát triển dự án, nhóm đã tận dụng hai nền tảng AI chính, mỗi nền tảng mang lại những thế mạnh riêng biệt:
+
+- **Claude Sonnet 4.5** (Anthropic): Hỗ trợ chính trong việc review code, gợi ý cấu trúc design pattern và tối ưu hóa logic nghiệp vụ. Claude đặc biệt hữu ích khi phân tích các tình huống edge cases phức tạp và đề xuất cách tổ chức code theo nguyên tắc SOLID.
+
+- **Gemini 3.1 Pro** (Google): Tham khảo cú pháp Java Swing, gợi ý cách xử lý exception và validate dữ liệu đầu vào. Gemini tỏ ra hiệu quả trong việc cung cấp các ví dụ code cụ thể cho các thành phần GUI và các thao tác với database JDBC.
 
 ### 2. Prompt Mẫu Đã Sử Dụng
 
@@ -36,10 +39,12 @@ Viết helper method kiểm tra trùng phone/email trong CustomerRepository.
 Sử dụng PreparedStatement để tránh SQL injection.
 ```
 
-### 3. Code Do AI Gợi Ý
+### 3. Code Do AI Gợi Ý:
+
+Nhóm đã xem xét, điều chỉnh và tích hợp các đoạn code và gợi ý này vào codebase chung, đảm bảo phù hợp với kiến trúc tổng thể và yêu cầu nghiệp vụ của dự án. Dù AI tạo ra code khung, việc kiểm thử và tinh chỉnh vẫn do con người thực hiện:
 
 #### 3.1. Utility Methods trong BillingServiceImpl
-AI hỗ trợ viết các hàm tiện ích như `truncate()`, `centerText()` và logic tính tax:
+AI hỗ trợ viết các hàm tiện ích như `truncate()`, `centerText()` và logic tính tax. Những method này tuy đơn giản nhưng rất quan trọng để đảm bảo tính nhất quán trong format dữ liệu hiển thị trên invoice:
 
 ```java
 // BillingServiceImpl.java - Lines 313-332
@@ -61,7 +66,7 @@ private String centerText(String text, int width) {
 ```
 
 #### 3.2. Generate Invoice Template
-AI gợi ý format invoice dạng text với căn chỉnh cột:
+AI gợi ý format invoice dạng text với căn chỉnh cột. Đây là một tính năng quan trọng của hệ thống billing, giúp hóa đơn in ra có bố cục rõ ràng, chuyên nghiệp và dễ đọc:
 
 ```java
 // BillingServiceImpl.java - Lines 174-237
@@ -77,7 +82,7 @@ public String generateInvoice(Order order) {
 ```
 
 #### 3.3. Login Frame UI Layout
-AI tư vấn cách dùng GridBagLayout và UITheme:
+AI tư vấn cách dùng GridBagLayout và UITheme để tạo giao diện đăng nhập hiện đại, cân đối. Việc bố trí layout hợp lý giúp trải nghiệm người dùng trở nên mượt mà và chuyên nghiệp hơn:
 
 ```java
 // LoginFrame.java - Lines 41-61
@@ -91,7 +96,7 @@ g.insets = new Insets(6, 0, 6, 0);
 ```
 
 #### 3.4. Repository Helper Methods
-AI đề xuất pattern map ResultSet sang Model:
+AI đề xuất pattern map ResultSet sang Model, một kỹ thuật phổ biến trong layered architecture giúp tách biệt giữa lớp truy xuất dữ liệu và lớp business logic:
 
 ```java
 // CustomerRepositoryImpl.java - Lines 13-28
@@ -112,10 +117,44 @@ private Customer mapRow(ResultSet rs) throws SQLException {
 }
 ```
 
-### 4. Code Tự Chỉnh Sửa & Phát Triển Thêm (Khoảng 60-65%)
+#### 3.5. Validation Rules cho Dữ Liệu Đầu Vào
+AI đóng vai trò quan trọng trong việc cung cấp code mẫu cho các **nguyên tắc validate cú pháp** của dữ liệu đầu vào. Các thông tin nhạy cảm và quan trọng như số điện thoại, email, địa chỉ đều cần được kiểm tra định dạng chặt chẽ trước khi lưu trữ vào database. AI đã hỗ trợ nhóm xây dựng:
+
+- Các pattern regex để kiểm tra định dạng email hợp lệ (ví dụ: `^[A-Za-z0-9+_.-]+@(.+)$`)
+- Quy tắc validate số điện thoại (độ dài, ký tự số, prefix quốc gia nếu cần)
+- Logic kiểm tra độ dài tối thiểu/tối đa cho các trường văn bản
+- Pattern xác thực địa chỉ không chứa ký tự đặc biệt nguy hiểm
+
+Nhóm sau đó đã tùy biến, mở rộng và tích hợp các nguyên tắc này vào hệ thống validation chung của dự án, đảm bảo mọi dữ liệu khách hàng nhập vào đều được rà soát kỹ lưỡng trước khi chấp nhận:
+
+```java
+// ValidationHelper.java - Ví dụ các method validate do AI gợi ý
+public static boolean isValidEmail(String email) {
+    if (email == null || email.trim().isEmpty()) return false;
+    String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+    return email.matches(emailRegex);
+}
+
+public static boolean isValidPhone(String phone) {
+    if (phone == null || phone.trim().isEmpty()) return false;
+    // AI gợi ý pattern: chỉ chứa số, độ dài 10-11 ký tự, có thể bắt đầu bằng 0 hoặc +84
+    String phoneRegex = "^(0|\\+84)[0-9]{9,10}$";
+    return phone.matches(phoneRegex);
+}
+
+public static boolean isValidAddress(String address) {
+    if (address == null || address.trim().length() < 5) return false;
+    // AI tư vấn không cho phép ký tự đặc biệt nguy hiểm như < > / \
+    return !address.matches(".*[<>\\\\/].*");
+}
+```
+
+### 4. Code Tự Chỉnh Sửa & Phát Triển Thêm
+
+Sau khi nhận được các gợi ý ban đầu từ AI, nhóm đã dành phần lớn thời gian để nghiên cứu sâu, phân tích yêu cầu nghiệp vụ thực tế, và triển khai các giải pháp tối ưu. Các đoạn code dưới đây hoàn toàn do nhóm tự viết hoặc chỉ sử dụng AI như một công cụ tham khảo ở mức độ hạn chế:
 
 #### 4.1. Business Logic Xử Lý Discount Edge Cases
-Nhóm tự nghiên cứu và thêm logic xử lý trường hợp đặc biệt khi discount ≥ subtotal:
+Nhóm tự nghiên cứu và thêm logic xử lý trường hợp đặc biệt khi discount ≥ subtotal. Đây là một tình huống thực tế mà nếu không xử lý đúng có thể dẫn đến âm tiền hoặc tính toán sai lệch. Team đã phân tích kỹ các scenario và đưa ra giải pháp an toàn:
 
 ```java
 // BillingServiceImpl.java - Lines 77-90
@@ -136,7 +175,7 @@ if (discountAmount.compareTo(subtotal) >= 0 && subtotal.compareTo(BigDecimal.ZER
 ```
 
 #### 4.2. Stock Validation Logic
-Tự implement logic kiểm tra tồn kho trước khi tạo order:
+Nhóm tự implement logic kiểm tra tồn kho trước khi tạo order. Việc kiểm tra này giúp đảm bảo tính toàn vẹn dữ liệu, tránh trường hợp hệ thống ghi nhận đơn hàng nhưng thực tế không đủ hàng, dẫn đến sai lệch số liệu và không đáp ứng được nhu cầu khách hàng:
 
 ```java
 // BillingServiceImpl.java - Lines 239-253
@@ -157,7 +196,7 @@ private void validateStock(List<OrderDetail> items) {
 ```
 
 #### 4.3. Async Login với SwingWorker
-Nhóm tự nghiên cứu và áp dụng SwingWorker để tránh block UI thread:
+Nhóm tự nghiên cứu tìm hiểu SwingWorker thông qua các công cụ chatbot AI, và tự áp dụng để tránh block UI thread. Kỹ thuật này rất quan trọng trong các ứng dụng Desktop sử dụng Swing để đảm bảo giao diện luôn phản hồi nhanh với người dùng, tránh tình trạng "đóng băng" (freezing) khi thực hiện các tác vụ tốn thời gian như gọi API, truy vấn database:
 
 ```java
 // LoginFrame.java - Lines 132-154
@@ -183,7 +222,7 @@ w.execute();
 ```
 
 #### 4.4. Search với PreparedStatement
-Tự viết logic search customer với wildcard pattern:
+Nhóm tự viết logic search customer với wildcard pattern. Tính năng tìm kiếm linh hoạt giúp nhân viên dễ dàng tra cứu thông tin khách hàng dựa trên tên hoặc số điện thoại, nâng cao hiệu quả phục vụ:
 
 ```java
 // CustomerRepositoryImpl.java - Lines 79-95
